@@ -1,0 +1,328 @@
+/*****************************************************************
+* SALDBCODIA.C Version 1.0 - Rev 1.2 - Dic. 20/93.
+*
+* saldobcodia.pc. Listado de los saldos de bancos
+*
+* Uso : saldbcodia copias device userid/password
+*
+* Martin A. Toloza L. Creado Diciembre 16-1997.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <math.h>
+#include <stdlib.h>
+
+void listado();
+void saltar(int s);
+				     /* Parametros de comunicacion con ORACLE */
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100]; 
+                                 /* Bancosq (C1) */
+VARCHAR codigo_emp_q[3];
+VARCHAR codigo_bco_q[3];
+VARCHAR nombre_corto[20];
+VARCHAR cta_cte_q   [10];
+int     columna;
+VARCHAR acumula     [2];
+int     salto1;
+VARCHAR texto1      [15];
+int     saltd1;
+VARCHAR texto2      [15];
+int     saltd2;
+VARCHAR texto3      [15];
+int     saltd3;
+VARCHAR division    [2];
+char    texto       [3][15];
+int     salto       [4];
+                                 /* Bancosm (C2) */
+double  saldo;
+VARCHAR codigo_emp  [3];
+VARCHAR codigo_bco  [3];
+VARCHAR cta_cte     [10];
+                                 /* Movtos (C3) */
+double  valor_chq;
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+                                            /* Variables globales del usuario */
+char    pagina[4];                                   /* Contador de Paginas */
+int     con_pag=0;                                   /* Contador de Paginas */
+int     con_lin=66;                                  /* Contador de Lineas  */
+int     cl;
+int     columna_ant=0;
+int     staora =0;
+        		                /* Variables de recepcion para datos */
+char *fmtnum(), r_t[100];
+char    cadena[255];
+char    copias[5];
+
+char    cad1[3][5][20];
+int     s;
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+char    fecha[30];
+int	status = 0;
+
+    if (argc < 3)
+       {
+	printf ("Incorrecta invocacion:\n");
+        printf ("Uso : saldbcodia\n");
+        printf ("      device : t salida por terminal\n");
+	printf ("               s salida standar     \n");
+	printf ("               Px salida por impresora (x nro printer)\n");
+	printf ("               userid/password nombre usuario y password\n");
+        exit (1);
+       }
+       strcpy (device,         argv[1]);
+       strlow (device);
+
+    if (!strpos ("/", argv[2]))
+       {
+        printf ("user id/password incorrecto.\n");
+	exit (1);
+       }
+
+    strcpy (uid.arr,  argv[2]);
+    uid.len   =       strlen(uid.arr);
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora("1");
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+
+    EXEC SQL DECLARE C1 CURSOR FOR
+             select codigo_emp, codigo_bco, nombre_corto, cta_cte,
+                    columna, acumula, salto, texto1, nvl(salto1,0),
+                    texto2, nvl(salto2,0), texto3,
+                    nvl(salto3,0), division
+             from   bancosq
+             order  by secuencia;
+    EXEC SQL OPEN C1;
+
+    strcpy (fecha, "");
+    fecha_system(fecha);
+
+    fprintf (fp, "%s%s%s\n-------------------\n\n",fecha,diezcpi,line_feed8vo);
+    staora  = 0;
+    while (staora == 0) {
+
+           EXEC SQL FETCH C1 INTO :codigo_emp_q, :codigo_bco_q, :nombre_corto,
+                                  :cta_cte_q, :columna, :acumula, :salto1,
+                                  :texto1, :saltd1, :texto2, :saltd2,
+                                  :texto3, :saltd3, :division;
+           staora  = sqlca.sqlcode;
+           if (staora == 1403) break;
+
+           if (staora == -1405 ) {
+               staora  = 0;
+               if (!strlen(nombre_corto.arr)) {
+                   strcpy (nombre_corto.arr, "");
+                   nombre_corto.len = 0;
+               }
+               if (!strlen(texto1.arr)) {
+                   strcpy (texto1.arr, "");
+                   texto1.len = 0;
+               }
+               if (!strlen(texto2.arr)) {
+                   strcpy (texto2.arr, "");
+                   texto2.len = 0;
+               }
+               if (!strlen(texto3.arr)) {
+                   strcpy (texto3.arr, "");
+                   texto3.len = 0;
+               }
+               if (!strlen(division.arr)) {
+                   strcpy (division.arr, "");
+                   division.len = 0;
+               }
+           }
+           else if (staora)
+                    fprintf (stderr, "Error leyendo C1 (%d)\n", staora);
+
+           codigo_emp_q.arr  [codigo_emp_q.len] = '\0';
+           codigo_bco_q.arr  [codigo_bco_q.len] = '\0';
+           nombre_corto.arr  [nombre_corto.len] = '\0';
+           cta_cte_q.arr     [cta_cte_q.len]    = '\0';
+           acumula.arr       [acumula.len]      = '\0';
+           texto1.arr        [texto1.len]       = '\0';
+           texto2.arr        [texto2.len]       = '\0';
+           texto3.arr        [texto3.len]       = '\0';
+           division.arr      [division.len]     = '\0';
+           strcpy (texto[0], texto1.arr);
+           salto[0] = saltd1;
+           strcpy (texto[1], texto2.arr);
+           salto[1] = saltd2;
+           strcpy (texto[2], texto3.arr);
+           salto[2] = saltd3;
+
+           listado();
+    }
+    fprintf (fp, "%s%s",salte_pagina,line_feed6);
+
+    cierre_impresora();
+
+    EXEC SQL CLOSE C1;
+
+    EXEC SQL COMMIT WORK RELEASE;
+    
+    exit   (0);
+}
+
+void listado()
+{
+  int i=0,j=0,k=0;
+  if (columna-columna_ant > 1) {
+      strful(cadena,(columna-columna_ant-1)*20,' ');
+      fprintf (fp,"%s",cadena);
+  }
+  fprintf (fp,"%s%s%-11s%s%9s",line_feed8vo,enfatizado_on,nombre_corto.arr,enfatizado_off," ");
+  
+  columna_ant=columna;
+  saldo=0;
+  if (!strcmp(acumula.arr,"S")) {
+      strcpy(codigo_emp.arr,codigo_emp_q.arr);
+      codigo_emp.len = strlen(codigo_emp.arr);
+      strcpy(codigo_bco.arr,codigo_bco_q.arr);
+      codigo_bco.len = strlen(codigo_bco.arr);
+      strcpy(cta_cte.arr,cta_cte_q.arr);
+      cta_cte.len    = strlen(cta_cte.arr);
+
+      EXEC SQL select saldo into :saldo
+               from   bancosm b
+               where  b.codigo_emp          = :codigo_emp     and
+                      b.codigo_bco          = :codigo_bco     and
+                      b.cta_cte             = :cta_cte        and
+                      ano_mes               =
+                      (select max(ano_mes)
+                       from   bancosm
+                       where  codigo_emp    = b.codigo_emp    and
+                              codigo_bco    = b.codigo_bco    and
+                              cta_cte       = b.cta_cte);
+      if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) 
+          fprintf (stderr, "Error leyendo C2 (%d)\n", sqlca.sqlcode);
+/*
+Cheques posfechados
+*/
+      EXEC SQL select nvl(sum(valor_cre),0) into :valor_chq
+               from   movto_d d, movto_c c
+               where  d.infa        =        :cta_cte                      and
+                      cuenta        = (select cuenta
+                                       from   bancos
+                                       where  codigo     = :codigo_bco     and
+                                              codigo_emp = :codigo_emp     and
+                                              tipo      != 'E')            and
+                      c.fecha      <= (select last_day(to_date(max(ano_mes),lpad('mm',4,'y')))
+                                       from   bancosm
+                                       where  codigo_emp = :codigo_emp     and
+                                              codigo_bco = :codigo_bco     and
+                                              cta_cte    = :cta_cte)       and
+                      c.fecha      < to_date(d.infd,'DD-MON-YYYY')         and
+                      SYSDATE      < to_date(d.infd,'DD-MON-YYYY')         and
+                      c.codigo_emp  =  :codigo_emp                         and
+                      c.codigo_emp  = d.codigo_emp                         and
+                      c.ano_mes     = d.ano_mes                            and
+                      c.consecutivo = d.consecutivo                        and
+                      d.valor_cre   is NOT NULL                            and
+                      clase         = 'EG'                                 and
+                      c.fecha      >= to_date(20010101,'yyyymmdd');
+      if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) 
+          fprintf (stderr, "Error leyendo C3 (%d)\n", sqlca.sqlcode);
+      sprintf(cadena,"%9.2f",saldo+valor_chq);
+      fprintf (fp,"\r%15s%s"," ",fmtnum("zzzz,zzz,zzz.zz",cadena,r_t));
+  }
+  if (salto1 > 0) {
+      saltar(salto1+1);
+      columna_ant=0;
+  }
+  fprintf (fp,"%s",line_feed6);
+  s=0;
+  for (i=0;i<=2;i++) {
+      if (salto[i] > 0) {
+          if (strcmp(texto[i],"")){
+             fprintf (fp,"%s",texto[i]);
+             s=1;
+          }
+          saltar(salto[i]);
+          columna_ant=0;
+      }
+      else {
+            strcpy(cad1[i][columna],texto[i]);
+      }
+  }
+  fprintf (fp,"%s",line_feed8vo);
+  if (s==1)
+     fprintf (fp,"\n");
+  if (salto1 > 0) {
+      i=0;
+      for (i=0;i<=2;i++) {
+          j=1;
+          for (j=1;j<=4;j++) {
+              if (strcmp(cad1[i][j],"")) {
+                  fprintf (fp,"%s %-19s %-19s %-19s %-19s\n",line_feed6,cad1[i][1],cad1[i][2],cad1[i][3],cad1[i][4]);
+                  j=5;
+              }
+          }
+      }
+      i=0;
+      for (i=0;i<=2;i++) {
+          j=1;
+          for (j=1;j<=4;j++) {
+              strcpy(cad1[i][j],"");
+          }
+      }
+  }
+  if (!strcmp(division.arr,"*")) {
+      strful(cadena,80,'*');
+      fprintf (fp,"%s",cadena);
+      saltar(salto1+1);
+  }
+}
+
+void saltar(s)
+int s;
+{
+int i;
+  if (s == 99)
+     fprintf (fp,"\f");
+  else {
+     if (s > 0) {
+         for (i=1;i<=s;i++) {
+             fprintf (fp,"\n");
+         }
+     }
+  }
+
+}

@@ -1,0 +1,3348 @@
+/*****************************************************************
+* RESUFAC.C  Version 1.0 - Rev 1.2 - Sep. 16/91.
+*
+* resufacp.c Programa para listar la facturacion de un periodo determinado
+*
+* Uso : resufac numero_quincena device copias userid/password
+*
+* Martin A. Toloza L. Creado Enero 14-1998.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+double redondo();
+
+void lista_empresa(int e);
+void lista_basura(int e);
+void imprime_facturas();
+void totaliza(int i);
+void porcentualiza(int i);
+void titulo_ciudad();
+void borro_totales(int i);
+void borro_totalesa(int i);
+void borro_totalesb(int i);
+void acumulo_totales(int i);
+void empresa();
+void titulos();
+void titulos_og();
+void lista_zonas(int e);
+void imprime_zonas();
+void titulo_zona();
+void lista_zonasg(int e);
+void titulo_opticasg();
+void imprime_recaudos();
+void imprime_recaudos_og();
+void acumulo_recaudos(int i);
+void borro_recaudos(int i);
+void recaudos_ciudad();
+void ventas_ciudad();
+void ventas_zona();
+void ventas_zona_og();
+void porcentualiza_pagos(int i);
+void porcentualiza_pagosg(int i);
+void acumulo_totales_z(int i);;
+void porcentualiza_pagost(int i);
+                                     /* Parametros de comunicacion con ORACLE */
+        		             /* Variables de recepcion para datos */
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[200];
+                                 /* Facturas (C1) y (C6) */
+double  numero_factura;
+VARCHAR codigo_cliente [40];
+VARCHAR ciudad [10];
+VARCHAR codigo_ven [40];
+VARCHAR codigo_ven2 [40];
+VARCHAR codigo_nom [40];
+VARCHAR cvendedor[40];
+double  valor_neto[13];
+double  valor_neto_z[13];
+double  valor_neto_a[13];
+double  valor_total;
+double  valor_total_z;
+double  valor_total_a;
+double  valor_pagos[13];
+double  total_pagos;
+VARCHAR nomb_clie_r[100];
+double  valor_neto_r[13];
+double  valor_total_r;
+int     hojas;
+VARCHAR codigo_emp     [10];
+VARCHAR numero_quincena[10];
+                                 /* Nits (C2) */
+VARCHAR nomb_clie      [100];
+VARCHAR wcod           [40];
+VARCHAR nombre_zona    [100];
+                                 /* Ciudades (C3) */
+VARCHAR nomb_ciudad    [100];
+VARCHAR wciu           [100];
+                                 /* Control_fac (C4) */
+int     ano;
+int     mes_proceso;
+float   ptaje_iva;
+VARCHAR fecinicial     [90];
+VARCHAR corte          [90];
+                                 /* Empresas (C5) */
+VARCHAR nomb_emp       [200];
+
+VARCHAR fecha_ini[90];
+VARCHAR fecha_fin[90];
+VARCHAR fecha_aini[90];
+VARCHAR fecha_afin[90];
+VARCHAR clientei[90];
+VARCHAR clientef[90];
+VARCHAR vcodigo[90];
+char    registro[200];
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+                                            /* Variables globales del usuario */
+#define A_F1 "###,###,###.##"
+#define O1 " Impresion en proceso...... "
+#define O2 " Recuperacion en proceso...... "
+
+FILE    *fp1;
+
+char *fmtnum(), r_t[300];
+int     con_pag;                                   /* Contador de Paginas */
+int     con_lin=66;                                /* Contador de Lineas  */
+int	inicio = 0;
+int	staora = 0;
+int     serv   = 0;
+char    copias[20];
+int     tit_ciu=0;
+int     tit_zon=0;
+int     opticasg=0;
+char    fechas[100];
+char    fecha[100];
+char    cadena[200];
+char    mensajes[100];
+char    wciu2[100];
+int     j;
+int     a, m;
+char    ai[90];
+char    mi[90];
+char    wnomb_clie[100];
+int     anod;
+double  anof;
+int     mesd;
+int     diad;
+int     lopticasg;
+ 
+struct acu {
+            double val_neto[20];
+            double val_total;
+            double val_netoa[20];
+            double val_totala;
+            double val_neto_r[20];
+            double val_total_r;
+           };
+struct acu vect[4];
+float   c;
+char    nro_quincena[90];
+char    formas[90];
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+char    device[20];
+int	status = 0;
+char    anoa[90];
+char    mesa[90];
+char    diaa[90];
+int     i;
+
+if (argc < 7)
+   {
+    printf ("Incorrecta invocacion:\n");
+    printf ("Uso : resufac fecha_ini fecha_fin cliente_ini cliente_fin device copias userid/password\n");
+    printf ("      device : t salida por terminal\n");
+    printf ("               Px salida por impresora (x nro printer)\n");
+    printf ("               userid/password nombre usuario y password\n");
+    exit (1);
+   }
+
+strcpy (fecha_ini.arr,argv[1]);
+fecha_ini.len = strlen(fecha_ini.arr);
+strcpy (fecha_fin.arr,argv[2]);
+fecha_fin.len = strlen(fecha_fin.arr);
+
+strcpy (anoa,argv[1]);
+strcpy (mesa,argv[1]);
+strcpy (diaa,argv[1]);
+strorg (anoa,1,4);
+strorg (mesa,5,4);
+anod = atoi(anoa);
+anod -= 1;
+sprintf(fecha_aini.arr,"%d%s",anod,mesa);
+fecha_aini.len = strlen(fecha_aini.arr);
+//printf("fecha_aini.arr <%s>",fecha_aini.arr); getchar();
+
+strcpy (anoa,argv[2]);
+strcpy (mesa,argv[2]);
+strcpy (diaa,argv[2]);
+strorg (anoa,1,4);
+strorg (mesa,5,2);
+strorg (diaa,7,2);
+//printf("%s",diaa); getchar();
+mesd = atoi(mesa);
+diad = atoi(diaa);
+anod = atoi(anoa);
+anod -= 1;
+sprintf(anoa,"%4d",anod);
+anof = atof(anoa);
+//printf("%4.2f = %6d %6d %6d %6d",anof,(int)(redondo(anof/4)), (int)(anof/4), mesd, diad); getchar();
+if ((int)(redondo(anof/4)) != (int)(anof/4)) {
+   if (mesd == 2 && diad == 29)
+       diad = 29;
+}
+else {
+   if (mesd == 2 && diad == 28)
+       diad = 28;
+}
+sprintf(fecha_afin.arr,"%d%s%2d",anod,mesa,diad);
+fecha_afin.len = strlen(fecha_afin.arr);
+//printf("fecha_afin.arr <%s>",fecha_afin.arr); getchar();
+
+strcpy (clientei.arr,argv[3]);
+clientei.len = strlen(clientei.arr);
+strcpy (clientef.arr,argv[4]);
+clientef.len = strlen(clientef.arr);
+
+strcpy (device,   argv[5]);
+strlow (device);
+strcpy (copias,   argv[6]);
+
+if (!strpos ("/", argv[7]))
+   {
+    printf ("user id/password incorrecto.\n");
+    exit (1);
+   }
+
+strcpy (uid.arr,   argv[7]);
+uid.len   =        strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora(copias);
+
+/**********************************************
+ * Ventas x cliente ofi                       *
+ **********************************************/
+
+  EXEC SQL DECLARE C1 CURSOR FOR
+        select codigo_cliente,\
+            sum(decode(to_char(fecha_documento,'mm'),'01',valor_neto,0)) "01",\
+            sum(decode(to_char(fecha_documento,'mm'),'02',valor_neto,0)) "02",\
+            sum(decode(to_char(fecha_documento,'mm'),'03',valor_neto,0)) "03",\
+            sum(decode(to_char(fecha_documento,'mm'),'04',valor_neto,0)) "04",\
+            sum(decode(to_char(fecha_documento,'mm'),'05',valor_neto,0)) "05",\
+            sum(decode(to_char(fecha_documento,'mm'),'06',valor_neto,0)) "06",\
+            sum(decode(to_char(fecha_documento,'mm'),'07',valor_neto,0)) "07",\
+            sum(decode(to_char(fecha_documento,'mm'),'08',valor_neto,0)) "08",\
+            sum(decode(to_char(fecha_documento,'mm'),'09',valor_neto,0)) "09",\
+            sum(decode(to_char(fecha_documento,'mm'),'10',valor_neto,0)) "10",\
+            sum(decode(to_char(fecha_documento,'mm'),'11',valor_neto,0)) "11",\
+            sum(decode(to_char(fecha_documento,'mm'),'12',valor_neto,0)) "12",\
+            sum(valor_neto) \
+	from facturas f\
+        where to_number(:codigo_emp)    = tipo_factura                     and\
+              (tipo_documento = 'F'                                         or\
+               tipo_documento = 'C'                                      ) and\
+              fecha_documento >= to_date(to_number(:fecha_ini),'yyyymmdd') and\
+              fecha_documento <= to_date(to_number(:fecha_fin),'yyyymmdd') and\
+              codigo_cliente  >= :clientei                                 and\
+              codigo_cliente  <= :clientef                                 and\
+              not exists\
+              (select 'x'\
+               from   basura\
+               where  f.tipo_factura   = tipo_factura   and\
+                      f.tipo_documento = tipo_documento and\
+                      f.numero_factura = numero_factura)\
+         group by codigo_cliente \
+         order by codigo_cliente;
+
+/**********************************************
+ * Recaudos x ciudad, año actual ofi         *
+ **********************************************/
+
+  EXEC SQL DECLARE C1A CURSOR FOR
+	select  c.nombre,\
+	        sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+	from ingresos_c i, ciudades c\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_ini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_fin) and\
+                substr(codigo_cliente,1,2) = :wciu                 and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      	        substr(i.codigo_cliente,1,2) = c.codigo            and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp                     and\
+      		not exists (select 'x' from opticasp\
+                	    where codigo_cliente = i.codigo_cliente)\
+	group by c.nombre;
+
+/**********************************************
+ * Recaudos x ciudad, año anterior ofi       *
+ **********************************************/
+
+  EXEC SQL DECLARE C1B CURSOR FOR
+	select  c.nombre,\
+	        sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+	from ingresos_c i, ciudades c\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_aini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_afin) and\
+                substr(codigo_cliente,1,2) = :wciu                 and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      	        substr(i.codigo_cliente,1,2) = c.codigo            and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp                     and\
+      		not exists (select 'x' from opticasp\
+                	    where codigo_cliente = i.codigo_cliente)\
+	group by c.nombre;
+
+/**********************************************
+ * Ventas x ciudades, año anterior ofi        *
+ **********************************************/
+
+  EXEC SQL DECLARE C1C CURSOR FOR
+        select c.nombre,\
+            sum(decode(to_char(fecha_documento,'mm'),'01',valor_neto,0)) "01",\
+            sum(decode(to_char(fecha_documento,'mm'),'02',valor_neto,0)) "02",\
+            sum(decode(to_char(fecha_documento,'mm'),'03',valor_neto,0)) "03",\
+            sum(decode(to_char(fecha_documento,'mm'),'04',valor_neto,0)) "04",\
+            sum(decode(to_char(fecha_documento,'mm'),'05',valor_neto,0)) "05",\
+            sum(decode(to_char(fecha_documento,'mm'),'06',valor_neto,0)) "06",\
+            sum(decode(to_char(fecha_documento,'mm'),'07',valor_neto,0)) "07",\
+            sum(decode(to_char(fecha_documento,'mm'),'08',valor_neto,0)) "08",\
+            sum(decode(to_char(fecha_documento,'mm'),'09',valor_neto,0)) "09",\
+            sum(decode(to_char(fecha_documento,'mm'),'10',valor_neto,0)) "10",\
+            sum(decode(to_char(fecha_documento,'mm'),'11',valor_neto,0)) "11",\
+            sum(decode(to_char(fecha_documento,'mm'),'12',valor_neto,0)) "12",\
+            sum(valor_neto) \
+	from facturas f, ciudades c\
+        where to_number(:codigo_emp)    = tipo_factura                      and\
+              (tipo_documento = 'F'                                          or\
+               tipo_documento = 'C'                                      )  and\
+              fecha_documento >= to_date(to_number(:fecha_aini),'yyyymmdd') and\
+              fecha_documento <= to_date(to_number(:fecha_afin),'yyyymmdd') and\
+              substr(codigo_cliente,1,2)   = :wciu    and\
+              substr(f.codigo_cliente,1,2) = c.codigo and\
+              not exists\
+              (select 'x'\
+               from   basura\
+               where  f.tipo_factura   = tipo_factura   and\
+                      f.tipo_documento = tipo_documento and\
+                      f.numero_factura = numero_factura)\
+        group by c.nombre;
+
+/**********************************************
+ * Ventas x clientes, año actual extra of     *
+ **********************************************/
+
+  EXEC SQL DECLARE C6 CURSOR FOR
+        select codigo_cliente,\
+            sum(decode(to_char(fecha_documento,'mm'),'01',valor_neto,0)) "01",\
+            sum(decode(to_char(fecha_documento,'mm'),'02',valor_neto,0)) "02",\
+            sum(decode(to_char(fecha_documento,'mm'),'03',valor_neto,0)) "03",\
+            sum(decode(to_char(fecha_documento,'mm'),'04',valor_neto,0)) "04",\
+            sum(decode(to_char(fecha_documento,'mm'),'05',valor_neto,0)) "05",\
+            sum(decode(to_char(fecha_documento,'mm'),'06',valor_neto,0)) "06",\
+            sum(decode(to_char(fecha_documento,'mm'),'07',valor_neto,0)) "07",\
+            sum(decode(to_char(fecha_documento,'mm'),'08',valor_neto,0)) "08",\
+            sum(decode(to_char(fecha_documento,'mm'),'09',valor_neto,0)) "09",\
+            sum(decode(to_char(fecha_documento,'mm'),'10',valor_neto,0)) "10",\
+            sum(decode(to_char(fecha_documento,'mm'),'11',valor_neto,0)) "11",\
+            sum(decode(to_char(fecha_documento,'mm'),'12',valor_neto,0)) "12",\
+            sum(valor_neto) \
+	from facturas f\
+        where to_number(:codigo_emp)    = tipo_factura                     and\
+              (tipo_documento = 'F'                                         or\
+               tipo_documento = 'C'                                      ) and\
+              fecha_documento >= to_date(to_number(:fecha_ini),'yyyymmdd') and\
+              fecha_documento <= to_date(to_number(:fecha_fin),'yyyymmdd') and\
+              codigo_cliente  >= :clientei                                 and\
+              codigo_cliente  <= :clientef                                 and\
+              exists\
+              (select 'x'\
+               from   basura\
+               where  f.tipo_factura   = tipo_factura   and\
+                      f.tipo_documento = tipo_documento and\
+                      f.numero_factura = numero_factura)\
+         group by codigo_cliente \
+         order by codigo_cliente;
+
+/**********************************************
+ * Ventas x ciudades, año actual extra of     *
+ **********************************************/
+
+  EXEC SQL DECLARE C6A CURSOR FOR
+        select c.nombre,\
+            sum(decode(to_char(fecha_documento,'mm'),'01',valor_neto,0)) "01",\
+            sum(decode(to_char(fecha_documento,'mm'),'02',valor_neto,0)) "02",\
+            sum(decode(to_char(fecha_documento,'mm'),'03',valor_neto,0)) "03",\
+            sum(decode(to_char(fecha_documento,'mm'),'04',valor_neto,0)) "04",\
+            sum(decode(to_char(fecha_documento,'mm'),'05',valor_neto,0)) "05",\
+            sum(decode(to_char(fecha_documento,'mm'),'06',valor_neto,0)) "06",\
+            sum(decode(to_char(fecha_documento,'mm'),'07',valor_neto,0)) "07",\
+            sum(decode(to_char(fecha_documento,'mm'),'08',valor_neto,0)) "08",\
+            sum(decode(to_char(fecha_documento,'mm'),'09',valor_neto,0)) "09",\
+            sum(decode(to_char(fecha_documento,'mm'),'10',valor_neto,0)) "10",\
+            sum(decode(to_char(fecha_documento,'mm'),'11',valor_neto,0)) "11",\
+            sum(decode(to_char(fecha_documento,'mm'),'12',valor_neto,0)) "12",\
+            sum(valor_neto) \
+	from facturas f, ciudades c\
+        where to_number(:codigo_emp)    = tipo_factura                     and\
+              (tipo_documento = 'F'                                         or\
+               tipo_documento = 'C'                                      ) and\
+              fecha_documento >= to_date(to_number(:fecha_ini),'yyyymmdd') and\
+              fecha_documento <= to_date(to_number(:fecha_fin),'yyyymmdd') and\
+              substr(codigo_cliente,1,2) = :wciu                           and\
+              substr(f.codigo_cliente,1,2) = c.codigo                      and\
+              exists\
+              (select 'x'\
+               from   basura\
+               where  f.tipo_factura   = tipo_factura   and\
+                      f.tipo_documento = tipo_documento and\
+                      f.numero_factura = numero_factura)\
+         group by c.nombre;
+
+/**********************************************
+ * Ventas x asesor, año actual ofi            *
+ **********************************************/
+
+  EXEC SQL DECLARE C7 CURSOR FOR
+         select v.codigo, v.codigo_nom, v.nombre, z.nombre, c.nombre,\
+            sum(decode(to_char(fecha_documento,'mm'),'01',valor_neto,0)) "01",\
+            sum(decode(to_char(fecha_documento,'mm'),'02',valor_neto,0)) "02",\
+            sum(decode(to_char(fecha_documento,'mm'),'03',valor_neto,0)) "03",\
+            sum(decode(to_char(fecha_documento,'mm'),'04',valor_neto,0)) "04",\
+            sum(decode(to_char(fecha_documento,'mm'),'05',valor_neto,0)) "05",\
+            sum(decode(to_char(fecha_documento,'mm'),'06',valor_neto,0)) "06",\
+            sum(decode(to_char(fecha_documento,'mm'),'07',valor_neto,0)) "07",\
+            sum(decode(to_char(fecha_documento,'mm'),'08',valor_neto,0)) "08",\
+            sum(decode(to_char(fecha_documento,'mm'),'09',valor_neto,0)) "09",\
+            sum(decode(to_char(fecha_documento,'mm'),'10',valor_neto,0)) "10",\
+            sum(decode(to_char(fecha_documento,'mm'),'11',valor_neto,0)) "11",\
+            sum(decode(to_char(fecha_documento,'mm'),'12',valor_neto,0)) "12",\
+            sum(valor_neto)\
+         from facturas f, vendedores v, zonas z, departamentos d, ciudades c\
+         where to_number(:codigo_emp)    = tipo_factura                     and\
+              (tipo_documento = 'F'                                          or\
+               tipo_documento = 'C')                                        and\
+               fecha_documento >= to_date(to_number(:fecha_ini),'yyyymmdd') and\
+               fecha_documento <= to_date(to_number(:fecha_fin),'yyyymmdd') and\
+               codigo_cliente  >= :clientei                                 and\
+               codigo_cliente  <= :clientef                                 and\
+               substr(f.codigo_cliente,1,2) = c.codigo                      and\
+               c.vendedor       = v.codigo                                  and\
+               c.dpto           = d.codigo                                  and\
+               d.zonas          = z.codigo                                  and\
+               not exists (select 'x' from opticasp\
+                           where codigo_cliente = f.codigo_cliente)         and\
+               not exists\
+              (select 'x'\
+               from   basura\
+               where  f.tipo_factura   = tipo_factura   and\
+                      f.tipo_documento = tipo_documento and\
+                      f.numero_factura = numero_factura)\
+         group by v.codigo, v.codigo_nom, v.nombre, z.nombre, c.nombre\
+         order by v.codigo, z.nombre, c.nombre;
+
+/**********************************************
+ * Ventas x asesor, año anterior ofi          *
+ **********************************************/
+
+  EXEC SQL DECLARE C7A CURSOR FOR
+         select v.codigo,\
+            sum(decode(to_char(fecha_documento,'mm'),'01',valor_neto,0)) "01",\
+            sum(decode(to_char(fecha_documento,'mm'),'02',valor_neto,0)) "02",\
+            sum(decode(to_char(fecha_documento,'mm'),'03',valor_neto,0)) "03",\
+            sum(decode(to_char(fecha_documento,'mm'),'04',valor_neto,0)) "04",\
+            sum(decode(to_char(fecha_documento,'mm'),'05',valor_neto,0)) "05",\
+            sum(decode(to_char(fecha_documento,'mm'),'06',valor_neto,0)) "06",\
+            sum(decode(to_char(fecha_documento,'mm'),'07',valor_neto,0)) "07",\
+            sum(decode(to_char(fecha_documento,'mm'),'08',valor_neto,0)) "08",\
+            sum(decode(to_char(fecha_documento,'mm'),'09',valor_neto,0)) "09",\
+            sum(decode(to_char(fecha_documento,'mm'),'10',valor_neto,0)) "10",\
+            sum(decode(to_char(fecha_documento,'mm'),'11',valor_neto,0)) "11",\
+            sum(decode(to_char(fecha_documento,'mm'),'12',valor_neto,0)) "12",\
+            sum(valor_neto)\
+         from facturas f, vendedores v, zonas z, departamentos d, ciudades c\
+         where to_number(:codigo_emp)    = tipo_factura                     and\
+              (tipo_documento = 'F'                                          or\
+               tipo_documento = 'C')                                        and\
+               fecha_documento >= to_date(to_number(:fecha_aini),'yyyymmdd') and\
+               fecha_documento <= to_date(to_number(:fecha_afin),'yyyymmdd') and\
+               codigo_cliente  >= :clientei                                 and\
+               codigo_cliente  <= :clientef                                 and\
+               v.codigo         = to_number(:cvendedor)                     and\
+               substr(f.codigo_cliente,1,2) = c.codigo                      and\
+               c.vendedor       = v.codigo                                  and\
+               c.dpto           = d.codigo                                  and\
+               d.zonas          = z.codigo                                  and\
+               not exists (select 'x' from opticasp\
+                           where codigo_cliente = f.codigo_cliente)         and\
+               not exists\
+              (select 'x'\
+               from   basura\
+               where  f.tipo_factura   = tipo_factura   and\
+                      f.tipo_documento = tipo_documento and\
+                      f.numero_factura = numero_factura)\
+         group by v.codigo, v.codigo_nom, v.nombre, z.nombre\
+         order by v.codigo, z.nombre;
+
+/*****************************************************
+ * Ventas x asesor, año actual opticas del grupo ofi *
+ *****************************************************/
+
+  EXEC SQL DECLARE C8 CURSOR FOR
+         select v.codigo, v.codigo_nom, v.nombre, z.nombre, c.nombre,\
+            sum(decode(to_char(fecha_documento,'mm'),'01',valor_neto,0)) "01",\
+            sum(decode(to_char(fecha_documento,'mm'),'02',valor_neto,0)) "02",\
+            sum(decode(to_char(fecha_documento,'mm'),'03',valor_neto,0)) "03",\
+            sum(decode(to_char(fecha_documento,'mm'),'04',valor_neto,0)) "04",\
+            sum(decode(to_char(fecha_documento,'mm'),'05',valor_neto,0)) "05",\
+            sum(decode(to_char(fecha_documento,'mm'),'06',valor_neto,0)) "06",\
+            sum(decode(to_char(fecha_documento,'mm'),'07',valor_neto,0)) "07",\
+            sum(decode(to_char(fecha_documento,'mm'),'08',valor_neto,0)) "08",\
+            sum(decode(to_char(fecha_documento,'mm'),'09',valor_neto,0)) "09",\
+            sum(decode(to_char(fecha_documento,'mm'),'10',valor_neto,0)) "10",\
+            sum(decode(to_char(fecha_documento,'mm'),'11',valor_neto,0)) "11",\
+            sum(decode(to_char(fecha_documento,'mm'),'12',valor_neto,0)) "12",\
+            sum(valor_neto)\
+         from facturas f, vendedores v, zonas z, departamentos d, ciudades c\
+         where to_number(:codigo_emp)    = tipo_factura                     and\
+              (tipo_documento = 'F'                                          or\
+               tipo_documento = 'C')                                        and\
+               fecha_documento >= to_date(to_number(:fecha_ini),'yyyymmdd') and\
+               fecha_documento <= to_date(to_number(:fecha_fin),'yyyymmdd') and\
+               codigo_cliente  >= :clientei                                 and\
+               codigo_cliente  <= :clientef                                 and\
+               substr(f.codigo_cliente,1,2) = c.codigo                      and\
+               c.vendedor       = v.codigo                                  and\
+               c.dpto           = d.codigo                                  and\
+               d.zonas          = z.codigo                                  and\
+               exists (select 'x' from opticasp\
+                       where codigo_cliente = f.codigo_cliente)             and\
+               not exists\
+              (select 'x'\
+               from   basura\
+               where  f.tipo_factura   = tipo_factura   and\
+                      f.tipo_documento = tipo_documento and\
+                      f.numero_factura = numero_factura)\
+         group by v.codigo, v.codigo_nom, v.nombre, z.nombre, c.nombre\
+         order by v.codigo, z.nombre, c.nombre;
+
+/************************************
+ * Ventas totales, año anterior ofi *
+ ************************************/
+
+  EXEC SQL DECLARE C9 CURSOR FOR
+        select sum(decode(to_char(fecha_documento,'mm'),'01',valor_neto,0)) "01",\
+               sum(decode(to_char(fecha_documento,'mm'),'02',valor_neto,0)) "02",\
+               sum(decode(to_char(fecha_documento,'mm'),'03',valor_neto,0)) "03",\
+               sum(decode(to_char(fecha_documento,'mm'),'04',valor_neto,0)) "04",\
+               sum(decode(to_char(fecha_documento,'mm'),'05',valor_neto,0)) "05",\
+               sum(decode(to_char(fecha_documento,'mm'),'06',valor_neto,0)) "06",\
+               sum(decode(to_char(fecha_documento,'mm'),'07',valor_neto,0)) "07",\
+               sum(decode(to_char(fecha_documento,'mm'),'08',valor_neto,0)) "08",\
+               sum(decode(to_char(fecha_documento,'mm'),'09',valor_neto,0)) "09",\
+               sum(decode(to_char(fecha_documento,'mm'),'10',valor_neto,0)) "10",\
+               sum(decode(to_char(fecha_documento,'mm'),'11',valor_neto,0)) "11",\
+               sum(decode(to_char(fecha_documento,'mm'),'12',valor_neto,0)) "12",\
+               sum(valor_neto) \
+	from facturas f\
+        where to_number(:codigo_emp)    = tipo_factura                      and\
+              (tipo_documento = 'F'                                          or\
+               tipo_documento = 'C'                                      )  and\
+              fecha_documento >= to_date(to_number(:fecha_aini),'yyyymmdd') and\
+              fecha_documento <= to_date(to_number(:fecha_afin),'yyyymmdd') and\
+              codigo_cliente  >= :clientei                                  and\
+              codigo_cliente  <= :clientef                                  and\
+              not exists\
+              (select 'x'\
+               from   basura\
+               where  f.tipo_factura   = tipo_factura   and\
+                      f.tipo_documento = tipo_documento and\
+                      f.numero_factura = numero_factura);
+
+/**********************************
+ * Pagos x asesor, año actual ofi *
+ **********************************/
+
+  EXEC SQL DECLARE C10 CURSOR FOR
+	select  v.nombre,\
+	        sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+	from ingresos_c i, ciudades c, vendedores v, zonas z\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_ini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_fin) and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      	        substr(i.codigo_cliente,1,2) = c.codigo            and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp                     and\
+                c.vendedor       = v.codigo                        and\
+                z.codigo         = c.zona                          and\
+                v.codigo         = to_number(:cvendedor)           and\
+      		not exists (select 'x' from opticasp\
+                	    where codigo_cliente = i.codigo_cliente)\
+	group by v.nombre\
+        order by v.nombre;
+
+/**********************************
+ * Pagos genereles año actual ofi *
+ **********************************/
+
+  EXEC SQL DECLARE C10A CURSOR FOR
+	select  sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+	from ingresos_c i\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_ini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_fin) and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp                     and\
+      		not exists (select 'x' from opticasp\
+                	    where codigo_cliente = i.codigo_cliente);
+
+/************************************
+ * Pagos x asesor, año anterior ofi *
+ ************************************/
+
+  EXEC SQL DECLARE C10B CURSOR FOR
+	select  v.nombre,\
+	        sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+	from ingresos_c i, ciudades c, vendedores v, zonas z\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_aini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_afin) and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      	        substr(i.codigo_cliente,1,2) = c.codigo            and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp                     and\
+                c.vendedor       = v.codigo                        and\
+                z.codigo         = c.zona                          and\
+                v.codigo         = to_number(:cvendedor)           and\
+      		not exists (select 'x' from opticasp\
+                	    where codigo_cliente = i.codigo_cliente)\
+	group by v.nombre\
+        order by v.nombre;
+
+/*********************************************
+ * Pagos genereles año anterior clientes ofi *
+ *********************************************/
+
+  EXEC SQL DECLARE C10C CURSOR FOR
+	select  sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+	from ingresos_c i\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_aini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_afin) and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp                     and\
+      		not exists (select 'x' from opticasp\
+                	    where codigo_cliente = i.codigo_cliente);
+
+/**********************************************
+ * Pagos genereles año actual opticas propias *
+ **********************************************/
+
+  EXEC SQL DECLARE C10D CURSOR FOR
+	select  sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+	from ingresos_c i\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_ini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_fin) and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp                     and\
+      		exists (select 'x' from opticasp\
+                        where codigo_cliente = i.codigo_cliente);
+
+/************************************************
+ * Pagos genereles año anterior opticas propias *
+ ************************************************/
+
+  EXEC SQL DECLARE C10E CURSOR FOR
+	select  sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+	from ingresos_c i\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_aini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_afin) and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp                     and\
+      		exists (select 'x' from opticasp\
+                        where codigo_cliente = i.codigo_cliente);
+
+/************************************
+ * Pagos genereles año anterior ofi *
+ ************************************/
+
+  EXEC SQL DECLARE C10F CURSOR FOR
+	select  sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+	from ingresos_c i\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_aini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_afin) and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp;
+
+
+/**********************************
+ * Pagos genereles año actual ofi *
+ **********************************/
+
+  EXEC SQL DECLARE C10G CURSOR FOR
+	select  sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+	from ingresos_c i\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_ini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_fin) and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp;
+
+/*************************************************
+ * Pagos x asesor, año actual opticas propias of *
+ *************************************************/
+
+  EXEC SQL DECLARE C11 CURSOR FOR
+        select v.nombre,\
+	        sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+        from ingresos_c i, ciudades c, vendedores v, zonas z\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_ini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_fin) and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      	        substr(i.codigo_cliente,1,2) = c.codigo            and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp                     and\
+                c.vendedor       = v.codigo                        and\
+                z.codigo         = c.zona                          and\
+                v.codigo         = to_number(:cvendedor)           and\
+      		exists (select 'x' from opticasp\
+                        where codigo_cliente = i.codigo_cliente)\
+	group by v.nombre\
+        order by v.nombre;
+
+/***************************************************
+ * Pagos x asesor, año anterior opticas propias of *
+ ***************************************************/
+
+  EXEC SQL DECLARE C11B CURSOR FOR
+        select v.nombre,\
+	        sum(decode(to_char(i.fecha,'mm'),'01',nvl(valor_cartera,0),0)) "01",\
+	        sum(decode(to_char(i.fecha,'mm'),'02',nvl(valor_cartera,0),0)) "02",\
+	        sum(decode(to_char(i.fecha,'mm'),'03',nvl(valor_cartera,0),0)) "03",\
+	        sum(decode(to_char(i.fecha,'mm'),'04',nvl(valor_cartera,0),0)) "04",\
+	        sum(decode(to_char(i.fecha,'mm'),'05',nvl(valor_cartera,0),0)) "05",\
+	        sum(decode(to_char(i.fecha,'mm'),'06',nvl(valor_cartera,0),0)) "06",\
+	        sum(decode(to_char(i.fecha,'mm'),'07',nvl(valor_cartera,0),0)) "07",\
+	        sum(decode(to_char(i.fecha,'mm'),'08',nvl(valor_cartera,0),0)) "08",\
+	        sum(decode(to_char(i.fecha,'mm'),'09',nvl(valor_cartera,0),0)) "09",\
+	        sum(decode(to_char(i.fecha,'mm'),'10',nvl(valor_cartera,0),0)) "10",\
+	        sum(decode(to_char(i.fecha,'mm'),'11',nvl(valor_cartera,0),0)) "11",\
+	        sum(decode(to_char(i.fecha,'mm'),'12',nvl(valor_cartera,0),0)) "12",\
+      	        sum(nvl(valor_cartera,0))\
+        from ingresos_c i, ciudades c, vendedores v, zonas z\
+	where   to_number(to_char(i.fecha,'yyyymmdd')) >= to_number(:fecha_aini) and\
+      	        to_number(to_char(i.fecha,'yyyymmdd')) <= to_number(:fecha_afin) and\
+      	        nvl(valor_cartera,0) > 0                           and\
+      	        substr(i.codigo_cliente,1,2) = c.codigo            and\
+      		i.tipo_documento = 'RC'                            and\
+      		i.codigo_cliente > '0'                             and\
+      		i.estado        <> '2'                             and\
+                i.codigo_emp     = :codigo_emp                     and\
+                c.vendedor       = v.codigo                        and\
+                z.codigo         = c.zona                          and\
+                v.codigo         = to_number(:cvendedor)           and\
+      		exists (select 'x' from opticasp\
+                        where codigo_cliente = i.codigo_cliente)\
+	group by v.nombre\
+        order by v.nombre;
+
+/*************************************
+ * Ventas, año anterior ofi          *
+ *************************************/
+
+  EXEC SQL DECLARE C11C CURSOR FOR
+         select sum(decode(to_char(fecha_documento,'mm'),'01',valor_neto,0)) "01",
+                sum(decode(to_char(fecha_documento,'mm'),'02',valor_neto,0)) "02",
+                sum(decode(to_char(fecha_documento,'mm'),'03',valor_neto,0)) "03",
+                sum(decode(to_char(fecha_documento,'mm'),'04',valor_neto,0)) "04",
+                sum(decode(to_char(fecha_documento,'mm'),'05',valor_neto,0)) "05",
+                sum(decode(to_char(fecha_documento,'mm'),'06',valor_neto,0)) "06",
+                sum(decode(to_char(fecha_documento,'mm'),'07',valor_neto,0)) "07",
+                sum(decode(to_char(fecha_documento,'mm'),'08',valor_neto,0)) "08",
+                sum(decode(to_char(fecha_documento,'mm'),'09',valor_neto,0)) "09",
+                sum(decode(to_char(fecha_documento,'mm'),'10',valor_neto,0)) "10",
+                sum(decode(to_char(fecha_documento,'mm'),'11',valor_neto,0)) "11",
+                sum(decode(to_char(fecha_documento,'mm'),'12',valor_neto,0)) "12",
+                sum(valor_neto)
+         from facturas f, vendedores v, zonas z, departamentos d, ciudades c
+         where to_number(:codigo_emp)    = tipo_factura                      and
+              (tipo_documento = 'F'                                          or
+               tipo_documento = 'C')                                         and
+               fecha_documento >= to_date(to_number(:fecha_aini),'yyyymmdd') and
+               fecha_documento <= to_date(to_number(:fecha_afin),'yyyymmdd') and
+               codigo_cliente  >= :clientei                                  and
+               codigo_cliente  <= :clientef                                  and
+               substr(f.codigo_cliente,1,2) = c.codigo                       and
+               c.vendedor       = v.codigo                                   and
+               c.dpto           = d.codigo                                   and
+               d.zonas          = z.codigo                                   and
+               not exists (select 'x' from opticasp
+                           where codigo_cliente = f.codigo_cliente)          and
+               not exists
+              (select 'x'
+               from   basura
+               where  f.tipo_factura   = tipo_factura   and
+                      f.tipo_documento = tipo_documento and
+                      f.numero_factura = numero_factura);
+
+/**********************************************
+ * Ventas, año anterior ofi opticas del grupo *
+ **********************************************/
+
+  EXEC SQL DECLARE C11D CURSOR FOR
+         select sum(decode(to_char(fecha_documento,'mm'),'01',valor_neto,0)) "01",
+                sum(decode(to_char(fecha_documento,'mm'),'02',valor_neto,0)) "02",
+                sum(decode(to_char(fecha_documento,'mm'),'03',valor_neto,0)) "03",
+                sum(decode(to_char(fecha_documento,'mm'),'04',valor_neto,0)) "04",
+                sum(decode(to_char(fecha_documento,'mm'),'05',valor_neto,0)) "05",
+                sum(decode(to_char(fecha_documento,'mm'),'06',valor_neto,0)) "06",
+                sum(decode(to_char(fecha_documento,'mm'),'07',valor_neto,0)) "07",
+                sum(decode(to_char(fecha_documento,'mm'),'08',valor_neto,0)) "08",
+                sum(decode(to_char(fecha_documento,'mm'),'09',valor_neto,0)) "09",
+                sum(decode(to_char(fecha_documento,'mm'),'10',valor_neto,0)) "10",
+                sum(decode(to_char(fecha_documento,'mm'),'11',valor_neto,0)) "11",
+                sum(decode(to_char(fecha_documento,'mm'),'12',valor_neto,0)) "12",
+                sum(valor_neto)
+         from facturas f, vendedores v, zonas z, departamentos d, ciudades c
+         where to_number(:codigo_emp)    = tipo_factura                      and
+              (tipo_documento = 'F'                                          or
+               tipo_documento = 'C')                                         and
+               fecha_documento >= to_date(to_number(:fecha_aini),'yyyymmdd') and
+               fecha_documento <= to_date(to_number(:fecha_afin),'yyyymmdd') and
+               codigo_cliente  >= :clientei                                  and
+               codigo_cliente  <= :clientef                                  and
+               substr(f.codigo_cliente,1,2) = c.codigo                       and
+               c.vendedor       = v.codigo                                   and
+               c.dpto           = d.codigo                                   and
+               d.zonas          = z.codigo                                   and
+                   exists (select 'x' from opticasp
+                           where codigo_cliente = f.codigo_cliente)          and
+               not exists
+              (select 'x'
+               from   basura
+               where  f.tipo_factura   = tipo_factura   and
+                      f.tipo_documento = tipo_documento and
+                      f.numero_factura = numero_factura);
+
+/*****************************************************
+ * Ventas x asesor, año anterior opticas del grupo ofi *
+ *****************************************************/
+
+  EXEC SQL DECLARE C11E CURSOR FOR
+         select v.codigo,\
+            sum(decode(to_char(fecha_documento,'mm'),'01',valor_neto,0)) "01",\
+            sum(decode(to_char(fecha_documento,'mm'),'02',valor_neto,0)) "02",\
+            sum(decode(to_char(fecha_documento,'mm'),'03',valor_neto,0)) "03",\
+            sum(decode(to_char(fecha_documento,'mm'),'04',valor_neto,0)) "04",\
+            sum(decode(to_char(fecha_documento,'mm'),'05',valor_neto,0)) "05",\
+            sum(decode(to_char(fecha_documento,'mm'),'06',valor_neto,0)) "06",\
+            sum(decode(to_char(fecha_documento,'mm'),'07',valor_neto,0)) "07",\
+            sum(decode(to_char(fecha_documento,'mm'),'08',valor_neto,0)) "08",\
+            sum(decode(to_char(fecha_documento,'mm'),'09',valor_neto,0)) "09",\
+            sum(decode(to_char(fecha_documento,'mm'),'10',valor_neto,0)) "10",\
+            sum(decode(to_char(fecha_documento,'mm'),'11',valor_neto,0)) "11",\
+            sum(decode(to_char(fecha_documento,'mm'),'12',valor_neto,0)) "12",\
+            sum(valor_neto)\
+         from facturas f, vendedores v, zonas z, departamentos d, ciudades c\
+         where to_number(:codigo_emp)    = tipo_factura                     and\
+              (tipo_documento = 'F'                                          or\
+               tipo_documento = 'C')                                        and\
+               fecha_documento >= to_date(to_number(:fecha_aini),'yyyymmdd') and\
+               fecha_documento <= to_date(to_number(:fecha_afin),'yyyymmdd') and\
+               codigo_cliente  >= :clientei                                 and\
+               codigo_cliente  <= :clientef                                 and\
+               v.codigo         = to_number(:cvendedor)                     and\
+               substr(f.codigo_cliente,1,2) = c.codigo                      and\
+               c.vendedor       = v.codigo                                  and\
+               c.dpto           = d.codigo                                  and\
+               d.zonas          = z.codigo                                  and\
+                   exists (select 'x' from opticasp\
+                           where codigo_cliente = f.codigo_cliente)         and\
+               not exists\
+              (select 'x'\
+               from   basura\
+               where  f.tipo_factura   = tipo_factura   and\
+                      f.tipo_documento = tipo_documento and\
+                      f.numero_factura = numero_factura)\
+         group by v.codigo, v.codigo_nom, v.nombre, z.nombre\
+         order by v.codigo, z.nombre;
+
+ strcpy(ai,fecha_ini.arr);
+ strorg(ai,1,4);
+ strcpy(mi,fecha_ini.arr);
+ strorg(mi,5,2);
+ a = atoi(ai);
+ m = atoi(mi);
+
+ for (i=0;i<=3;i++) {
+     borro_totalesb(i);
+ }
+
+/* LISTA LABOCOSTA S.A. */
+
+ lista_empresa(1);
+ for (i=0;i<=3;i++) {
+     borro_totalesb(i);
+ }
+ lista_zonas(1);
+ for (i=1;i<=3;i++) {
+     borro_totales(i);
+ }
+
+/* LISTA OPTICAS DEL GRUPO */
+
+ for (i=0;i<=3;i++) {
+     borro_totalesb(i);
+ }
+ lopticasg = 1;
+ lista_zonasg(1);
+ for (i=1;i<=3;i++) {
+     borro_totales(i);
+ }
+
+/* LISTA LILIAN */
+
+ lista_empresa(3);
+ for (i=1;i<=3;i++) {
+     borro_totales(i);
+ }
+ lista_zonas(3);
+ for (i=1;i<=3;i++) {
+     borro_totales(i);
+ }
+ con_pag=0;
+
+/* LISTA LABORATORIO OFTALMICO LTDA. */
+/*
+ lista_empresa(2);
+ con_pag=0;
+ serv=1;
+ lista_basura(1);
+ for (i=1;i<=3;i++) {
+     borro_totales(i);
+ }
+ lista_basura(2);
+ for (i=1;i<=3;i++) {
+     borro_totales(i);
+ }
+*/
+ cierre_impresora();
+
+ EXEC SQL COMMIT WORK RELEASE;
+
+ exit   (0);
+}
+
+void lista_empresa(e)
+int e;
+{
+ int i;
+ sprintf(codigo_emp.arr,"%d",e);
+ empresa();
+
+ strcpy(fecha,fecha_ini.arr);
+ fecha_oracle3(fecha);
+ strcpy(cadena,fecha);
+ strcat(cadena," hasta ");
+ strcpy(fecha,fecha_fin.arr);
+ fecha_oracle3(fecha);
+ strcat(cadena,fecha);
+ strcpy(fechas,cadena);
+ inicio  = 0;
+ staora  = 0;
+ EXEC SQL OPEN C1;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C1 INTO :codigo_cliente,
+                              :valor_neto[1],
+                              :valor_neto[2],
+                              :valor_neto[3],
+                              :valor_neto[4],
+                              :valor_neto[5],
+                              :valor_neto[6],
+                              :valor_neto[7],
+                              :valor_neto[8],
+                              :valor_neto[9],
+                              :valor_neto[10],
+                              :valor_neto[11],
+                              :valor_neto[12],
+                              :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C1 (%d)\n", staora);
+
+       codigo_cliente.arr   [codigo_cliente.len] = '\0';
+       if (inicio == 0) {
+           inicio  = 1;
+           strcpy(wciu.arr,codigo_cliente.arr);
+           strorg(wciu.arr,1,2);
+          }
+       strcpy(wciu2,codigo_cliente.arr);
+       strorg(wciu2,1,2);
+       if (strcmp(wciu2,wciu.arr)) {
+           if (con_lin > 56)
+               titulos();
+           sprintf(mensajes,"TOTAL CIUDAD %d",anod+1);
+           totaliza(0);
+           ventas_ciudad();
+           recaudos_ciudad();
+           strcpy(wciu.arr,codigo_cliente.arr);
+           strorg(wciu.arr,1,2);
+           titulo_ciudad();
+       }
+       strcpy(wcod.arr,codigo_cliente.arr);
+       wcod.len  =  strlen(wcod.arr);
+       imprime_facturas();
+ }
+ if (con_lin > 56)
+    titulos();
+ sprintf(mensajes,"TOTAL CIUDAD %d",anod+1);
+ totaliza(0);
+ ventas_ciudad();
+ recaudos_ciudad();
+ strcpy(wciu.arr,codigo_cliente.arr);
+ strorg(wciu.arr,1,2);
+// if (con_lin > 56)
+ tit_ciu = 1;
+ titulos();
+ sprintf(mensajes,"TOTALES GENERALES %d",anod+1);
+ totaliza(1);
+// recaudos_ciudad();
+/*
+ for (i=0;i<=3;i++) {
+     borro_totales(i);
+ }
+*/
+ EXEC SQL CLOSE C1;
+
+ staora = 0;
+ EXEC SQL OPEN C9;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C9 INTO :valor_neto[1],
+                              :valor_neto[2],
+                              :valor_neto[3],
+                              :valor_neto[4],
+                              :valor_neto[5],
+                              :valor_neto[6],
+                              :valor_neto[7],
+                              :valor_neto[8],
+                              :valor_neto[9],
+                              :valor_neto[10],
+                              :valor_neto[11],
+                              :valor_neto[12],
+                              :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C9 (%d)\n", staora);
+       for (i=0;i<=1;++i)
+            acumulo_totales(i);
+ }
+ sprintf(mensajes,"TOTALES GENERALES %d",anod);
+
+ porcentualiza(1);
+
+ EXEC SQL CLOSE C9;
+
+ porcentualiza_pagost(1);
+
+// if(e!=1)
+    con_lin=66;
+}
+
+void lista_basura(e)
+int e;
+{
+// int i;
+ sprintf(codigo_emp.arr,"%d",e);
+ empresa();
+
+ EXEC SQL OPEN C6;
+
+ inicio  = 0;
+ staora  = 0;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C6 INTO :codigo_cliente,
+                              :valor_neto[1],
+                              :valor_neto[2],
+                              :valor_neto[3],
+                              :valor_neto[4],
+                              :valor_neto[5],
+                              :valor_neto[6],
+                              :valor_neto[7],
+                              :valor_neto[8],
+                              :valor_neto[9],
+                              :valor_neto[10],
+                              :valor_neto[11],
+                              :valor_neto[12],
+                              :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C6 (%d)\n", staora);
+
+       codigo_cliente.arr   [codigo_cliente.len] = '\0';
+       if (inicio == 0) {
+           inicio  = 1;
+           strcpy(wciu.arr,codigo_cliente.arr);
+           strorg(wciu.arr,1,2);
+          }
+       strcpy(wciu2,codigo_cliente.arr);
+       strorg(wciu2,1,2);
+       if (strcmp(wciu2,wciu.arr)) {
+           if (con_lin > 56)
+               titulos();
+           sprintf(mensajes,"TOTAL CIUDAD %d",anod+1);
+           totaliza(0);
+           ventas_ciudad();
+           recaudos_ciudad();
+           strcpy(wciu.arr,codigo_cliente.arr);
+           strorg(wciu.arr,1,2);
+           titulo_ciudad();
+       }
+       strcpy(wcod.arr,codigo_cliente.arr);
+       wcod.len  =  strlen(wcod.arr);
+       imprime_facturas();
+ }
+ if (con_lin > 56)
+    titulos();
+ sprintf(mensajes,"TOTAL CIUDAD %d",anod+1);
+ totaliza(0);
+ ventas_ciudad();
+ recaudos_ciudad();
+ strcpy(wciu.arr,codigo_cliente.arr);
+ strorg(wciu.arr,1,2);
+ sprintf(mensajes,"TOTALES GENERALES %d",anod+1);
+ totaliza(0);
+/*
+ for (i=1;i<=3;i++) {
+     borro_totales(i);
+ }
+*/
+ con_lin=66;
+ EXEC SQL CLOSE C6;
+}
+
+void imprime_facturas()
+{
+ int i;
+ if (con_lin > 60)
+    titulos();
+ EXEC SQL select n.nombre
+          into  :nomb_clie
+          from  nits n, clientes cl
+          where n.codigo_nit      = cl.codigo_nit      and
+                cl.codigo_cliente = :wcod;
+
+ if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error leyendo Nits(C2) (%d)\n", sqlca.sqlcode);
+
+ nomb_clie.arr   [nomb_clie.len] = '\0';
+ if (hojas > 1) {
+    sprintf(cadena,"%06.0f",numero_factura+hojas-1);
+    cadena[3]='-';
+    strorg(cadena,4,3);
+ }
+ else strcpy(cadena,"  ");
+ fprintf(fp,"%6s ",codigo_cliente.arr);
+ strorg(nomb_clie.arr,1,39);
+ fprintf(fp,"%-39s",nomb_clie.arr);
+
+ for (i=m;i<=12;i++) {
+     sprintf (cadena,"%6.2f",valor_neto[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (i=1;i<m;i++) {
+     sprintf (cadena,"%6.2f",valor_neto[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",valor_total);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=1;
+ for (i=0;i<=1;++i)
+      acumulo_totales(i);
+}
+
+void totaliza(i)
+int i;
+{
+ if (con_lin > 62)
+    titulos();
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",vect[i].val_total);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+ borro_totales(i);
+ tit_ciu=0;
+}
+
+void ventas_ciudad()    //Aqui esta el problema
+{
+  int i;
+  valor_total_a = 0;
+  for (i=1;i<=12;i++) {
+    valor_neto_a[i] = 0;
+  }
+
+  EXEC SQL OPEN C1C;
+  EXEC SQL FETCH C1C INTO :nomb_ciudad,
+                          :valor_neto_a[1],
+                          :valor_neto_a[2],
+                          :valor_neto_a[3],
+                          :valor_neto_a[4],
+                          :valor_neto_a[5],
+                          :valor_neto_a[6],
+                          :valor_neto_a[7],
+                          :valor_neto_a[8],
+                          :valor_neto_a[9],
+                          :valor_neto_a[10],
+                          :valor_neto_a[11],
+                          :valor_neto_a[12],
+                          :valor_total_a;
+  nomb_ciudad.arr   [nomb_ciudad.len] = '\0';
+  sprintf(mensajes,"TOTAL CIUDAD %d",anod);
+  if (con_lin > 62) {
+      titulos();
+  }
+
+  fprintf(fp,"\n%-4s"," ");
+  fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+  for (i=m;i<=12;i++) {
+     sprintf (cadena,"%6.2f",valor_neto_a[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+  }
+  for (i=1;i<m;i++) {
+     sprintf (cadena,"%6.2f",valor_neto_a[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+  }
+  sprintf (cadena,"%6.2f",valor_total_a);
+  fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+  con_lin+=2;
+  EXEC SQL CLOSE C1C;
+
+  valor_total_a = 0;
+  for (i=1;i<=12;i++) {
+    valor_neto_a[i] = 0;
+  }
+}
+
+void ventas_zona()
+{
+  int i;
+  valor_total = 0;
+  for (i=1;i<=12;i++) {
+    valor_neto[i] = 0;
+  }
+//  printf("Vendedor %s ",cvendedor.arr); getchar();
+  EXEC SQL OPEN C7A;
+  EXEC SQL FETCH C7A INTO :codigo_ven2,
+                          :valor_neto[1],
+                          :valor_neto[2],
+                          :valor_neto[3],
+                          :valor_neto[4],
+                          :valor_neto[5],
+                          :valor_neto[6],
+                          :valor_neto[7],
+                          :valor_neto[8],
+                          :valor_neto[9],
+                          :valor_neto[10],
+                          :valor_neto[11],
+                          :valor_neto[12],
+                          :valor_total;
+
+ staora  = sqlca.sqlcode;
+ if (staora == -1405)
+     staora  = 0;
+ else if (staora)
+          fprintf (stderr, "Error leyendo C7A.1 (%d)\n", staora);
+
+ codigo_ven2.arr  [codigo_ven2.len]  = '\0';
+
+  sprintf(mensajes,"SUB-TOTAL ZONA %d",anod);
+  if (con_lin > 62)
+     titulo_zona();
+
+  fprintf(fp,"\n%-4s"," ");
+  fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+  for (i=m;i<=12;i++) {
+     sprintf (cadena,"%6.2f",valor_neto[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+  }
+  for (i=1;i<m;i++) {
+     sprintf (cadena,"%6.2f",valor_neto[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+  }
+  sprintf (cadena,"%6.2f",valor_total);
+  fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+  con_lin+=2;
+  EXEC SQL CLOSE C7A;
+
+  valor_total = 0;
+  for (i=1;i<=12;i++) {
+    valor_neto[i] = 0;
+  }
+}
+
+void ventas_zona_og()
+{
+  int i;
+  valor_total = 0;
+  for (i=1;i<=12;i++) {
+    valor_neto[i] = 0;
+  }
+//  printf("Vendedor %s ",cvendedor.arr); getchar();
+  EXEC SQL OPEN C11E;
+  EXEC SQL FETCH C11E INTO :codigo_ven2,
+                           :valor_neto[1],
+                           :valor_neto[2],
+                           :valor_neto[3],
+                           :valor_neto[4],
+                           :valor_neto[5],
+                           :valor_neto[6],
+                           :valor_neto[7],
+                           :valor_neto[8],
+                           :valor_neto[9],
+                           :valor_neto[10],
+                           :valor_neto[11],
+                           :valor_neto[12],
+                           :valor_total;
+
+ staora  = sqlca.sqlcode;
+ if (staora == -1405)
+     staora  = 0;
+ else if (staora)
+          fprintf (stderr, "Error leyendo C11D.1 (%d)\n", staora);
+
+ codigo_ven2.arr  [codigo_ven2.len]  = '\0';
+
+  sprintf(mensajes,"SUB-TOTAL ZONA %d",anod);
+  if (con_lin > 62)
+     titulos();
+
+  fprintf(fp,"\n%-4s"," ");
+  fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+  for (i=m;i<=12;i++) {
+     sprintf (cadena,"%6.2f",valor_neto[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+  }
+  for (i=1;i<m;i++) {
+     sprintf (cadena,"%6.2f",valor_neto[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+  }
+  sprintf (cadena,"%6.2f",valor_total);
+  fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+  con_lin+=2;
+  EXEC SQL CLOSE C11E;
+
+  valor_total = 0;
+  for (i=1;i<=12;i++) {
+    valor_neto[i] = 0;
+  }
+}
+
+void recaudos_ciudad()
+{
+  int i;
+  total_pagos = 0;
+  for (i=1;i<=12;i++) {
+    valor_pagos[i] = 0;
+  }
+  EXEC SQL OPEN C1A;
+  EXEC SQL FETCH C1A INTO :nomb_ciudad,
+                         :valor_pagos[1],
+                         :valor_pagos[2],
+                         :valor_pagos[3],
+                         :valor_pagos[4],
+                         :valor_pagos[5],
+                         :valor_pagos[6],
+                         :valor_pagos[7],
+                         :valor_pagos[8],
+                         :valor_pagos[9],
+                         :valor_pagos[10],
+                         :valor_pagos[11],
+                         :valor_pagos[12],
+                         :total_pagos;
+//  staoraa  = sqlca.sqlcode;
+  nomb_ciudad.arr   [nomb_ciudad.len] = '\0';
+  sprintf(mensajes,"RECAUDO %d",anod+1);
+  if (con_lin > 62)
+     titulos();
+
+  fprintf(fp,"\n%-4s"," ");
+  fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+  for (i=m;i<=12;i++) {
+     sprintf (cadena,"%6.2f",valor_pagos[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+  }
+  for (i=1;i<m;i++) {
+     sprintf (cadena,"%6.2f",valor_pagos[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+  }
+  sprintf (cadena,"%6.2f",total_pagos);
+  fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+  con_lin+=2;
+  EXEC SQL CLOSE C1A;
+
+  total_pagos = 0;
+  for (i=1;i<=12;i++) {
+    valor_pagos[i] = 0;
+  }
+  EXEC SQL OPEN C1B;
+  EXEC SQL FETCH C1B INTO :nomb_ciudad,
+                         :valor_pagos[1],
+                         :valor_pagos[2],
+                         :valor_pagos[3],
+                         :valor_pagos[4],
+                         :valor_pagos[5],
+                         :valor_pagos[6],
+                         :valor_pagos[7],
+                         :valor_pagos[8],
+                         :valor_pagos[9],
+                         :valor_pagos[10],
+                         :valor_pagos[11],
+                         :valor_pagos[12],
+                         :total_pagos;
+// staoraa  = sqlca.sqlcode;
+ nomb_ciudad.arr   [nomb_ciudad.len] = '\0';
+ sprintf(mensajes,"RECAUDO %d",anod);
+ if (con_lin > 62)
+    titulos();
+
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+ for (i=m;i<=12;i++) {
+     sprintf (cadena,"%6.2f",valor_pagos[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (i=1;i<m;i++) {
+     sprintf (cadena,"%6.2f",valor_pagos[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ sprintf (cadena,"%6.2f",total_pagos);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+ EXEC SQL CLOSE C1B;
+
+}
+
+void imprime_recaudos()
+{
+ int i;
+// printf("10) codigo_emp <%s>, fecha_ini <%s> fecha_fin <%s>, cvendedor<%s> ",codigo_emp.arr,fecha_ini.arr, fecha_fin.arr, cvendedor.arr); getchar();
+ EXEC SQL OPEN C10;
+ EXEC SQL FETCH C10 INTO :nomb_clie_r,
+                         :valor_neto_r[1],
+                         :valor_neto_r[2],
+                         :valor_neto_r[3],
+                         :valor_neto_r[4],
+                         :valor_neto_r[5],
+                         :valor_neto_r[6],
+                         :valor_neto_r[7],
+                         :valor_neto_r[8],
+                         :valor_neto_r[9],
+                         :valor_neto_r[10],
+                         :valor_neto_r[11],
+                         :valor_neto_r[12],
+                         :valor_total_r;
+ staora  = sqlca.sqlcode;
+ nomb_clie_r.arr   [nomb_clie_r.len] = '\0';
+// printf("0) (%d) fecha_ini.arr <%s>, fecha_fin.arr <%s>, wciu.arr <%s>, codigo_emp.arr <%s>, cvendedor.arr <%s>, valor_neto_r[%4d] = <%15.0f> ",staora,fecha_ini.arr, fecha_fin.arr, wciu.arr, codigo_emp.arr, cvendedor.arr,1,valor_neto_r[1]); getchar();
+ if (staora == -1405)
+     staora  = 0;
+ else if (staora) {
+         nomb_clie_r.arr[0] = '\0';
+         valor_total_r=0;
+         for (i=0;i<=12;++i) {
+             valor_neto_r[i]=0;
+         }
+         fprintf (stderr, "Error leyendo C10 (%d)\n", staora);
+      }
+ sprintf(mensajes,"RECAUDO %d",anod+1);
+ EXEC SQL CLOSE C10;
+ if (con_lin > 62)
+    titulos();
+
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+ for (i=m;i<=12;i++) {
+// printf("1) valor_neto_r[%4d] = <%15.0f> ",i,valor_neto_r[i]); getchar();
+     sprintf (cadena,"%6.2f",valor_neto_r[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (i=1;i<m;i++) {
+// printf("2) valor_neto_r[%4d] = <%15.0f> ",i,valor_neto_r[i]); getchar();
+     sprintf (cadena,"%6.2f",valor_neto_r[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ sprintf (cadena,"%6.2f",valor_total_r);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+ for (i=0;i<=1;++i) {
+      acumulo_recaudos(i);
+ }
+
+ EXEC SQL OPEN C10B;
+ EXEC SQL FETCH C10B INTO :nomb_clie_r,
+                         :valor_neto_r[1],
+                         :valor_neto_r[2],
+                         :valor_neto_r[3],
+                         :valor_neto_r[4],
+                         :valor_neto_r[5],
+                         :valor_neto_r[6],
+                         :valor_neto_r[7],
+                         :valor_neto_r[8],
+                         :valor_neto_r[9],
+                         :valor_neto_r[10],
+                         :valor_neto_r[11],
+                         :valor_neto_r[12],
+                         :valor_total_r;
+ staora  = sqlca.sqlcode;
+ nomb_clie_r.arr   [nomb_clie_r.len] = '\0';
+ if (staora == -1405)
+     staora  = 0;
+ else if (staora) {
+         nomb_clie_r.arr[0] = '\0';
+         valor_total_r=0;
+         for (i=0;i<=12;++i) {
+             valor_neto_r[i]=0;
+         }
+         fprintf (stderr, "Error leyendo C10B (%d)\n", staora);
+      }
+ sprintf(mensajes,"RECAUDO %d",anod);
+ EXEC SQL CLOSE C10B;
+ if (con_lin > 62)
+    titulos();
+
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+ for (i=m;i<=12;i++) {
+     sprintf (cadena,"%6.2f",valor_neto_r[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (i=1;i<m;i++) {
+     sprintf (cadena,"%6.2f",valor_neto_r[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ sprintf (cadena,"%6.2f",valor_total_r);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+/*
+ for (i=0;i<=1;++i) {
+      acumulo_recaudos(i);
+ }
+*/
+ tit_ciu=0;
+
+}
+
+void imprime_recaudos_og()
+{
+ int i;
+
+// printf("11) codigo_emp <%s>, fecha_ini <%s> fecha_fin <%s>, cvendedor<%s> ",codigo_emp.arr,fecha_ini.arr, fecha_fin.arr, cvendedor.arr); getchar();
+ EXEC SQL OPEN C11;
+ EXEC SQL FETCH C11 INTO :nomb_clie_r,
+                         :valor_neto_r[1],
+                         :valor_neto_r[2],
+                         :valor_neto_r[3],
+                         :valor_neto_r[4],
+                         :valor_neto_r[5],
+                         :valor_neto_r[6],
+                         :valor_neto_r[7],
+                         :valor_neto_r[8],
+                         :valor_neto_r[9],
+                         :valor_neto_r[10],
+                         :valor_neto_r[11],
+                         :valor_neto_r[12],
+                         :valor_total_r;
+ staora  = sqlca.sqlcode;
+ nomb_clie_r.arr   [nomb_clie_r.len] = '\0';
+ if (staora == -1405)
+     staora  = 0;
+ else if (staora) {
+         nomb_clie_r.arr[0] = '\0';
+         valor_total_r=0;
+         for (i=0;i<=12;++i) {
+             valor_neto_r[i]=0;
+         }
+         fprintf (stderr, "Error leyendo C11 (%d)\n", staora);
+      }
+
+ sprintf(mensajes,"RECAUDO %d",anod+1);
+ EXEC SQL CLOSE C11;
+ if (con_lin > 62)
+    titulos();
+
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+ for (i=m;i<=12;i++) {
+     sprintf (cadena,"%6.2f",valor_neto_r[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (i=1;i<m;i++) {
+     sprintf (cadena,"%6.2f",valor_neto_r[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",valor_total_r);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+ for (i=0;i<=1;++i) {
+      acumulo_recaudos(i);
+ }
+
+ EXEC SQL OPEN C11B;
+ EXEC SQL FETCH C11B INTO :nomb_clie_r,
+                         :valor_neto_r[1],
+                         :valor_neto_r[2],
+                         :valor_neto_r[3],
+                         :valor_neto_r[4],
+                         :valor_neto_r[5],
+                         :valor_neto_r[6],
+                         :valor_neto_r[7],
+                         :valor_neto_r[8],
+                         :valor_neto_r[9],
+                         :valor_neto_r[10],
+                         :valor_neto_r[11],
+                         :valor_neto_r[12],
+                         :valor_total_r;
+ staora  = sqlca.sqlcode;
+ nomb_clie_r.arr   [nomb_clie_r.len] = '\0';
+ if (staora == -1405)
+     staora  = 0;
+ else if (staora) {
+         nomb_clie_r.arr[0] = '\0';
+         valor_total_r=0;
+         for (i=0;i<=12;++i) {
+             valor_neto_r[i]=0;
+         }
+         fprintf (stderr, "Error leyendo C11 (%d)\n", staora);
+      }
+ sprintf(mensajes,"RECAUDO %d",anod);
+ EXEC SQL CLOSE C11B;
+ if (con_lin > 62)
+    titulos();
+
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+ for (i=m;i<=12;i++) {
+     sprintf (cadena,"%6.2f",valor_neto_r[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (i=1;i<m;i++) {
+     sprintf (cadena,"%6.2f",valor_neto_r[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",valor_total_r);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+ tit_ciu=0;
+
+}
+
+void acumulo_recaudos(i)
+int i;
+{
+
+ for (j=1;j<=12;j++) {
+     vect[i].val_neto_r[j] +=valor_neto_r[j];
+ }
+ vect[i].val_total_r       +=valor_total_r;
+
+}
+
+void borro_recaudos(i)
+int i;
+{
+
+ for (j=1;j<=12;j++) {
+     vect[i].val_neto_r[j] =0;
+ }
+ vect[i].val_total_r =0;
+
+}
+
+void totaliza_r(i)
+int i;
+{
+ if (con_lin > 62)
+    titulos();
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto_r[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto_r[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",vect[i].val_total_r);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+ borro_recaudos(i);
+ tit_ciu=0;
+}
+
+void porcentualiza(i)
+int i;
+{
+
+// if (con_lin > 60)
+//    titulos();
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",vect[i].val_total);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+
+ sprintf(mensajes,"PORCENTAJE COMPARATIVO");
+ if (con_lin > 62)
+    titulos();
+ fprintf(fp,"\n%-4s"," ");
+ con_lin+=1;
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+     sprintf (cadena,"%6.2f",0);
+     if (vect[i].val_neto[j] > 0) {
+        sprintf (cadena,"%6.2f",(vect[i].val_netoa[j]-vect[i].val_neto[j])/vect[i].val_neto[j]*100);
+     }
+     else {
+           if (vect[i].val_neto[j] == 0 && vect[i].val_netoa[j] > 0 ) {
+//             printf("i=<%d>,j=<%d>",i,j); getchar();
+//             printf("x%d)pase-1 vect[i].val_netoa[j]=%12.2f ", j, vect[i].val_netoa[j]); getchar();
+//             printf("y%d)pase-1 vect[i].val_neto[j]=%12.2f ", j, vect[i].val_neto[j]); getchar();
+//             printf("z%d)pase-1 vect[i].val_netoa[j]=%12.2f, vect[i].val_neto[j]=%12.2f ",j, vect[i].val_netoa[j], vect[i].val_neto[j]); getchar();
+               sprintf (cadena,"%6.2f",100.00);
+//             printf("pase-1.1.x %s ", cadena); getchar();
+           }
+     }
+//   printf("pase-1.1.1 %s ", cadena); getchar();
+     fprintf(fp,"%14s",fmtnum("zzz,zz9.99",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+     sprintf (cadena,"%6.2f",0);
+     if (vect[i].val_netoa[j] > 0) {
+        sprintf (cadena,"%6.2f",(vect[i].val_netoa[j]-vect[i].val_neto[j])/vect[i].val_neto[j]*100);
+     }
+     else {
+           if (vect[i].val_neto[j] == 0 && vect[i].val_netoa[j] > 0 ) {
+//             printf("pase-2 vect[i].val_netoa[j]=%12.2f vect[i].val_neto[j]=%12.2f ", vect[i].val_netoa[j], vect[i].val_neto[j]); getchar();
+               sprintf (cadena,"%6.2f",100.00);
+//             printf("pase-2.1.x %s ", cadena); getchar();
+           }
+     }
+     fprintf(fp,"%14s",fmtnum("zzz,zz9.99",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",(vect[i].val_totala-vect[i].val_total)/vect[i].val_total*100);
+ fprintf(fp,"%16s\n",fmtnum("zzz,zz9.99",cadena,r_t));
+
+ con_lin+=1;
+ borro_totales(i);
+ borro_totalesa(i);
+ tit_ciu=0;
+}
+
+void porcentualiza_pagos(i)
+int i;
+{
+ int k;
+ staora = 0;
+ EXEC SQL OPEN C10A;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C10A INTO :valor_neto[1],
+                                :valor_neto[2],
+                                :valor_neto[3],
+                                :valor_neto[4],
+                                :valor_neto[5],
+                                :valor_neto[6],
+                                :valor_neto[7],
+                                :valor_neto[8],
+                                :valor_neto[9],
+                                :valor_neto[10],
+                                :valor_neto[11],
+                                :valor_neto[12],
+                                :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C10A (%d)\n", staora);
+       for (k=0;k<=1;++k)
+            acumulo_totales(k);
+ }
+
+ sprintf(mensajes,"TOTAL RECAUDOS %d",anod+1);
+
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",vect[i].val_total);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+
+ borro_totales(i);
+
+ staora = 0;
+ EXEC SQL OPEN C10C;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C10C INTO :valor_neto[1],
+                                :valor_neto[2],
+                                :valor_neto[3],
+                                :valor_neto[4],
+                                :valor_neto[5],
+                                :valor_neto[6],
+                                :valor_neto[7],
+                                :valor_neto[8],
+                                :valor_neto[9],
+                                :valor_neto[10],
+                                :valor_neto[11],
+                                :valor_neto[12],
+                                :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C10C (%d)\n", staora);
+       for (k=0;k<=1;++k)
+            acumulo_totales(k);
+ }
+ sprintf(mensajes,"TOTAL RECAUDOS %d",anod);
+
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+//     printf("1) vect[%4d].val_neto[%4d] = <%15.0f>",i,j,vect[i].val_neto[j]); getchar();
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+//     printf("2) vect[%4d].val_neto[%4d] = ",i,j,vect[i].val_neto[j]); getchar();
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",vect[i].val_total);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+
+ sprintf(mensajes,"PORCENTAJE COMPARATIVO");
+ if (con_lin > 62)
+    titulos();
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+     sprintf (cadena,"%6.2f",0);
+     if (vect[i].val_neto[j] > 0) {
+        sprintf (cadena,"%6.2f",(vect[i].val_netoa[j]-vect[i].val_neto[j])/vect[i].val_neto[j]*100);
+     }
+     else {
+           if (vect[i].val_neto[j] == 0 && vect[i].val_netoa[j] > 0 ) {
+               sprintf (cadena,"%6.2f",100.00);
+           }
+     }
+     fprintf(fp,"%14s",fmtnum("zzz,zz9.99",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+     sprintf (cadena,"%6.2f",0);
+     if (vect[i].val_netoa[j] > 0) {
+        sprintf (cadena,"%6.2f",(vect[i].val_netoa[j]-vect[i].val_neto[j])/vect[i].val_neto[j]*100);
+     }
+     else {
+           if (vect[i].val_neto[j] == 0 && vect[i].val_netoa[j] > 0 ) {
+               sprintf (cadena,"%6.2f",100.00);
+           }
+     }
+     fprintf(fp,"%14s",fmtnum("zzz,zz9.99",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",(vect[i].val_totala-vect[i].val_total)/vect[i].val_total*100);
+ fprintf(fp,"%16s\n",fmtnum("zzz,zz9.99",cadena,r_t));
+
+ con_lin+=2;
+ borro_totales(i);
+ borro_totalesa(i);
+ tit_ciu=0;
+}
+
+void porcentualiza_pagosg(i)
+int i;
+{
+ int k;
+ staora = 0;
+ EXEC SQL OPEN C10D;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C10D INTO :valor_neto[1],
+                                :valor_neto[2],
+                                :valor_neto[3],
+                                :valor_neto[4],
+                                :valor_neto[5],
+                                :valor_neto[6],
+                                :valor_neto[7],
+                                :valor_neto[8],
+                                :valor_neto[9],
+                                :valor_neto[10],
+                                :valor_neto[11],
+                                :valor_neto[12],
+                                :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C10D (%d)\n", staora);
+       for (k=0;k<=1;++k)
+            acumulo_totales(k);
+ }
+
+ sprintf(mensajes,"TOTAL RECAUDOS %d",anod+1);
+
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",vect[i].val_total);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+
+ borro_totales(i);
+
+ EXEC SQL CLOSE C10D;
+
+ staora = 0;
+ EXEC SQL OPEN C10E;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C10E INTO :valor_neto[1],
+                                :valor_neto[2],
+                                :valor_neto[3],
+                                :valor_neto[4],
+                                :valor_neto[5],
+                                :valor_neto[6],
+                                :valor_neto[7],
+                                :valor_neto[8],
+                                :valor_neto[9],
+                                :valor_neto[10],
+                                :valor_neto[11],
+                                :valor_neto[12],
+                                :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C10E (%d)\n", staora);
+       for (k=0;k<=1;++k)
+            acumulo_totales(k);
+ }
+ sprintf(mensajes,"TOTAL RECAUDOS %d",anod);
+ EXEC SQL CLOSE C10E;
+
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+//     printf("1) vect[%4d].val_neto[%4d] = <%15.0f>",i,j,vect[i].val_neto[j]); getchar();
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+//     printf("2) vect[%4d].val_neto[%4d] = ",i,j,vect[i].val_neto[j]); getchar();
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",vect[i].val_total);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+
+ sprintf(mensajes,"PORCENTAJE COMPARATIVO");
+ if (con_lin > 62)
+    titulos();
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+     sprintf (cadena,"%6.2f",0);
+     if (vect[i].val_neto[j] > 0) {
+        sprintf (cadena,"%6.2f",(vect[i].val_netoa[j]-vect[i].val_neto[j])/vect[i].val_neto[j]*100);
+     }
+     else {
+           if (vect[i].val_neto[j] == 0 && vect[i].val_netoa[j] > 0 ) {
+               sprintf (cadena,"%6.2f",100.00);
+           }
+     }
+     fprintf(fp,"%14s",fmtnum("zzz,zz9.99",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+     sprintf (cadena,"%6.2f",0);
+     if (vect[i].val_netoa[j] > 0) {
+        sprintf (cadena,"%6.2f",(vect[i].val_netoa[j]-vect[i].val_neto[j])/vect[i].val_neto[j]*100);
+     }
+     else {
+           if (vect[i].val_neto[j] == 0 && vect[i].val_netoa[j] > 0 ) {
+               sprintf (cadena,"%6.2f",100.00);
+           }
+     }
+     fprintf(fp,"%14s",fmtnum("zzz,zz9.99",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",(vect[i].val_totala-vect[i].val_total)/vect[i].val_total*100);
+ fprintf(fp,"%16s\n",fmtnum("zzz,zz9.99",cadena,r_t));
+
+ con_lin+=2;
+ borro_totales(i);
+ borro_totalesa(i);
+ tit_ciu=0;
+}
+
+void porcentualiza_pagost(i)
+int i;
+{
+ int k;
+ staora = 0;
+ EXEC SQL OPEN C10G;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C10G INTO :valor_neto[1],
+                                :valor_neto[2],
+                                :valor_neto[3],
+                                :valor_neto[4],
+                                :valor_neto[5],
+                                :valor_neto[6],
+                                :valor_neto[7],
+                                :valor_neto[8],
+                                :valor_neto[9],
+                                :valor_neto[10],
+                                :valor_neto[11],
+                                :valor_neto[12],
+                                :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C10G (%d)\n", staora);
+       for (k=0;k<=1;++k)
+            acumulo_totales(k);
+ }
+
+ sprintf(mensajes,"TOTAL RECAUDOS %d",anod+1);
+
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",vect[i].val_total);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+
+ borro_totales(i);
+
+ staora = 0;
+ EXEC SQL OPEN C10F;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C10F INTO :valor_neto[1],
+                                :valor_neto[2],
+                                :valor_neto[3],
+                                :valor_neto[4],
+                                :valor_neto[5],
+                                :valor_neto[6],
+                                :valor_neto[7],
+                                :valor_neto[8],
+                                :valor_neto[9],
+                                :valor_neto[10],
+                                :valor_neto[11],
+                                :valor_neto[12],
+                                :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C10F (%d)\n", staora);
+       for (k=0;k<=1;++k)
+            acumulo_totales(k);
+ }
+ sprintf(mensajes,"TOTAL RECAUDOS %d",anod);
+
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+//     printf("1) vect[%4d].val_neto[%4d] = <%15.0f>",i,j,vect[i].val_neto[j]); getchar();
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+//     printf("2) vect[%4d].val_neto[%4d] = ",i,j,vect[i].val_neto[j]); getchar();
+     sprintf (cadena,"%6.2f",vect[i].val_neto[j]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",vect[i].val_total);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+
+ sprintf(mensajes,"PORCENTAJE COMPARATIVO");
+ if (con_lin > 62)
+    titulos();
+ fprintf(fp,"\n%-4s"," ");
+ fprintf(fp,"%s%s%-21s%s%s",enfatizado_on,ancho_on,mensajes,enfatizado_off,ancho_off);
+
+ for (j=m;j<=12;j++) {
+     sprintf (cadena,"%6.2f",0);
+     if (vect[i].val_neto[j] > 0) {
+        sprintf (cadena,"%6.2f",(vect[i].val_netoa[j]-vect[i].val_neto[j])/vect[i].val_neto[j]*100);
+     }
+     else {
+           if (vect[i].val_neto[j] == 0 && vect[i].val_netoa[j] > 0 ) {
+               sprintf (cadena,"%6.2f",100.00);
+           }
+     }
+     fprintf(fp,"%14s",fmtnum("zzz,zz9.99",cadena,r_t));
+ }
+ for (j=1;j<m;j++) {
+     sprintf (cadena,"%6.2f",0);
+     if (vect[i].val_netoa[j] > 0) {
+        sprintf (cadena,"%6.2f",(vect[i].val_netoa[j]-vect[i].val_neto[j])/vect[i].val_neto[j]*100);
+     }
+     else {
+           if (vect[i].val_neto[j] == 0 && vect[i].val_netoa[j] > 0 ) {
+               sprintf (cadena,"%6.2f",100.00);
+           }
+     }
+     fprintf(fp,"%14s",fmtnum("zzz,zz9.99",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",(vect[i].val_totala-vect[i].val_total)/vect[i].val_total*100);
+ fprintf(fp,"%16s\n",fmtnum("zzz,zz9.99",cadena,r_t));
+ con_lin+=2;
+
+ EXEC SQL OPEN C10F;
+ EXEC SQL OPEN C10G;
+ con_lin+=2;
+ borro_totales(i);
+ borro_totalesa(i);
+ tit_ciu=0;
+}
+
+void titulo_ciudad()
+{
+ wciu.len  =  strlen(wciu.arr);
+ EXEC SQL select nombre
+          into  :nomb_ciudad
+          from   ciudades
+          where  codigo = :wciu;
+
+ if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error leyendo Ciudades(C3) (%d)\n", sqlca.sqlcode);
+
+ nomb_ciudad.arr   [nomb_ciudad.len] = '\0';
+ if (con_lin > 58)
+    titulos();
+ if (tit_ciu==0) {
+     fprintf(fp,"\n%s%16s%s%s%s%s\n\n",enfatizado_on,ancho_on,"CIUDAD ",nomb_ciudad.arr,ancho_off,enfatizado_off);
+     con_lin+=3;
+ }
+}
+
+void titulo_zona()
+{
+ int i;
+
+ if (con_lin > 58)
+    titulos_og();
+ if (tit_zon==1) {
+     fprintf(fp,"\n\n%s%16s%s%s%s%s\n\n",enfatizado_on,ancho_on,"       "," ",ancho_off,enfatizado_off);
+     con_lin+=4;
+     fprintf(fp,"%194s\n",         "ASESOR         DEPARTAMENTO   CIUDAD             FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION     FACTURACION");
+     fprintf(fp,"%s%47s",enfatizado_on," ");
+
+     for (i=m;i<=12;i++) {
+          strcpy(cadena,mes[i-1]);
+          strupp(cadena);
+          fprintf(fp,"%14s",cadena);
+     }
+     for (i=1;i<m;i++) {
+          strcpy(cadena,mes[i-1]);
+          strupp(cadena);
+          fprintf(fp,"%14s",cadena);
+     }
+     fprintf(fp,"%15s\n","TOTAL");
+
+     fprintf(fp,"%s%50s",enfatizado_on," ");
+
+     for (i=m;i<=12;i++) {
+         sprintf (cadena,"%4d",a);
+         fprintf(fp,"%5s%-9s"," ",fmtnum("z,zz9",cadena,r_t));
+     }
+
+     for (i=1;i<m;i++) {
+         sprintf (cadena,"%4d",a+1);
+         fprintf(fp,"%5s%-9s"," ",fmtnum("z,zz9",cadena,r_t));
+     }
+
+     fprintf(fp,"%s%5s\n\n",enfatizado_off," ");
+
+     con_lin += 8;
+ }
+}
+
+void lista_zonas(e)
+int e;
+{
+ int i;
+// int j;
+ sprintf(codigo_emp.arr,"%d",e);
+ empresa();
+ strcpy(fecha,fecha_ini.arr);
+ fecha_oracle3(fecha);
+ strcpy(cadena,fecha);
+ strcat(cadena," hasta ");
+ strcpy(fecha,fecha_fin.arr);
+ fecha_oracle3(fecha);
+ strcat(cadena,fecha);
+ strcpy(fechas,cadena);
+ inicio  = 0;
+ staora  = 0;
+ tit_ciu = 1;
+ tit_zon = 1;
+ if (con_lin > 56)
+    titulos_og();
+// titulo_zona();
+/*
+ for (i=1;i<=3;i++) {
+    for (j=1;j<=12;j++) {
+        vect[i].val_neto[j] =0;
+        vect[i].val_netoa[j] =0;
+//        printf("lista zonas: <%d,%d> <%15.0f> <%15.0f>",i,j,vect[i].val_neto[j],vect[i].val_netoa[j]); getchar();
+    }
+    vect[i].val_total =0;
+    vect[i].val_totala =0;
+//    printf("lista zonas: <%d> <%15.0f> <%15.0f>",i,vect[i].val_total,vect[i].val_totala); getchar();
+ }
+*/
+ EXEC SQL OPEN C7;
+ EXEC SQL FETCH C7 INTO :codigo_ven,
+                        :codigo_nom,
+                        :nomb_clie,
+                        :nombre_zona,
+                        :nomb_ciudad,
+                        :valor_neto_z[1],
+                        :valor_neto_z[2],
+                        :valor_neto_z[3],
+                        :valor_neto_z[4],
+                        :valor_neto_z[5],
+                        :valor_neto_z[6],
+                        :valor_neto_z[7],
+                        :valor_neto_z[8],
+                        :valor_neto_z[9],
+                        :valor_neto_z[10],
+                        :valor_neto_z[11],
+                        :valor_neto_z[12],
+                        :valor_total_z;
+
+ staora  = sqlca.sqlcode;
+ if (staora == -1405)
+     staora  = 0;
+ else if (staora)
+          fprintf (stderr, "Error leyendo C7.1 (%d)\n", staora);
+
+ strorg(nomb_clie.arr,1,14);
+ nomb_clie.arr [nomb_clie.len] = '\0';
+ nombre_zona.arr [nombre_zona.len] = '\0';
+ nomb_ciudad.arr [nomb_ciudad.len] = '\0';
+ codigo_ven.arr  [codigo_ven.len]  = '\0';
+ codigo_nom.arr  [codigo_nom.len]  = '\0';
+ strcpy(cvendedor.arr,codigo_ven.arr );
+ cvendedor.len = strlen(cvendedor.arr);
+
+ strcpy(wnomb_clie,nomb_clie.arr);
+// printf("1) codigo_emp <%s>, fecha_ini <%s> fecha_fin <%s>, cvendedor<%s>, codigo_nom<%s>, wnomb_clie<%s> ",codigo_emp.arr,fecha_ini.arr, fecha_fin.arr, cvendedor.arr, codigo_nom.arr, wnomb_clie); getchar();
+
+ while (staora == 0) {
+       imprime_zonas();
+       EXEC SQL FETCH C7 INTO :codigo_ven,
+                              :codigo_nom,
+                              :nomb_clie,
+                              :nombre_zona,
+                              :nomb_ciudad,
+                              :valor_neto_z[1],
+                              :valor_neto_z[2],
+                              :valor_neto_z[3],
+                              :valor_neto_z[4],
+                              :valor_neto_z[5],
+                              :valor_neto_z[6],
+                              :valor_neto_z[7],
+                              :valor_neto_z[8],
+                              :valor_neto_z[9],
+                              :valor_neto_z[10],
+                              :valor_neto_z[11],
+                              :valor_neto_z[12],
+                              :valor_total_z;
+
+       strorg(nomb_clie.arr,1,14);
+       nomb_clie.arr [nomb_clie.len]     = '\0';
+       strorg(nombre_zona.arr,1,14);
+       nombre_zona.arr [nombre_zona.len] = '\0';
+       strorg(nomb_ciudad.arr,1,14);
+       nomb_ciudad.arr [nomb_ciudad.len] = '\0';
+       codigo_ven.arr [codigo_ven.len]   = '\0';
+       codigo_nom.arr [codigo_nom.len]   = '\0';
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C7.2 (%d)\n", staora);
+
+       if (strcmp(nomb_clie.arr,wnomb_clie)) {
+           sprintf(mensajes,"SUB-TOTAL ZONA %d",anod+1);
+           tit_ciu = 1;
+           tit_zon = 1;
+           totaliza(0);
+//           printf("pase-1"); getchar();
+           tit_ciu = 1;
+           tit_zon = 1;
+           ventas_zona();
+           inicio=0;
+           strcpy(wnomb_clie,nomb_clie.arr);
+           tit_ciu = 1;
+           tit_zon = 1;
+           imprime_recaudos();
+           fprintf(fp,"\n");
+           con_lin++;
+           strcpy(cvendedor.arr,codigo_ven.arr );
+           cvendedor.len = strlen(cvendedor.arr);
+//           printf("2) codigo_emp <%s>, fecha_ini <%s> fecha_fin <%s>, cvendedor<%s>, codigo_nom<%s>, wnomb_clie<%s> ",codigo_emp.arr,fecha_ini.arr, fecha_fin.arr, cvendedor.arr, codigo_nom.arr, wnomb_clie); getchar();
+           staora  = 0;
+       }
+ }
+ sprintf(mensajes,"SUB-TOTAL ZONA %d",anod+1);
+ tit_ciu = 1;
+ tit_zon = 1;
+ totaliza(0);
+// printf("pase-2"); getchar();
+ tit_ciu = 1;
+ tit_zon = 1;
+ ventas_zona();
+ tit_ciu = 1;
+ tit_zon = 1;
+ imprime_recaudos();
+ sprintf(mensajes,"TOTAL ZONAS %d",anod+1);
+ tit_ciu = 1;
+ tit_zon = 1;
+ totaliza(1);
+
+ tit_ciu = 1;
+ tit_zon = 1;
+ if (con_lin > 56)
+    titulos_og();
+// titulo_zona();
+
+ staora = 0;
+ EXEC SQL OPEN C11C;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C11C INTO :valor_neto[1],
+                                :valor_neto[2],
+                                :valor_neto[3],
+                                :valor_neto[4],
+                                :valor_neto[5],
+                                :valor_neto[6],
+                                :valor_neto[7],
+                                :valor_neto[8],
+                                :valor_neto[9],
+                                :valor_neto[10],
+                                :valor_neto[11],
+                                :valor_neto[12],
+                                :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C11C (%d)\n", staora);
+       for (i=0;i<=1;++i)
+            acumulo_totales(i);
+ }
+ sprintf(mensajes,"TOTAL ZONAS %d",anod);
+
+ tit_ciu = 1;
+ tit_zon = 1;
+ porcentualiza(1);
+
+ EXEC SQL CLOSE C7;
+
+ tit_ciu = 1;
+ tit_zon = 1;
+ porcentualiza_pagos(1);
+
+ borro_totales(0);
+ borro_totalesa(0);
+ borro_totalesb(0);
+ borro_totales(1);
+ borro_totalesa(1);
+ borro_totalesb(1);
+ con_lin=66;
+
+
+}
+
+void lista_zonasg(e)
+int e;
+{
+ int i;
+// int j;
+ sprintf(codigo_emp.arr,"%d",e);
+ empresa();
+ strcpy(fecha,fecha_ini.arr);
+ fecha_oracle3(fecha);
+ strcpy(cadena,fecha);
+ strcat(cadena," hasta ");
+ strcpy(fecha,fecha_fin.arr);
+ fecha_oracle3(fecha);
+ strcat(cadena,fecha);
+ strcpy(fechas,cadena);
+ inicio  = 0;
+ staora  = 0;
+ tit_ciu = 1;
+ tit_zon = 1;
+ opticasg = 1;
+ if (con_lin > 56)
+    titulos_og();
+
+ EXEC SQL OPEN C8;
+ EXEC SQL FETCH C8 INTO :codigo_ven,
+                        :codigo_nom,
+                        :nomb_clie,
+                        :nombre_zona,
+                        :nomb_ciudad,
+                        :valor_neto_z[1],
+                        :valor_neto_z[2],
+                        :valor_neto_z[3],
+                        :valor_neto_z[4],
+                        :valor_neto_z[5],
+                        :valor_neto_z[6],
+                        :valor_neto_z[7],
+                        :valor_neto_z[8],
+                        :valor_neto_z[9],
+                        :valor_neto_z[10],
+                        :valor_neto_z[11],
+                        :valor_neto_z[12],
+                        :valor_total_z;
+
+ staora  = sqlca.sqlcode;
+ if (staora == -1405)
+     staora  = 0;
+ else if (staora)
+          fprintf (stderr, "Error leyendo C8.1 (%d)\n", staora);
+
+ strorg(nomb_clie.arr,1,14);
+ nomb_clie.arr [nomb_clie.len] = '\0';
+ nombre_zona.arr [nombre_zona.len] = '\0';
+ nomb_ciudad.arr [nomb_ciudad.len] = '\0';
+ codigo_ven.arr  [codigo_ven.len]  = '\0';
+ codigo_nom.arr  [codigo_nom.len]  = '\0';
+ strcpy(cvendedor.arr,codigo_ven.arr );
+ cvendedor.len = strlen(cvendedor.arr);
+
+ strcpy(wnomb_clie,nomb_clie.arr);
+// printf("1) codigo_emp <%s>, fecha_ini <%s> fecha_fin <%s>, cvendedor<%s>, codigo_nom<%s>, wnomb_clie<%s> ",codigo_emp.arr,fecha_ini.arr, fecha_fin.arr, cvendedor.arr, codigo_nom.arr, wnomb_clie); getchar();
+
+ while (staora == 0) {
+       imprime_zonas();
+       EXEC SQL FETCH C8 INTO :codigo_ven,
+                              :codigo_nom,
+                              :nomb_clie,
+                              :nombre_zona,
+                              :nomb_ciudad,
+                              :valor_neto_z[1],
+                              :valor_neto_z[2],
+                              :valor_neto_z[3],
+                              :valor_neto_z[4],
+                              :valor_neto_z[5],
+                              :valor_neto_z[6],
+                              :valor_neto_z[7],
+                              :valor_neto_z[8],
+                              :valor_neto_z[9],
+                              :valor_neto_z[10],
+                              :valor_neto_z[11],
+                              :valor_neto_z[12],
+                              :valor_total_z;
+
+       strorg(nomb_clie.arr,1,14);
+       nomb_clie.arr [nomb_clie.len]     = '\0';
+       strorg(nombre_zona.arr,1,14);
+       nombre_zona.arr [nombre_zona.len] = '\0';
+       strorg(nomb_ciudad.arr,1,14);
+       nomb_ciudad.arr [nomb_ciudad.len] = '\0';
+       codigo_ven.arr [codigo_ven.len]   = '\0';
+       codigo_nom.arr [codigo_nom.len]   = '\0';
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C8.2 (%d)\n", staora);
+
+       if (strcmp(nomb_clie.arr,wnomb_clie)) {
+           sprintf(mensajes,"SUB-TOTAL ZONA %d",anod+1);
+           totaliza(0);
+//           printf("pase-1"); getchar();
+           ventas_zona();
+           inicio=0;
+           strcpy(wnomb_clie,nomb_clie.arr);
+           imprime_recaudos();
+           fprintf(fp,"\n");
+           con_lin++;
+           strcpy(cvendedor.arr,codigo_ven.arr );
+           cvendedor.len = strlen(cvendedor.arr);
+//           printf("2) codigo_emp <%s>, fecha_ini <%s> fecha_fin <%s>, cvendedor<%s>, codigo_nom<%s>, wnomb_clie<%s> ",codigo_emp.arr,fecha_ini.arr, fecha_fin.arr, cvendedor.arr, codigo_nom.arr, wnomb_clie); getchar();
+           staora  = 0;
+       }
+ }
+ sprintf(mensajes,"SUB-TOTAL ZONA %d",anod+1);
+ totaliza(0);
+// printf("pase-2"); getchar();
+
+/***  EN LAS DOS LINEAS SIGUIENTES ESTA EL PROBLEMA */
+ ventas_zona_og();
+ imprime_recaudos_og();
+ 
+ sprintf(mensajes,"TOTAL ZONAS %d",anod+1);
+ totaliza(1);
+
+ tit_ciu = 1;
+ if (con_lin > 56)
+    titulos_og();
+// titulo_zona();
+
+ staora = 0;
+ EXEC SQL OPEN C11D;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C11D INTO :valor_neto[1],
+                                :valor_neto[2],
+                                :valor_neto[3],
+                                :valor_neto[4],
+                                :valor_neto[5],
+                                :valor_neto[6],
+                                :valor_neto[7],
+                                :valor_neto[8],
+                                :valor_neto[9],
+                                :valor_neto[10],
+                                :valor_neto[11],
+                                :valor_neto[12],
+                                :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C11C (%d)\n", staora);
+       for (i=0;i<=1;++i)
+            acumulo_totales(i);
+ }
+ sprintf(mensajes,"TOTAL ZONAS %d",anod);
+
+ porcentualiza(1);
+
+ EXEC SQL CLOSE C8;
+/*EN LA SIGUIENTE LINEA HAY PROBLEMAS */
+
+ porcentualiza_pagosg(1);
+
+ borro_totales(0);
+ borro_totalesa(0);
+ borro_totalesb(0);
+ borro_totales(1);
+ borro_totalesa(1);
+ borro_totalesb(1);
+ con_lin=66;
+
+}
+
+/* esta es la original 
+void lista_zonasg(e)
+int e;
+{
+ int i;
+// int j;
+ sprintf(codigo_emp.arr,"%d",e);
+ empresa();
+ strcpy(fecha,fecha_ini.arr);
+ fecha_oracle3(fecha);
+ strcpy(cadena,fecha);
+ strcat(cadena," hasta ");
+ strcpy(fecha,fecha_fin.arr);
+ fecha_oracle3(fecha);
+ strcat(cadena,fecha);
+ strcpy(fechas,cadena);
+ inicio  = 0;
+ staora  = 0;
+ tit_ciu = 1;
+ tit_zon = 1;
+ opticasg = 1;
+ if (con_lin > 56)
+    titulos_og();
+// titulo_zona();
+
+ for (i=1;i<=3;i++) {
+    for (j=1;j<=12;j++) {
+        vect[i].val_neto[j] =0;
+        vect[i].val_netoa[j] =0;
+//        printf("lista zonas g: <%d,%d> <%15.0f> <%15.0f>",i,j,vect[i].val_neto[j],vect[i].val_netoa[j]); getchar();
+    }
+    vect[i].val_total =0;
+    vect[i].val_totala =0;
+//    printf("lista zonas g: <%d> <%15.0f> <%15.0f>",i,vect[i].val_total,vect[i].val_totala); getchar();
+ }
+
+ EXEC SQL OPEN C8;
+ EXEC SQL FETCH C8 INTO :codigo_ven,
+                        :codigo_nom,
+                        :nomb_clie,
+                        :nombre_zona,
+                        :nomb_ciudad,
+                        :valor_neto_z[1],
+                        :valor_neto_z[2],
+                        :valor_neto_z[3],
+                        :valor_neto_z[4],
+                        :valor_neto_z[5],
+                        :valor_neto_z[6],
+                        :valor_neto_z[7],
+                        :valor_neto_z[8],
+                        :valor_neto_z[9],
+                        :valor_neto_z[10],
+                        :valor_neto_z[11],
+                        :valor_neto_z[12],
+                        :valor_total_z;
+
+ staora  = sqlca.sqlcode;
+ if (staora == -1405)
+     staora  = 0;
+ else if (staora)
+          fprintf (stderr, "Error leyendo C7.1 (%d)\n", staora);
+
+ strorg(nomb_clie.arr,1,14);
+ nomb_clie.arr [nomb_clie.len] = '\0';
+ nombre_zona.arr [nombre_zona.len] = '\0';
+ nomb_ciudad.arr [nomb_ciudad.len] = '\0';
+ codigo_ven.arr  [codigo_ven.len]  = '\0';
+ codigo_nom.arr  [codigo_nom.len]  = '\0';
+ strcpy(cvendedor.arr,codigo_ven.arr );
+ cvendedor.len = strlen(cvendedor.arr);
+
+ strcpy(wnomb_clie,nomb_clie.arr);
+// printf("1) codigo_emp <%s>, fecha_ini <%s> fecha_fin <%s>, cvendedor<%s>, codigo_nom<%s>, wnomb_clie<%s> ",codigo_emp.arr,fecha_ini.arr, fecha_fin.arr, cvendedor.arr, codigo_nom.arr, wnomb_clie); getchar();
+
+ while (staora == 0) {
+       imprime_zonas();
+       EXEC SQL FETCH C8 INTO :codigo_ven,
+                              :codigo_nom,
+                              :nomb_clie,
+                              :nombre_zona,
+                              :nomb_ciudad,
+                              :valor_neto_z[1],
+                              :valor_neto_z[2],
+                              :valor_neto_z[3],
+                              :valor_neto_z[4],
+                              :valor_neto_z[5],
+                              :valor_neto_z[6],
+                              :valor_neto_z[7],
+                              :valor_neto_z[8],
+                              :valor_neto_z[9],
+                              :valor_neto_z[10],
+                              :valor_neto_z[11],
+                              :valor_neto_z[12],
+                              :valor_total_z;
+
+       strorg(nomb_clie.arr,1,14);
+       nomb_clie.arr [nomb_clie.len]     = '\0';
+       strorg(nombre_zona.arr,1,14);
+       nombre_zona.arr [nombre_zona.len] = '\0';
+       strorg(nomb_ciudad.arr,1,14);
+       nomb_ciudad.arr [nomb_ciudad.len] = '\0';
+       codigo_ven.arr [codigo_ven.len]   = '\0';
+       codigo_nom.arr [codigo_nom.len]   = '\0';
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C7.2 (%d)\n", staora);
+
+       if (strcmp(nomb_clie.arr,wnomb_clie)) {
+           sprintf(mensajes,"SUB-TOTAL ZONA %d",anod+1);
+           totaliza(0);
+//           printf("pase-1"); getchar();
+           ventas_zona();
+           inicio=0;
+           strcpy(wnomb_clie,nomb_clie.arr);
+           imprime_recaudos();
+           fprintf(fp,"\n");
+           con_lin++;
+           strcpy(cvendedor.arr,codigo_ven.arr );
+           cvendedor.len = strlen(cvendedor.arr);
+//           printf("2) codigo_emp <%s>, fecha_ini <%s> fecha_fin <%s>, cvendedor<%s>, codigo_nom<%s>, wnomb_clie<%s> ",codigo_emp.arr,fecha_ini.arr, fecha_fin.arr, cvendedor.arr, codigo_nom.arr, wnomb_clie); getchar();
+           staora  = 0;
+       }
+ }
+ sprintf(mensajes,"SUB-TOTAL ZONA %d",anod+1);
+ totaliza(0);
+// printf("pase-2"); getchar();
+ ventas_zona();
+ imprime_recaudos();
+ sprintf(mensajes,"TOTAL ZONAS %d",anod+1);
+ totaliza(1);
+
+ tit_ciu = 1;
+ if (con_lin > 56)
+    titulo_opticasg();
+// titulo_zona();
+
+ staora = 0;
+ EXEC SQL OPEN C11D;
+ while (staora == 0) {
+
+       EXEC SQL FETCH C11D INTO :valor_neto[1],
+                                :valor_neto[2],
+                                :valor_neto[3],
+                                :valor_neto[4],
+                                :valor_neto[5],
+                                :valor_neto[6],
+                                :valor_neto[7],
+                                :valor_neto[8],
+                                :valor_neto[9],
+                                :valor_neto[10],
+                                :valor_neto[11],
+                                :valor_neto[12],
+                                :valor_total;
+
+       staora  = sqlca.sqlcode;
+       if (staora ==  1403) break;
+       if (staora == -1405)
+           staora  = 0;
+       else if (staora)
+                fprintf (stderr, "Error leyendo C11D (%d)\n", staora);
+       for (i=0;i<=1;++i)
+            acumulo_totales(i);
+ }
+ sprintf(mensajes,"TOTAL ZONAS %d",anod);
+
+ porcentualiza(1);
+
+ EXEC SQL CLOSE C8;
+ EXEC SQL CLOSE C11D;
+
+ porcentualiza_pagos(1);
+
+ borro_totales(0);
+ borro_totalesa(0);
+ borro_totalesb(0);
+ borro_totales(1);
+ borro_totalesa(1);
+ borro_totalesb(1);
+ con_lin=66;
+
+}
+fin de la original */
+
+void titulo_opticasg()
+{
+ int i;
+
+ tit_ciu = 1;
+// if (con_lin > 56)
+    titulos_og();
+ if (tit_zon==1) {
+     fprintf(fp,"\n\n%s%16s%s%s%s%s\n\n",enfatizado_on,ancho_on,"OPTICAS DEL GRUPO"," ",ancho_off,enfatizado_off);
+     fprintf(fp,"%194s\n",         "ASESOR         DEPARTAMENTO   CIUDAD             FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION     FACTURACION");
+     fprintf(fp,"%s%47s",enfatizado_on," ");
+
+     for (i=m;i<=12;i++) {
+          strcpy(cadena,mes[i-1]);
+          strupp(cadena);
+          fprintf(fp,"%14s",cadena);
+     }
+     for (i=1;i<m;i++) {
+          strcpy(cadena,mes[i-1]);
+          strupp(cadena);
+          fprintf(fp,"%14s",cadena);
+     }
+     fprintf(fp,"%15s\n","TOTAL");
+
+     fprintf(fp,"%s%50s",enfatizado_on," ");
+
+     for (i=m;i<=12;i++) {
+         sprintf (cadena,"%4d",a);
+         fprintf(fp,"%5s%-9s"," ",fmtnum("z,zz9",cadena,r_t));
+     }
+
+     for (i=1;i<m;i++) {
+         sprintf (cadena,"%4d",a+1);
+         fprintf(fp,"%5s%-9s"," ",fmtnum("z,zz9",cadena,r_t));
+     }
+
+     fprintf(fp,"%s%5s\n\n",enfatizado_off," ");
+
+     con_lin += 8;
+ }
+}
+
+void imprime_zonas()
+{
+ int i;
+ if (con_lin > 60)
+    titulos_og();
+
+ if (inicio==1) {
+     strcpy(nomb_clie.arr," ");
+ }
+ fprintf(fp,"%-15s%-15s%-15s ",nomb_clie.arr,nombre_zona.arr,nomb_ciudad.arr);
+ inicio=1;
+ for (i=m;i<=12;i++) {
+     sprintf (cadena,"%6.2f",valor_neto_z[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+ for (i=1;i<m;i++) {
+     sprintf (cadena,"%6.2f",valor_neto_z[i]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zz9",cadena,r_t));
+ }
+
+ sprintf (cadena,"%6.2f",valor_total_z);
+ fprintf(fp,"%16s\n",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=1;
+ for (i=0;i<=1;++i)
+      acumulo_totales_z(i);
+}
+
+void borro_totales(i)
+int i;
+{
+
+ for (j=1;j<=12;j++) {
+     vect[i].val_netoa[j] = vect[i].val_neto[j];
+     vect[i].val_neto[j] =0;
+ }
+ vect[i].val_totala = vect[i].val_total;
+ vect[i].val_total =0;
+
+}
+
+void borro_totalesa(i)
+int i;
+{
+
+ for (j=1;j<=12;j++) {
+     vect[i].val_netoa[j] =0;
+ }
+ vect[i].val_totala =0;
+
+}
+
+void borro_totalesb(i)
+int i;
+{
+
+ for (j=1;j<=12;j++) {
+     vect[i].val_neto[j] =0;
+     vect[i].val_netoa[j] =0;
+//     printf("<%d,%d> <%15.0f> <%15.0f>\n",i,j,vect[i].val_neto[j],vect[i].val_netoa[j]);
+ }
+ vect[i].val_total =0;
+ vect[i].val_totala =0;
+// getchar();
+ // printf("<%d> <%15.0f> <%15.0f>",i,vect[i].val_total,vect[i].val_totala); getchar();
+
+}
+
+void acumulo_totales(i)
+int i;
+{
+
+ for (j=1;j<=12;j++) {
+     vect[i].val_neto[j]     +=valor_neto[j];
+ }
+ vect[i].val_total      +=valor_total;
+
+}
+
+void acumulo_totales_z(i)
+int i;
+{
+
+ for (j=1;j<=12;j++) {
+     vect[i].val_neto[j]     +=valor_neto_z[j];
+ }
+ vect[i].val_total      +=valor_total_z;
+
+}
+
+void empresa()
+{
+ strcpy (numero_quincena.arr,nro_quincena);
+ numero_quincena.len =  strlen(numero_quincena.arr);
+ codigo_emp.len      =  strlen(codigo_emp.arr);
+
+ EXEC SQL select cf.ano, cf.mes_proceso, cf.ptaje_iva,
+               to_date(
+               decode(to_number(cf.numero_quincena),
+                  1,to_number(cf.ano||lpad(cf.mes_proceso,2,0)||lpad(1,2,0)),
+                  2,to_number(cf.ano||lpad(cf.mes_proceso,2,0)||16)),'yyyymmdd'),
+               to_date(to_char(to_date(
+               decode(to_number(cf.numero_quincena),
+                  1,to_number(cf.ano||lpad(cf.mes_proceso,2,0)||lpad(15,2,0)),
+                  2,to_number(to_char(last_day(to_date(cf.ano||lpad(cf.mes_proceso,2,0),'yymm')),'yyyymmdd'))),'yymmdd'),'yyyymmdd'),'yyyymmdd')
+        into  :ano, :mes_proceso, :ptaje_iva, :fecinicial, :corte
+	from  control_fac cf
+        where cf.codigo_emp   = :codigo_emp;
+
+ if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error leyendo Control_Fac(C4) (%d)\n", sqlca.sqlcode);
+
+ fecinicial.arr [fecinicial.len] = '\0';
+ corte.arr      [corte.len]      = '\0';
+
+ EXEC SQL select nits.nombre
+          into  :nomb_emp
+          from   empresas, nits
+          where  empresas.codigo_nit = nits.codigo_nit and
+                 empresas.codigo_emp = :codigo_emp;
+
+ if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error leyendo Empresa(C5) (%d)\n", sqlca.sqlcode);
+
+ nomb_emp.arr   [nomb_emp.len] = '\0';
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+ int i;
+
+ con_pag++;
+ if (!strcmp(codigo_emp.arr,"3"))
+    strcpy(nomb_emp.arr," ");
+ fprintf(fp,"%s",salte_pagina);
+ strful(cadena,(int)(42-strlen(nomb_emp.arr))/2,' ');
+ fprintf(fp,"%s%s%s%s%s\n\n",diezcpi,ancho_on,cadena,nomb_emp.arr,ancho_off);
+ if( serv == 0 )
+   fprintf(fp,"%s%s%s%52s",diezcpi,condensado_on,ancho_on,"RESUMEN DE VENTAS (CREDITO+CONTADO)");
+ else  {
+   if (!strcmp(codigo_emp.arr,"1"))
+       fprintf(fp,"%s%s%s%45s",diezcpi,condensado_on,ancho_on,"SERVICIOS DE ADMINISTRACION");
+   else
+       fprintf(fp,"%s%s%s%40s",diezcpi,condensado_on,ancho_on,"MATERIA PRIMA");
+ }
+ fprintf(fp,"%17s %d\n","PAGINA ",con_pag);
+ fprintf(fp,"%46s%s%s\n","REPORTE MENSUAL",ancho_off,diezcpi);
+ strorg(fechas,1,strlen(fechas));
+ fprintf(fp,"%s%62s%s\n\n",enfatizado_on,fechas,enfatizado_off);
+ con_lin=6;
+ 
+ if (tit_zon==1) { 
+     fprintf(fp,"%s%194s\n",condensado_on,"ASESOR         DEPARTAMENTO   CIUDAD             FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION     FACTURACION");
+     con_lin++; 
+     }    
+ else
+     fprintf(fp,"%s%s%36s",condensado_on,"CODIGO ","C L I E N T E / O P T I C A");
+ fprintf(fp,"%168s\n",                        "      FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION     FACTURACION");
+ fprintf(fp,"%s%47s",enfatizado_on," ");
+
+ for (i=m;i<=12;i++) {
+      strcpy(cadena,mes[i-1]);
+      strupp(cadena);
+      fprintf(fp,"%14s",cadena);
+ }
+ for (i=1;i<m;i++) {
+      strcpy(cadena,mes[i-1]);
+      strupp(cadena);
+      fprintf(fp,"%14s",cadena);
+ }
+ fprintf(fp,"%15s\n","TOTAL");
+
+ fprintf(fp,"%s%50s",enfatizado_on," ");
+
+ for (i=m;i<=12;i++) {
+     sprintf (cadena,"%4d",a);
+     fprintf(fp,"%5s%-9s"," ",fmtnum("z,zz9",cadena,r_t));
+ }
+
+ for (i=1;i<m;i++) {
+     sprintf (cadena,"%4d",a+1);
+     fprintf(fp,"%5s%-9s"," ",fmtnum("z,zz9",cadena,r_t));
+ }
+
+ fprintf(fp,"%s%5s\n\n",enfatizado_off," ");
+
+ con_lin += 4;
+ if (tit_ciu == 0) {
+    titulo_ciudad();
+    tit_ciu=1;
+ }
+}
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos_og()
+{
+ int i;
+
+ con_pag++;
+ if (!strcmp(codigo_emp.arr,"3"))
+    strcpy(nomb_emp.arr," ");
+ fprintf(fp,"%s",salte_pagina);
+ strful(cadena,(int)(42-strlen(nomb_emp.arr))/2,' ');
+ fprintf(fp,"%s%s%s%s%s\n\n",diezcpi,ancho_on,cadena,nomb_emp.arr,ancho_off);
+ if( serv == 0 )
+   fprintf(fp,"%s%s%s%52s",diezcpi,condensado_on,ancho_on,"RESUMEN DE VENTAS (CREDITO+CONTADO)");
+ else  {
+   if (!strcmp(codigo_emp.arr,"1"))
+       fprintf(fp,"%s%s%s%45s",diezcpi,condensado_on,ancho_on,"SERVICIOS DE ADMINISTRACION");
+   else
+       fprintf(fp,"%s%s%s%40s",diezcpi,condensado_on,ancho_on,"MATERIA PRIMA");
+ }
+ fprintf(fp,"%17s %d\n","PAGINA ",con_pag);
+ fprintf(fp,"%46s%s%s\n","REPORTE MENSUAL",ancho_off,diezcpi);
+ strorg(fechas,1,strlen(fechas));
+ fprintf(fp,"%s%62s%s\n\n",enfatizado_on,fechas,enfatizado_off);
+ fprintf(fp,"%s",condensado_on);
+ con_lin=6;
+
+ if(opticasg==1) {
+    fprintf(fp,"\n%s%16s%s%s%s%s\n\n",enfatizado_on,ancho_on,"OPTICAS DEL GRUPO"," ",ancho_off,enfatizado_off);
+    opticasg=0;
+    con_lin+=3;
+ }
+ fprintf(fp,"%194s\n",         "ASESOR         DEPARTAMENTO   CIUDAD             FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION     FACTURACION");
+ fprintf(fp,"%s%47s",enfatizado_on," ");
+
+ for (i=m;i<=12;i++) {
+      strcpy(cadena,mes[i-1]);
+      strupp(cadena);
+      fprintf(fp,"%14s",cadena);
+ }
+ for (i=1;i<m;i++) {
+      strcpy(cadena,mes[i-1]);
+      strupp(cadena);
+      fprintf(fp,"%14s",cadena);
+ }
+ fprintf(fp,"%15s\n","TOTAL");
+
+ fprintf(fp,"%s%50s",enfatizado_on," ");
+
+ for (i=m;i<=12;i++) {
+     sprintf (cadena,"%4d",a);
+     fprintf(fp,"%5s%-9s"," ",fmtnum("z,zz9",cadena,r_t));
+ }
+
+ for (i=1;i<m;i++) {
+     sprintf (cadena,"%4d",a+1);
+     fprintf(fp,"%5s%-9s"," ",fmtnum("z,zz9",cadena,r_t));
+ }
+
+ fprintf(fp,"%s%5s\n\n",enfatizado_off," ");
+
+ con_lin+=4;
+}

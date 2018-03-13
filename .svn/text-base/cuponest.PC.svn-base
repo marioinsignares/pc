@@ -1,0 +1,303 @@
+/*****************************************************************
+* ORDENES.C Version 1.0 - Rev 1.2 - May. 29/90.
+*
+* ordenes.c. Listado de Ordenes de Produccion.
+*
+* Uso : ordenes numero_orden device userid/password
+*
+* Martin A. Toloza L. Creado Febrero 10-1998.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+void ver_tipo_material();
+void tipos1();
+void tipos2();
+void leer_material();
+void leer_coloresv();
+void leer_servicios();
+void imprimo_servicios();
+void totales();
+void Rx_procesor();
+void borro_puntos();
+void titulos();
+void hacer_asiento();
+void reverso_asiento();
+void ver_inf();
+
+				     /* Parametros de comunicacion con ORACLE */
+        		             /* Variables de recepcion para datos */
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+                                 /* Ordenes_c (C1) */
+double  numero_orden;
+int     loop_2 = 0;
+int     traidos = 0;
+int     num_ret = 0;
+VARCHAR codigo_cliente [6];
+VARCHAR nomb_clie      [51];
+VARCHAR nomb_ciu       [30];
+VARCHAR fecha_control  [70];
+VARCHAR asesor         [70];
+VARCHAR profesional    [70];
+VARCHAR fecha          [20];
+VARCHAR orden          [20];
+VARCHAR clase          [20];
+VARCHAR tipo           [20];
+double  nit_asesor;
+double  nit_prof;
+int     ano_mes;
+int     puntos;
+int     puntosc;
+int     puntos_ac;
+VARCHAR estado         [02];
+                                 /* Ordenes_d (C2) */
+int     cantidad;
+double  valor;
+int     tcantidad;
+VARCHAR ano_mesa       [20];
+VARCHAR consecutivoa   [08];
+                                 /* Tipos (C3) */
+/* VARIABLES PARA ASIENTOS CONTABLES */
+
+double  consecutivo;
+                                 /* Acumulados (C6) */
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+                                            /* Variables globales del usuario */
+#define TITULO_1 "TEODORO TARUD & CIA LTDA."
+#define TITULO_2 "Nit. 890.112.740-2"
+#define A_F1     "###,###.##"
+char *fmtnum(), r_t[100];
+int     con_len;                                   /* Contador de Paginas */
+int     con_lin= 22;                               /* Contador de Lineas  */
+int     staora = 0;
+int     staora2 = 0;
+int     i;
+char    cadena[100];
+char    cadena2[100];
+int     cuantos;
+double  valort;
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int	status = 0;
+
+    if (argc < 4)
+       {
+	printf ("Incorrecta invocacion:\n");
+	printf ("Uso : ordenes fecha (aaaammdd) orden device userid/password\n");
+	printf ("      device : t salida por terminal\n");
+	printf ("               Px salida por impresora (x nro printer)\n");
+	printf ("               userid/password nombre usuario y password\n");
+        exit (1);
+       }
+
+       strcpy (fecha.arr, argv[1]);
+       fecha.len   =      strlen(fecha.arr);
+       strcpy (orden.arr, argv[2]);
+       orden.len   =      strlen(orden.arr);
+       strcpy (device,    argv[3]);
+       strlow (device);
+
+    if (!strpos ("/", argv[4]))
+       {
+        printf ("user id/password incorrecto.\n");
+	exit (1);
+       }
+
+    strcpy (uid.arr,   argv[4]);
+    uid.len   =        strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora("1");
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+
+  if (strcmp(orden.arr,"0")) {
+    EXEC SQL DECLARE C1 CURSOR FOR
+             select o.numero_orden, o.codigo_cliente, n.nombre,
+                    nvl(n.nombre_muni,c.nombre),
+                    to_char(o.fecha_control,'DD-MON-YYYY'),
+                    o.consecutivo, o.ano_mes, nvl(o.puntos,0)
+             from   nits n, ordenes_c o, ciudades c, clientes ct
+             where  n.codigo_nit      = ct.codigo_nit    and
+                    ct.codigo_cliente = o.codigo_cliente and
+                    n.codigo_ciu      = c.codigo         and
+                    o.numero_orden    = :orden
+             order by o.codigo_cliente, o.numero_orden;
+    EXEC SQL OPEN C1;
+  }
+  else {
+    EXEC SQL DECLARE C1A CURSOR FOR
+             select o.numero_orden, o.codigo_cliente, n.nombre,
+                    nvl(n.nombre_muni,c.nombre),
+                    to_char(o.fecha_control,'DD-MON-YYYY'),
+                    o.consecutivo, o.ano_mes, nvl(o.puntos,0)
+             from   nits n, ordenes_c o, ciudades c, clientes ct
+             where  n.codigo_nit      = ct.codigo_nit    and
+                    ct.codigo_cliente = o.codigo_cliente and
+                    n.codigo_ciu      = c.codigo         and
+                    to_char(o.fecha_documento,'yyyymmdd') = :fecha
+             order by o.codigo_cliente, o.numero_orden;
+    EXEC SQL OPEN C1A;
+  }
+    staora  = 0;
+    while (staora == 0) {
+
+          if (strcmp(orden.arr,"0")) {
+             EXEC SQL FETCH C1 INTO :numero_orden, :codigo_cliente, :nomb_clie, :nomb_ciu,
+                                    :fecha_control, :consecutivo, :ano_mes, :puntosc;
+          }
+          else {
+             EXEC SQL FETCH C1A INTO :numero_orden, :codigo_cliente, :nomb_clie, :nomb_ciu,
+                                     :fecha_control, :consecutivo, :ano_mes, :puntosc;
+          }
+          staora  = sqlca.sqlcode;
+          if (staora ==  1403) break;
+          if (staora == -1405) {
+              staora  = 0;
+          }
+          else if (staora)
+                  fprintf (stderr, "Error leyendo Ordenes_c (%d)\n", staora);
+          codigo_cliente.arr [codigo_cliente.len] = '\0';
+          nomb_clie.arr      [nomb_clie.len]      = '\0';
+          nomb_ciu.arr       [nomb_ciu.len]       = '\0';
+          fecha_control.arr  [fecha_control.len]  = '\0';
+
+          sprintf(ano_mesa.arr,"%6d",ano_mes);
+          ano_mesa.len     =   strlen(ano_mesa.arr);
+          sprintf(consecutivoa.arr,"%5.0f",consecutivo);
+          consecutivoa.len =   strlen(consecutivoa.arr);
+
+          EXEC SQL DECLARE C2 CURSOR FOR
+               select cantidad, cantidad*valor_venta, decode(substr(codigo_articulo,1,1),'4',1,'5',1,'B',1,0), decode(substr(codigo_articulo,3,2),'50',1,'51',1,'52',1,'54',1,'55',1,'56',1,'57',1,0)
+               from   ordenes_d d
+               where  d.consecutivo = :consecutivoa  and
+                      d.ano_mes     = :ano_mesa;
+
+          EXEC SQL select nvl(profesional,' '), nvl(nit_prof,0), nvl(asesor,' '), nvl(nit_asesor,0)
+                   into  :profesional, :nit_prof, :asesor, :nit_asesor
+                   from   ordenes_r
+                   where  numero_orden    = :numero_orden;
+
+          if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+              fprintf (stderr, "Error leyendo Ordenes_r C8(%d)\n", sqlca.sqlcode);
+
+          asesor.arr         [asesor.len]      = '\0';
+          profesional.arr    [profesional.len] = '\0';
+
+/***************************************/
+
+          EXEC SQL OPEN C2;
+          staora2  = 0;
+          cuantos  = 0;
+          while (staora2 == 0) {
+
+                EXEC SQL FETCH C2 INTO :cantidad, :valor, :clase, :tipo;
+          	clase.arr         [clase.len]     = '\0';
+          	tipo.arr          [tipo.len]      = '\0';
+
+                staora2  = sqlca.sqlcode;
+                if (staora2 ==  1403) break;
+                if (staora2 == -1405 || staora2 == 0) {
+                   cuantos += cantidad;
+                   valort  += valor;
+                }
+                if (staora2 == -1405) {
+                   staora2  = 0;
+                }
+                else if (staora2)
+                        fprintf (stderr, "Error leyendo C2 (%d)\n", staora2);
+          }
+          if ( !strcmp(clase.arr,"1") && cuantos >= 2 && valor > 0 ) {
+               titulos();
+          }
+          cuantos = 0;
+          EXEC SQL CLOSE C2;
+    }
+    fprintf(fp,"\r");
+//    fprintf(fp,"%c\r",11);
+    cierre_impresora();
+
+    EXEC SQL COMMIT WORK RELEASE;
+
+    exit   (0);
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+  char fechas[20];
+
+  strcpy(fechas,fecha_control.arr);
+  strorg(fechas,1,11);
+  fprintf (fp,"%s%s%22s%-32s%22s%-32s\n%33s%s%s%s%7.0f%s%s%40s%s%s%7.0f%s%s%s\n\n\n\n\n\n",condensado_off,diezcpi," ",fechas," ", fechas," ",enfatizado_on,ancho_on,alto_on,numero_orden,ancho_off,alto_off," ",ancho_on,alto_on,numero_orden,ancho_off,alto_off,enfatizado_off);
+  strorg(nomb_clie.arr,1,34);
+  fprintf (fp,"%16s%s%-35s%19s%-35s\n"," ",enfatizado_on,nomb_clie.arr," ",nomb_clie.arr);
+  fprintf (fp,"%9s%-17s%-25s%11s%-17s%-25s\n\n"," ",codigo_cliente.arr,nomb_ciu.arr," ",codigo_cliente.arr,nomb_ciu.arr);
+  sprintf(cadena,"%12.0f",nit_prof);
+  strcpy(cadena,fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+  strorg(profesional.arr,31);
+  fprintf (fp,"%19s%-32s%21s%-32s\n%25s%-26s%27s%-26s\n"," ",profesional.arr," ",profesional.arr," ",cadena," ",cadena);
+  sprintf(cadena,"%12.0f",nit_asesor);
+  strcpy(cadena,fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+  strorg(asesor.arr,37);
+  fprintf (fp,"%13s%-38s%16s%-38s\n%25s%-26s%27s%-26s\n\n\n\n\n"," ",asesor.arr," ",asesor.arr," ",cadena," ",cadena);
+//  sprintf(cadena,"%6d",tpuntos+puntosc);
+//  strcpy(cadena,fmtnum("zzz,zz9",cadena,r_t));
+//  strcpy(cadena,fmtnum("zzz,zz9",cadena,r_t));
+  strcpy(cadena," ");
+//  fprintf (fp,"%22s%-32s%22s%-8s\n","PUNTOS DE ESTA ORDEN: ",cadena,"PUNTOS DE ESTA ORDEN: ",cadena);
+  if ( !strcmp(clase.arr,"1") && !strcmp(tipo.arr,"1") ) {
+     strcpy(cadena,"TR. - P.E.");
+     fprintf (fp,"%-22s%-32s%-22s%-8s\n",cadena," ",cadena," ");
+  }
+  else {
+     strcpy(cadena,"TR.");
+     fprintf (fp,"%-22s%-32s%-22s%-8s\n",cadena," ",cadena," ");
+  }
+  con_lin = 19;
+  for (i=0;i<22-con_lin;i++)
+       fprintf(fp,"\n");
+}
+
+

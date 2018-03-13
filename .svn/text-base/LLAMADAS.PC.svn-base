@@ -1,0 +1,282 @@
+/*****************************************************************
+* DEPRECIA.C Version 1.0 - Rev 1.2 - Nov. 30/97.
+*
+* deprecia.c. Apropiacion para Depreciaciones.
+*
+* Uso: deprecia codigo_emp aamm device copias userid/password\n");
+*
+* Martin A. Toloza L. Creado en Noviembre 27 de 1.997.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <setjmp.h>
+#include <stdlib.h>
+#include <math.h>
+
+double redondo();
+void hacer_asiento();
+void ver_inf();
+
+
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+                                 /* Empresa (C1) */
+double  nit;
+int     codigo_nit;
+int     digito;
+VARCHAR codigo_emp  [3];
+VARCHAR consecutivob[07];
+VARCHAR secuenciab  [7];
+VARCHAR codigo_nitb [6];
+VARCHAR facturab    [20];
+                                 /* Control_Mes (C5) */
+double  consecutivo;
+VARCHAR fuenteb     [3];
+                                 /* Acumulados (C6) */
+double  valor;
+VARCHAR valor_fac   [20];
+VARCHAR ano_mes     [20];
+VARCHAR sucursal    [20];
+VARCHAR fecha       [20];
+VARCHAR ciudad_des  [40];
+int     piva;
+VARCHAR valiva      [20];
+double  pfactu;
+double  origen;
+double  destino;
+double  vlr_consumo;
+
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+				     /* Parametros de comunicacion con ORACLE */
+                                            /* Variables globales del usuario */
+char    pagina[4];                                   /* Contador de Paginas */
+int     con_pag=0;                                   /* Contador de Paginas */
+int     con_lin=66;                                  /* Contador de Lineas  */
+int     cl;
+int     staora     =0;
+int     traidos    =0;
+int     num_ret    =0;
+int     loop_2     =0;
+double  secuencia  =0;
+        		                /* Variables de recepcion para datos */
+char *fmtnum(), r_t[100];
+double  nitn;
+char    cadena[100];
+char    login[30];
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+int	status = 0;
+
+    if (argc < 6)
+       {
+	printf ("Incorrecta invocacion:\n");
+        printf ("Uso : codigo_emp sucursal fecha(aaaammdd) valor_factura factura valor_iva userid/password\n");
+	printf ("               Px salida por impresora (x nro printer)\n");
+	printf ("               userid/password nombre usuario y password\n");
+        exit (1);
+       }
+       strcpy (codigo_emp.arr, argv[1]);
+       codigo_emp.len =        strlen(codigo_emp.arr);
+       strcpy (sucursal.arr,   argv[2]);
+       sucursal.len =          strlen(sucursal.arr);
+       strcpy (fecha.arr,      argv[3]);
+       fecha.len =             strlen(fecha.arr);
+       strcpy (valor_fac.arr,  argv[4]);
+       valor_fac.len =         strlen(valor_fac.arr);
+       strcpy (facturab.arr,   argv[5]);
+       facturab.len  =         strlen(facturab.arr);
+       strcpy (valiva.arr,     argv[6]);
+       valiva.len    =         strlen(valiva.arr);
+
+    if (!strpos ("/", argv[7]))
+       {
+        printf ("user id/password incorrecto.\n");
+	exit (1);
+       }
+
+    strcpy (uid.arr,    argv[7]);
+    uid.len =           strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+/*********************************************
+ * Procesar una sentencia SQL (oexec).       *
+ *********************************************/
+
+    strcpy (ano_mes.arr,argv[3]);
+    ano_mes.len = strlen(ano_mes.arr);
+    strorg (ano_mes.arr,1,6);
+    ano_mes.len = strlen(ano_mes.arr);
+
+    EXEC SQL DECLARE C6 CURSOR FOR
+             select o.nit, o.factura,origen,
+                    substr(to_char(decode(substr(plan,1,9),'RedIn 800',o.linea_que_paga,o.destino)),
+                    length(to_char(decode(substr(plan,1,9),'RedIn 800',o.linea_que_paga,o.destino)))-(d.digitos-1),d.digitos),
+                    d.codigo,
+                    o.consumo_descuento
+             from   orbitel o, destinos d
+             where  rtrim(decode(substr(plan,1,9),'RedIn 800',o.ciudad_org,o.ciudad_des)) = d.nombre and
+                    o.factura = :facturab
+             order by o.fecha;
+
+    EXEC SQL OPEN C6;
+
+    hacer_asiento();
+
+    EXEC SQL CLOSE C6;
+
+    EXEC SQL COMMIT WORK RELEASE;
+
+    exit   (0);
+}
+
+void hacer_asiento()
+{
+
+  strcpy(fuenteb.arr,"08");
+  fuenteb.len = strlen(fuenteb.arr);
+
+  /* Lee consecutivo de Control_mes Fte 08 sgte consecutivo */
+
+  EXEC SQL select consecutivo+1
+           into  :consecutivo
+           from  control_mes
+           where fuente       = to_number(:fuenteb)       and
+                 ano_mes      = to_number(:ano_mes)       and
+                 codigo_emp   = to_number(:codigo_emp);
+
+  if (sqlca.sqlcode)
+     {
+      fprintf (stderr, "Error leyendo Control_Mes 08 (%d)\n", sqlca.sqlcode);
+      consecutivo=1;
+      sprintf(consecutivob.arr,"%5.0f",consecutivo);
+      consecutivob.len = strlen(consecutivob.arr);
+               /* Inserta en Control_Mes Fte 08 si no existe (C11) */
+      EXEC SQL insert into control_mes
+               values (:fuenteb, :ano_mes, 'CONTROL CONTABILIDAD',:consecutivob, :codigo_emp);
+     }
+  else {
+        sprintf(consecutivob.arr,"%5.0f",consecutivo);
+        consecutivob.len = strlen(consecutivob.arr);
+               /* Actualiza Cns de Fte 08 en control_mes (C12) */
+        EXEC SQL update control_mes
+                 set    consecutivo = :consecutivob
+                 where ano_mes      = to_number(:ano_mes)      and
+                       fuente       = :fuenteb                 and
+                       codigo_emp   = to_number(:codigo_emp);
+  }
+
+  EXEC SQL FETCH C6 INTO nit, pfactu, origen, destino,
+                         ciudad_des, vlr_consumo;
+  ciudad_des.arr [ciudad_des.len] = '\0';
+
+  EXEC SQL select n.nit, n.digito, n.codigo_nit
+           into   :nit, :digito, :codigo_nit
+           from   nits n, empresas e
+           where  n.codigo_nit = e.codigo_nit and
+                  e.codigo_emp = to_number(:codigo_emp);
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo Empresa (%d)\n", sqlca.sqlcode);
+
+  sprintf(codigo_nitb.arr,"%5d",codigo_nit);
+  codigo_nitb.len = strlen(codigo_nitb.arr);
+
+  EXEC SQL select 16
+           into   :piva
+           from   control_fac
+           where  codigo_emp = 1;
+
+  EXEC SQL insert into llamadas_c
+           (CODIGO_EMP,ANO_MES,CONSECUTIVO,FECHA,CODIGO_NIT,FACTURA,TELEFONO,VALOR,ESTADO,SUCURSAL,VALOR_EPL,VALOR_PUB,PTAJE_IVA,VALOR_IVA)
+           values(:codigo_emp, :ano_mes, :consecutivob, to_date(:fecha,'yyyymmdd'), 6755,
+                  :facturab, :origen, :valor_fac, 0, :sucursal, 0, 0, :piva, :valiva);
+
+  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+      fprintf (stderr, "Error grabando llamadas_c (%d)\n", sqlca.sqlcode);
+
+  EXEC SQL DECLARE C7 CURSOR FOR
+           select codigo_nit
+           from   telefonos
+           where  numero     = :destino and
+                  codigo_ciu = :ciudad_des;
+
+  staora  = 0;
+
+  while (staora == 0) {
+
+        ciudad_des.arr  [ciudad_des.len]  = '\0';
+        secuencia++;
+
+        sprintf(secuenciab.arr,"%6.0f",secuencia);
+        secuenciab.len = strlen(secuenciab.arr);
+
+
+        EXEC SQL OPEN C7;
+
+        EXEC SQL FETCH C7 INTO codigo_nit;
+
+        if (sqlca.sqlcode == 1403 || sqlca.sqlcode != 0) {
+           if ( sqlca.sqlcode == -2112) {
+              fprintf (stderr, "Warning, encontro varios registros con el mismo telefono (%d)\n", sqlca.sqlcode);
+           }
+           else {
+//            fprintf (stderr, "Error leyendo telefonos (%d)\n", sqlca.sqlcode);
+              codigo_nit=0;
+           }
+        }
+
+        EXEC SQL CLOSE C7;
+
+        sprintf(codigo_nitb.arr,"%5d",codigo_nit);
+        codigo_nitb.len = strlen(codigo_nitb.arr);
+
+        EXEC SQL insert into llamadas_d
+                 (CODIGO_EMP,ANO_MES,CONSECUTIVO,SECUENCIA,CODIGO_CIU,NUMERO,VALOR,ESTADO,CODIGO_NIT)
+                 values(:codigo_emp, :ano_mes, :consecutivob, :secuenciab,
+                        :ciudad_des, :destino, :vlr_consumo, 0, :codigo_nit);
+
+        if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+            fprintf (stderr, "Error Grabando llamadas_d (%d)\n", sqlca.sqlcode);
+
+        EXEC SQL FETCH C6 INTO nit, pfactu, origen, destino,
+                               ciudad_des, vlr_consumo;
+
+        ciudad_des.arr [ciudad_des.len] = '\0';
+        staora  = sqlca.sqlcode;
+
+        if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+            fprintf (stderr, "Error leyendo C6 (%d)\n", sqlca.sqlcode);
+  }
+}

@@ -1,0 +1,334 @@
+/*****************************************************************
+* LRETENCION.C Version 1.0 - Rev 1.2 - Mar. 13/98.
+*
+* lretencion.c Programa que lista los certificados de retencion en la
+* fuente.
+*
+* Uso : lretencion codigo_emp ano_mesi ano_mesf device copias userid/password
+*
+* Martin A. Toloza L. Creado Marzo 13-1998.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+void titulos();
+void totales();
+void monletr();
+
+double redondo();
+				     /* Parametros de comunicacion con ORACLE */
+        		             /* Variables de recepcion para datos */
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+                                 /* Acumulanit (C1) */
+VARCHAR nombre_r      [56];
+VARCHAR nombre        [51];
+double  nit;
+double  valor;
+float   ptaje;
+double  codigo_nit;
+int     codigo_ret;
+VARCHAR codigo_emp    [5];
+VARCHAR ano_mesi      [20];
+VARCHAR ano_mesf      [20];
+                                 /* Ciudades (C2) */
+VARCHAR nombre_emp    [51];
+VARCHAR direccion_emp [56];
+double  nit_emp;
+VARCHAR nombre_ciu    [22];
+                                 /* Acumulanit (C3) */
+double  valor_sal;
+VARCHAR codigo_nita   [8];
+int     a2k;
+int     ano;
+VARCHAR niti         [13];
+VARCHAR nitf         [13];
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+                                            /* Variables globales del usuario */
+#define A_F1 "###,###,###.##"
+
+char *fmtnum(), r_t[100];
+int     con_lin=66;                                /* Contador de Lineas  */
+int	staora = 0;
+int	oraest = 0;
+double  nita=0;
+int     j;
+double  valor_tot=0;
+
+char    copias[3];
+char    cadena[120];
+char    cadena2[50];
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int	status = 0;
+
+if (argc < 7)
+   {
+    printf ("Incorrecta invocacion:\n");
+    printf ("Uso : lretencion codigo_emp ano_mesi ano_mesf nitini nitfin device copias userid/password\n");
+    printf ("      device : t salida por terminal\n");
+    printf ("               Px salida por impresora (x nro printer)\n");
+    printf ("               userid/password nombre usuario y password\n");
+    exit (1);
+   }
+
+strcpy (codigo_emp.arr,  argv[1]);
+codigo_emp.len   =       strlen(codigo_emp.arr);
+strcpy (ano_mesi.arr,    argv[2]);
+ano_mesi.len     =       strlen(ano_mesi.arr);
+strcpy (ano_mesf.arr,    argv[3]);
+ano_mesf.len     =       strlen(ano_mesf.arr);
+strcpy (niti.arr,        argv[4]);
+niti.len =               strlen(niti.arr);
+strcpy (nitf.arr,        argv[5]);
+nitf.len =               strlen(nitf.arr);
+strcpy (device,          argv[6]);
+strlow (device);
+strcpy (copias,          argv[7]);
+
+if (!strpos ("/", argv[8]))
+   {
+    printf ("user id/password incorrecto.\n");
+    exit (1);
+   }
+
+strcpy (uid.arr,   argv[8]);
+uid.len   =        strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora(copias);
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+
+    EXEC SQL DECLARE C1 CURSOR FOR
+	     select r.nombre, n.nombre, n.nit,
+       	     	    sum(valor_cre-valor_deb), decode(n.clase_docu,'N',r.ptaje2, r.ptaje),
+	     	    n.codigo_nit, to_number(substr(p.cuenta,5,2))
+	     from   acumulanit a, retencion r, nits n, plan p
+       	     where n.codigo_nit         = a.codigo_nit         and
+             	   a.ano_mes           >=  :ano_mesi           and
+             	   a.ano_mes           <=  :ano_mesf           and
+             	 ((p.cuenta            >= '236501'             and
+             	   p.cuenta            <= '236598')            or
+             	   p.cuenta in ('23670101','23670102','23680101')) and
+             	   p.cuenta             = substr(a.cuenta,1,6) and
+             	   p.nivel              = '3'                  and
+             	   substr(p.cuenta,5,2) = r.codigo             and
+             	   a.codigo_emp         = p.codigo_emp         and
+             	   a.codigo_emp         = :codigo_emp          and
+             	   n.nit               >= :niti                and
+             	   n.nit               <= :nitf
+       	     group by r.nombre, n.nombre, n.nit, n.clase_docu, r.ptaje, r.ptaje2,
+                      n.codigo_nit, p.cuenta
+       	     order by n.nit, p.cuenta;
+
+    EXEC SQL select n.nombre, n.direccion, n.nit, c.nombre
+             into  :nombre_emp, :direccion_emp, :nit_emp, :nombre_ciu
+             from   nits n, ciudades c, empresas e
+             where  n.codigo_nit = e.codigo_nit  and
+                    n.codigo_ciu = c.codigo      and
+                    e.codigo_emp = :codigo_emp;
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+        fprintf (stderr, "Error Leyendo Empresa C2(%d)\n", sqlca.sqlcode);
+    }
+
+    nombre_emp.arr       [nombre_emp.len]      = '\0';
+    direccion_emp.arr    [direccion_emp.len]   = '\0';
+    nombre_ciu.arr       [nombre_ciu.len]      = '\0';
+
+    EXEC SQL OPEN C1;
+    staora  = 0;
+ EXEC SQL delete from etqprov;
+
+ if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error Borrando etiquetas para proveedores(etqprov) (%d)\n", sqlca.sqlcode);
+
+ while (staora == 0) {
+
+        EXEC SQL FETCH C1 INTO :nombre_r, :nombre, :nit, :valor,
+                               :ptaje, :codigo_nit, :codigo_ret;
+
+        staora  = sqlca.sqlcode;
+        if (staora ==  1403) break;
+        if (staora == -1405)
+            staora  = 0;
+        else if (staora) {
+                 fprintf (stderr, "Error Leyendo C1 (%d)\n", staora);
+                 }
+
+        nombre_r.arr  [nombre_r.len] = '\0';
+        nombre.arr    [nombre.len]   = '\0';
+
+        if (nita != nit) {
+            if (valor_tot>0) {
+                totales();
+            }
+            nita=nit;
+            con_lin=66;
+        }
+        if (valor > 0) {
+           if (con_lin > 62)
+               titulos();
+           if (codigo_ret == 5) {
+               sprintf(codigo_nita.arr,"%5.0f",codigo_nit);
+               codigo_nita.len =   strlen(codigo_nita.arr);
+
+               EXEC SQL select sum(valor_deb-valor_cre)
+                        into  :valor_sal
+	                from  acumulanit a, plan p
+                        where a.codigo_nit     =  :codigo_nita        and
+                              a.ano_mes       >=  :ano_mesi           and
+                              a.ano_mes       <=  :ano_mesf           and
+                              p.cuenta         = '510506'             and
+                              p.cuenta         = substr(a.cuenta,1,6) and
+                              p.nivel          = '3'                  and
+                              a.codigo_emp     = p.codigo_emp         and
+                              a.codigo_emp     =  :codigo_emp
+                        group by a.codigo_nit, p.cuenta;
+               oraest  = sqlca.sqlcode;
+               if (oraest != 1403 && oraest != 0) {
+                   fprintf (stderr, "Error Leyendo C3 (%d)\n", oraest);
+               }
+               sprintf (cadena,"%9.0f",valor_sal);
+           }
+           else {
+                if (nit==890111018 && codigo_ret == 40) {
+                    ptaje=2;
+                }
+                sprintf (cadena,"%9.0f",redondo((valor/ptaje)*100,0));
+           }
+           fprintf (fp,"%-35s",nombre_r.arr);
+           if (codigo_ret != 5) {
+               sprintf (cadena2,"%3.2f",ptaje);
+               fprintf (fp,"%6s",fmtnum("zz9.99",cadena2,r_t));
+           }
+           else {
+                fprintf (fp,"%6s"," ");
+           }
+           if (j==0) {
+               fprintf (fp,"%16s",fmtnum("$z,zzz,zzz,zz9",cadena,r_t));
+               sprintf (cadena,"%9.2f",valor);
+               fprintf (fp,"%17s\n",fmtnum("$zz,zzz,zz9.99",cadena,r_t));
+               j=1;
+           }
+           else {
+               fprintf (fp,"%16s",fmtnum("zz,zzz,zzz,zz9",cadena,r_t));
+               sprintf (cadena,"%9.2f",valor);
+               fprintf (fp,"%17s\n",fmtnum("zzz,zzz,zz9.99",cadena,r_t));
+           }
+           valor_tot+=valor;
+           con_lin++;
+        }
+
+        sprintf(codigo_nita.arr,"%5.0f",codigo_nit);
+        EXEC SQL insert into etqprov values(:codigo_nit);
+
+        if (sqlca.sqlcode != 0) {
+            fprintf (stderr, "Error insertando etiquetas para proveedores(etqprov) (%s) (%d)\n", codigo_nita.arr, sqlca.sqlcode);
+        }
+
+ }
+ if (valor_tot>0)
+     totales();
+ cierre_impresora();
+
+ EXEC SQL CLOSE C1;
+
+ EXEC SQL COMMIT WORK RELEASE;
+
+ exit   (0);
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+ char n[60], n1[60], n2[60], n3[60], n4[60];
+ strcpy(n,nombre_emp.arr);
+ strcat(n1,direccion_emp.arr);
+ sprintf(n2,"%s%s",nombre_ciu.arr," -  COLOMBIA");
+ sprintf(cadena,"%10.0f",nit_emp);
+ sprintf(n3,"Nit : %14s",fmtnum("zzzz,zzz,zz9",cadena,r_t));
+ strcpy(n4,"CERTIFICADO DE RETENCION EN LA FUENTE ");
+
+ strful(cadena,(int)(46-strlen(n))/2,' ');
+ fprintf(fp,"%s%s%s%s%s%s%s\n\n",salte_pagina,elite,ancho_on,cadena,n,diezcpi,ancho_off);
+ strful(cadena,(int)(76-strlen(n2))/2,' ');
+ fprintf(fp,"%s%s%s\n",enfatizado_on,cadena,n2);
+ strful(cadena,(int)(76-strlen(n1))/2,' ');
+ fprintf(fp,"%s%s\n",cadena,n1);
+ strful(cadena,(int)(76-strlen(n3))/2,' ');
+ fprintf(fp,"%s%s%s\n\n\n\n\n",cadena,n3,enfatizado_off);
+ fprintf(fp,"%s%s%s%s%s\n\n\n\n\n\n",condensado_on,ancho_on,n4,condensado_off,ancho_off);
+ fprintf(fp,"%s\n","Certificamos que durante el a|o gravable de 2,008 practicamos retencio\b'n en");
+ fprintf(fp,"%s\n\n","la fuente a los se|ores :");
+ fprintf(fp,"%s%-57s%3s\n",enfatizado_on,"RAZON SOCIAL","NIT");
+ fprintf(fp,"%-53s%11s%s\n","------------","-----------",enfatizado_off);
+ sprintf(cadena,"%10.0f",nit);
+
+ fprintf(fp,"%-50s%14s\n\n\n",nombre.arr,fmtnum("zzzz,zzz,zz9",cadena,r_t));
+ fprintf(fp,"%s%-42s%15s\n",enfatizado_on," ","BASE SOMETIDA ");
+ fprintf(fp,"%-35s%7s%15s%17s\n","CONCEPTO","%   ","A LA RETENCION","VALOR RETENIDO");
+ fprintf(fp,"%-35s%7s%15s%17s%s\n","--------"," ------","--------------","--------------",enfatizado_off);
+ con_lin=26;
+}
+
+void totales()
+{
+  int i;
+  for (i=1;i<=35-con_lin;i++) {
+      fprintf(fp,"\n");
+  }
+  sprintf(cadena,"%6.2f",valor_tot);
+  fprintf(fp,"%s%52s%s%22s\n\n",enfatizado_on,"VALOR DE LA RETENCION =======>",enfatizado_off,fmtnum("$zz,zzz,zz9.99",cadena,r_t));
+  monletr(valor_tot,cadena);
+  fprintf(fp,"%s%s%s%s%s%s\n\n",elite,enfatizado_on,"SON : ",cadena,diezcpi,enfatizado_off);
+  fprintf(fp,"%s%s%s%s\n\n",enfatizado_on,"LUGAR DONDE SE PRACTICO LA RETENCION : ",enfatizado_off,"BARRANQUILLA.");
+  fprintf(fp,"%s\n","Para constancia, firmamos  en  BARRANQUILLA   a  los  16  di\b'as  del mes  de");
+  fprintf(fp,"%s\n\n\n\n\n","FEBRERO DE 2,009.");
+  fprintf(fp,"%s\n","______________________________");
+  valor_tot=0;
+  con_lin=66;
+  j=0;
+}

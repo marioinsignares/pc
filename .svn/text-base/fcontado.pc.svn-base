@@ -1,0 +1,2269 @@
+/*****************************************************************
+* ORDENES.C Version 1.0 - Rev 1.2 - May. 29/90.
+*
+* ordenes.c. Listado de Ordenes de Produccion.
+*
+* Uso : ordenes numero_orden device userid/password
+*
+* Martin A. Toloza L. Creado Febrero 10-1998.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+#define length(x) (sizeof(x)/sizeof(x[0]))
+
+void ver_tipo_material();
+void tipos1();
+void tipos2();
+void leer_material();
+void leer_coloresv();
+void leer_servicios();
+void imprimo_servicios();
+void totales();
+void Rx_procesor();
+void borro_puntos();
+void titulos();
+
+void busco_total_hojas();
+void busco_nro_factura();
+void busco_total_hojas();
+void mover_datos_factura();
+void borro_acumulados();
+void actualizo_facturas();
+void actualizo_clientem();
+void calculo_desctos();
+void calculo_fletes();
+void actu_totales();
+void monletr();
+int control_asiento();
+int hacer_asiento();
+void reverso_asiento();
+void ver_inf();
+void fnit();
+void factura();
+
+				     /* Parametros de comunicacion con ORACLE */
+        		             /* Variables de recepcion para datos */
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+                                 /* Ordenes_c (C1) */
+double  nit;
+double  numero_orden;
+int     digito;
+VARCHAR direccion      [50];
+VARCHAR codigo_cliente [20];
+VARCHAR tipo_cliente   [5];
+VARCHAR nomb_clie      [60];
+VARCHAR nomb_ciu       [30];
+VARCHAR nomb_clase     [14];
+VARCHAR tipo_material  [10];
+VARCHAR tipo_lista     [10];
+VARCHAR fecha_control  [70];
+VARCHAR cantidad_envios[10];
+VARCHAR codigo_emp     [5];
+VARCHAR numero_quincena[5];
+VARCHAR wcod           [10];
+VARCHAR ano_mes_c      [20];
+VARCHAR numero_factura [15];
+VARCHAR codigo_emp_op[5];
+VARCHAR rete_fte_c     [20];
+double  retefte;
+double  monto_retefte;
+double  tipo_descto;
+int     nro_ordenes_c;
+int     nro_ordenes_o;
+int     ptaje_iva;
+double  impue;
+double  total_descto;
+double  ultimo_numero;
+double  costo_factura_an;
+double  ptaje_oftal;
+double  saldo_cliente;
+float   nro_despachos;
+double  valor_env;
+double  fletes;
+double  ptaje_conta;
+int     cob_fletes;
+double  valor_material;
+double  valor_bis_mont;
+double  valor_trat;
+double  valor_color;
+double  valor_desctos;
+double  valor_otros;
+double  valor_total;
+double  valor;
+float   diametro;
+double  consecutivo;
+int     ano_mes;
+int     puntos;
+int     puntosc;
+int     puntos_ac;
+int     clase_prom;
+int     promocion;
+int     premios;
+int     propias;
+float   numero_caja;
+VARCHAR color_caja     [10];
+VARCHAR estado         [10];
+VARCHAR clase_material [10];
+VARCHAR orden          [20];
+                                 /* Ordenes_d (C2) */
+VARCHAR lado_lente     [10];
+VARCHAR d_tipo_material[10];
+VARCHAR colorv         [10];
+float   esfera;
+float   cilindro;
+int     eje;
+float   prisma;
+VARCHAR base           [10];
+float   dir_prisma;
+float   adicion;
+int     cantidad;
+int     tcantidad;
+double  valor_venta;
+double  costo_promedio_p;
+VARCHAR codigo_articulo[30];
+VARCHAR terminado      [10];
+VARCHAR esp_cial       [10];
+float   d_diametro;
+VARCHAR d_nomb_clase   [30];
+VARCHAR clase_mat_fac  [10];
+VARCHAR tipo_mat_fac   [04];
+VARCHAR ano_mesa       [20];
+VARCHAR consecutivoa   [20];
+VARCHAR codigo_prv     [05];
+VARCHAR lote           [22];
+                                 /* Tipos (C3) */
+VARCHAR nomb_tipol     [40];
+VARCHAR tipo_mat       [10];
+VARCHAR tipo_lis       [10];
+VARCHAR clase_mat      [10];
+                                 /* Tipos (C4) */
+VARCHAR nomb_tipo      [40];
+                                 /* Almacen (C5) */
+VARCHAR nomb_tipoa     [40];
+VARCHAR codigo_art     [20];
+                                 /* Coloresv (C12) */
+VARCHAR nomb_color     [30];
+VARCHAR colorva        [10];
+                                 /* Servicios_len (C7) */
+VARCHAR nomb_servicio  [40];
+int     cantidad_srv;
+double  valor_servicio;
+VARCHAR tipo_servicio  [10];
+                                 /* pedido_c (C8) */
+VARCHAR observacion    [40];
+float   gaveta;
+float   nfactura;
+                                 /* Ordenes_d (C9) */
+double  tot_lin;
+                                 /* Ordenes_o (C10) */
+double  tot_lin2;
+
+VARCHAR ultimo_numero_c[20];
+VARCHAR codigo_cliente_c[20];
+VARCHAR fecha_corte_c[20];
+VARCHAR fecha_vencmto_c[20];
+VARCHAR nro_ordenes_oc[20];
+VARCHAR nro_ordenes_cc[20];
+VARCHAR nro_despachos_c[20];
+VARCHAR sub_total_oc[20];
+VARCHAR sub_total_cc[20];
+VARCHAR total_descto_c[20];
+VARCHAR fletes_c[20];
+VARCHAR valor_iva_c[20];
+VARCHAR ptaje_iva_c[20];
+VARCHAR costo_factura_c[20];
+VARCHAR tipo_cliente_c[20];
+VARCHAR valor_pagos_c[20];
+VARCHAR total_pag_c[20];
+VARCHAR fecha_vencmto[20];
+VARCHAR fecha_corte[20];
+VARCHAR clase_docu[5];
+
+VARCHAR vecinf      [20][14];
+                                 /* Movto_C (C3) */
+VARCHAR comprobanteb[10];
+VARCHAR consecutivob[10];
+VARCHAR fechab      [30];
+                                 /* Movto_D (C4) */
+VARCHAR secuenciab  [10];
+VARCHAR cuentab     [15];
+VARCHAR infa        [20];
+VARCHAR infb        [20];
+VARCHAR infc        [20];
+VARCHAR infd        [20];
+VARCHAR codigo_nitb [20];
+VARCHAR valor_debb  [20];
+VARCHAR valor_creb  [20];
+char    inf         [5][20];
+                                 /* Control_Mes (C5) */
+VARCHAR fuenteb     [10];
+double  consecutivo15;
+double  nitn;
+                                 /* Acumulados (C6) */
+VARCHAR cuenta_db   [20];
+VARCHAR cuenta_cr   [20];
+VARCHAR fecha_asto  [20];
+VARCHAR codigo      [10];
+VARCHAR ano_mesi    [20];
+VARCHAR codigox     [20];
+                                 /* Plan (C8) */
+VARCHAR veca        [20];
+VARCHAR vecb        [20];
+VARCHAR vecc        [20];
+VARCHAR vecd        [20];
+char    vecplan     [5][20];
+VARCHAR rinvima     [200];
+
+float   codigo_nit;
+double  version;
+int     commited;
+int     contador;
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+                                            /* Variables globales del usuario */
+#define A_F1     "###,###.##"
+char *fmtnum(), r_t[100];
+int     con_pag;                                   /* Contador de Paginas */
+int     con_len;                                   /* Contador de Paginas */
+int     con_lin= 33;                               /* Contador de Lineas  */
+int     loop_2 = 0;
+int     traidos = 0;
+int     num_ret = 0;
+int     staora = 0;
+int     oraest = 0;
+int     pasan=0;
+double  total_paginas;
+double  sub_total_o;
+double  sub_total_c;
+char    fecha[20];
+char    hora[12];
+int     tip;
+char    nombre_tipo[33];
+double  tot_servicio;
+double  subtotal;
+double  costo_venta;
+int     i, j, k;
+float   c;
+char    mensaje[100];
+char    cadena[100];
+char    cadena2[100];
+char    cadena3[100];
+char    cadena4[100];
+char    lineas[132];
+int     oraest4;
+int     nro_ordenes;
+double  sub_total;
+double  costo_factura;
+double  saldo_factura;
+double  secuencia;
+int     tpuntos;
+int     npromo;
+int     nclaprom;
+int     npremio;
+double  rete_fte;
+double  base_gravable;
+int     oraest2;
+char    clado[2][10];
+char    clotes[2][100];
+char    aInvima[2][110];
+char    cinvima[110];
+int     l = 0;
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int	status = 0;
+
+    if (argc < 4)
+       {
+	printf ("Incorrecta invocacion:\n");
+	printf ("Uso : ordenes numero_orden device userid/password\n");
+	printf ("      device : t salida por terminal\n");
+	printf ("               Px salida por impresora (x nro printer)\n");
+	printf ("               userid/password nombre usuario y password\n");
+        exit (1);
+       }
+
+       strcpy (orden.arr, argv[1]);
+       orden.len   =      strlen(orden.arr);
+       strcpy (device,    argv[2]);
+       strlow (device);
+
+    if (!strpos ("/", argv[3]))
+       {
+        printf ("user id/password incorrecto.\n");
+	exit (1);
+       }
+
+    strcpy (uid.arr,   argv[3]);
+    uid.len   =        strlen(uid.arr);
+
+    strcpy(codigo_emp.arr,"1");
+    codigo_emp.len  = strlen(codigo_emp.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora("1");
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+
+    EXEC SQL select numero_orden, o.codigo_cliente, n.nombre,
+                    nvl(n.nombre_muni,c.nombre),
+                    cl.nombre, o.tipo_material, o.tipo_lista,
+                    to_char(fecha_control,'DD-MON-YYYY hh:mi am'),
+                    nvl(valor_material,0),
+                    nvl(valor_bis_mont,0), nvl(valor_trat,0),
+                    nvl(valor_color,0),    nvl(valor_desctos,0),
+                    nvl(valor_otros,0),    nvl(valor_total,0),
+                    nvl(diam_pedido,0), o.consecutivo, o.ano_mes,
+                    o.numero_caja, o.color_caja, o.estado, o.clase_material,
+                    n.nit, n.digito, n.direccion,
+                    nvl(o.tipo_descto,0), nvl(puntos_ac,0), nvl(puntos,0),
+                    cf.retefte, cf.monto_retefte, n.clase_docu
+             into  :numero_orden, :codigo_cliente, :nomb_clie, :nomb_ciu,
+                   :nomb_clase, :tipo_material, :tipo_lista, :fecha_control,
+                   :valor_material, :valor_bis_mont, :valor_trat, :valor_color,
+                   :valor_desctos, :valor_otros, :valor_total, :diametro,
+                   :consecutivo, :ano_mes, :numero_caja, :color_caja,
+                   :estado, :clase_material, :nit, :digito, :direccion,
+                   :tipo_descto, :puntos_ac, :puntosc,
+                   :retefte, :monto_retefte, :clase_docu
+             from   nits n, ordenes_c o, ciudades c, clase cl, clientes ct, control_fac cf
+             where  n.codigo_nit      = ct.codigo_nit     and
+                    cf.codigo_emp     = ct.codigo_emp     and
+                    ct.codigo_cliente = o.codigo_cliente  and
+                    n.codigo_ciu      = c.codigo          and
+                    o.clase_material  = cl.clase_material and
+                    o.numero_orden    = :orden;
+
+    staora  = sqlca.sqlcode;
+    if (staora != -1405 && staora != 1403 && staora != 0)
+        fprintf (stderr, "Error leyendo Ordenes_c (%d)\n", staora);
+
+    codigo_cliente.arr [codigo_cliente.len] = '\0';
+    nomb_clie.arr      [nomb_clie.len]      = '\0';
+    nomb_ciu.arr       [nomb_ciu.len]       = '\0';
+    nomb_clase.arr     [nomb_clase.len]     = '\0';
+    fecha_control.arr  [fecha_control.len]  = '\0';
+    tipo_material.arr  [tipo_material.len]  = '\0';
+    tipo_lista.arr     [tipo_lista.len]     = '\0';
+    color_caja.arr     [color_caja.len]     = '\0';
+    estado.arr         [estado.len]         = '\0';
+    clase_material.arr [clase_material.len] = '\0';
+    direccion.arr      [direccion.len]      = '\0';
+    clase_docu.arr     [clase_docu.len]     = '\0';
+
+    sprintf(ano_mesa.arr,"%6d",ano_mes);
+    ano_mesa.len     =   strlen(ano_mesa.arr);
+    sprintf(consecutivoa.arr,"%5.0f",consecutivo);
+    consecutivoa.len =   strlen(consecutivoa.arr);
+
+    EXEC SQL select 1
+             into  :propias
+             from   opticasp
+             where  codigo_cliente = :codigo_cliente;
+
+    EXEC SQL DECLARE C2 CURSOR FOR
+             select d.lado_lente, nvl(d.tipo_mat_fac,d.tipo_material), d.colorv,
+                    esfera, nvl(cilindro,0), nvl(eje,0), nvl(prisma,0),
+                    nvl(base,0), d.dir_prisma, nvl(adicion,0), cantidad,
+                    valor_venta, codigo_articulo, terminado,
+                    d.especial, d.diametro, cl.nombre, d.clase_mat_fac, d.tipo_mat_fac,
+                    costo_promedio_p, nvl(puntos,0),
+                    decode(substr(codigo_articulo,1,1),'4',1,'5',1,'B',1,0),
+                    decode(substr(codigo_articulo,3,2),'50',1,'51',1,'54',1,'55',1,'56',1,'57',1,'59',1,0),
+                    substr(codigo_articulo,3,2),
+                    d.codigo_prv, d.lote, p.rinvima
+             from   ordenes_d d, clase cl, proveedores p
+             where  d.consecutivo = :consecutivoa  and
+                    d.ano_mes     = :ano_mesa      and
+                    nvl(d.clase_mat_fac,clase_mat) = cl.clase_material(+) and
+                    d.codigo_prv  = p.codigo_prv(+)
+             order by lado_lente;
+
+    EXEC SQL DECLARE C6 CURSOR FOR
+           select to_number(decode(si_no,'S','1','N','0','1'))
+           from  fletescob
+           where codigo_cli_may >= :wcod and
+                 codigo_cli_men <= :wcod;
+
+    EXEC SQL DECLARE C7 CURSOR FOR
+             select s.nombre, o.cantidad, nvl(o.cantidad*o.valor_unidad,0)
+             from   ordenes_o o, servicios_len s
+             where  o.tipo_servicio = s.tipo_servicio and
+                    o.tipo_trabajo  = s.tipo_trabajo  and
+                    o.consecutivo   =  :consecutivoa  and
+                    o.ano_mes       =  :ano_mesa      and
+                    o.tipo_servicio =  :tipo_servicio and
+                    s.lista         = (select lista
+                                       from   clientes
+                                       where  codigo_cliente = :codigo_cliente )
+             order by s.secuencia;
+
+/***************************************/
+
+    EXEC SQL DECLARE C8 CURSOR FOR
+             select inf
+             from   infacu;
+
+    EXEC SQL OPEN C8;
+
+    staora  = 0;
+    traidos = 0;
+    num_ret = 0;
+    while (staora == 0) {
+
+          EXEC SQL FETCH C8 INTO :vecinf;
+
+          if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+             fprintf (stderr, "Error leyendo C8 (%d)\n", sqlca.sqlcode);
+
+          staora  = sqlca.sqlcode;
+          traidos = sqlca.sqlerrd[2];
+
+          for (loop_2 = 0; loop_2 < (traidos - num_ret); loop_2++) {
+              vecinf[loop_2].arr  [vecinf[loop_2].len] = '\0';
+          }
+          num_ret = traidos;
+    }
+    k = traidos;
+    EXEC SQL CLOSE C8;
+
+/***************************************/
+
+    EXEC SQL select paciente, gaveta, factura
+             into  :observacion, :gaveta, :nfactura
+             from   pedido_c
+             where  numero_orden    = :orden;
+
+    if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo pedido_c C8(%d)\n", sqlca.sqlcode);
+
+    observacion.arr [observacion.len] = '\0';
+
+    EXEC SQL select count(*)
+             into  :tot_lin
+             from   ordenes_d
+             where  ano_mes       = :ano_mesa  and
+                    consecutivo   = :consecutivoa;
+
+    if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo Ordenes_d C9(%d) ano_mesa=(%S), consecutivoa=(%S)\n", sqlca.sqlcode, ano_mesa.arr, consecutivoa.arr);
+
+    EXEC SQL select count(*)
+             into  :tot_lin2
+             from   ordenes_o
+             where  ano_mes       = :ano_mesa  and
+                    consecutivo   = :consecutivoa;
+
+    if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo Ordenes_o C10(%d)\n", sqlca.sqlcode);
+    if (valor_desctos>0)
+       total_paginas=tot_lin+tot_lin2+3;
+    else total_paginas=tot_lin+tot_lin2+2;
+    total_paginas=ceil(total_paginas/11);
+    strcpy(fecha,fecha_control.arr);
+    strorg(fecha,1,11);
+    strcpy(hora,fecha_control.arr);
+    strorg(hora,13,11);
+
+//  fprintf(fp,"%s%s%c%s%c%c%s%c%c\r",line_feed6,diezcpi,27,"C",33,27,"B",22,0);
+    fprintf(fp,"%s%s%c%s%c%c%s%c%c\r",line_feed6,diezcpi,27,"C",33,27,"B",23,0);
+    titulos();
+
+    npromo   = 0;
+    nclaprom = 0;
+
+//    printf("1)npromo<%d>",npromo); getchar();
+    EXEC SQL OPEN C2;
+    staora  = 0;
+    while (staora == 0) {
+
+          EXEC SQL FETCH C2 INTO :lado_lente, :d_tipo_material, :colorv,
+                                 :esfera, :cilindro, :eje, :prisma, :base,
+                                 :dir_prisma, :adicion, :cantidad, :valor_venta,
+                                 :codigo_articulo, :terminado, :esp_cial,
+                                 :d_diametro, :d_nomb_clase, :clase_mat_fac, :tipo_mat_fac,
+                                 :costo_promedio_p, :puntos, :clase_prom, :promocion, :premios,
+                                 :codigo_prv, :lote, :rinvima;
+
+          staora  = sqlca.sqlcode;
+          if (staora ==  1403) break;
+          if (staora == -1405)
+              staora  = 0;
+          else if (staora)
+                   fprintf (stderr, "Error leyendo C2 (%d)\n", staora);
+
+          lado_lente.arr      [lado_lente.len]      = '\0';
+          d_tipo_material.arr [d_tipo_material.len] = '\0';
+          colorv.arr          [colorv.len]          = '\0';
+          base.arr            [base.len]            = '\0';
+          codigo_articulo.arr [codigo_articulo.len] = '\0';
+          terminado.arr       [terminado.len]       = '\0';
+          esp_cial.arr        [esp_cial.len]        = '\0';
+          d_nomb_clase.arr    [d_nomb_clase.len]    = '\0';
+          clase_mat_fac.arr   [clase_mat_fac.len]   = '\0';
+          tipo_mat_fac.arr    [tipo_mat_fac.len]    = '\0';
+          codigo_prv.arr      [codigo_prv.len]      = '\0';
+          lote.arr            [lote.len]            = '\0';
+          rinvima.arr         [rinvima.len]         = '\0';
+/*
+          if (strlen(clotes) < 30 ) {
+             if (strlen(clotes) > 0 ) {
+                strcat(clotes,",");
+                strcat(clotes,"L.");
+                strcat(clotes,lado_lente.arr);
+                strcat(clotes,":");
+                strcat(clotes,lote.arr);
+             }
+             else {
+                strcpy(clotes,"L.");
+                strcat(clotes,lado_lente.arr);
+                strcat(clotes,":");
+                strcat(clotes,lote.arr);
+             }
+          }
+
+*/
+          if ( l <= 1 ) { 
+             strcpy(aInvima[l],rinvima.arr);
+             strcpy(clado[l],"L.");
+             strcat(clado[l],lado_lente.arr);
+             strcat(clado[l],":");
+             strcpy(clotes[l],lote.arr);
+             l++;
+          }
+          if ( clase_prom == 1 ) {
+              nclaprom = 1;
+          }
+          if ( promocion == 1 ) {
+              npromo = 1;
+          }
+          if ( premios > 0 ) {
+              npremio = premios;
+          }
+
+          if (!strcmp(lado_lente.arr,"S")||!strcmp(lado_lente.arr,"O")) {
+              strcpy(codigo_art.arr,codigo_articulo.arr);
+              strcpy(nomb_clase.arr," ");
+              diametro=0;
+              leer_material();
+          }
+          else ver_tipo_material();
+          if (strcmp(colorv.arr,"")) {
+              strcpy(colorva.arr,colorv.arr);
+              leer_coloresv();
+          }
+          if (con_lin > 21)
+              titulos();
+          strcpy (cadena,codigo_articulo.arr);
+          strorg (cadena,3,1);
+          if (!strcmp(cadena,"1")||!strcmp(cadena,"6")) {
+              if (cantidad > 1)
+                  strcpy(lado_lente.arr," ");
+          }
+          if (con_len == 0 && !strcmp(lado_lente.arr,"I")) {
+              fprintf(fp,"\n");
+              con_lin++;
+          }
+          fprintf (fp, "%s%s",diezcpi,condensado_on);
+          if (cantidad > 0) {
+              strorg(nomb_clase.arr,1,13);
+              strorg(d_nomb_clase.arr,1,13);
+              if (!strcmp(esp_cial.arr,"E") && strlen(d_nomb_clase.arr) > 0)
+                  fprintf (fp, "%-14s " ,d_nomb_clase.arr);
+              else if (strlen(d_nomb_clase.arr) > 0)
+                       fprintf (fp, "%-14s " ,d_nomb_clase.arr);
+                   else fprintf (fp, "%-14s " ,nomb_clase.arr);
+	      if (!strcmp(clase_mat.arr,"V")) {
+              	  strorg  (nombre_tipo,1,23);
+                  fprintf (fp, "%-24s " ,nombre_tipo);
+                  fprintf (fp, "%-10s  " ,nomb_color.arr);
+	      }
+	      else {
+                    fprintf (fp, "%-36s " ,nombre_tipo);
+	      }
+              if ((!strcmp(tipo_material.arr,"11")  ||
+                   !strcmp(tipo_material.arr,"21")) &&
+                   !strcmp(clase_material.arr,"5")) {
+                   fprintf (fp, "%5s","70/76 ");
+              }
+              else if (!strcmp(tipo_material.arr,"6")     &&
+                      (diametro == 65 || diametro == 70 ) &&
+                       !strcmp(clase_material.arr,"0")) {
+                        fprintf (fp, "%5s","65/70 ");
+              }
+              else if  (!strcmp(tipo_material.arr,"6")   &&
+                       (!strcmp(clase_material.arr,"1")  ||
+                        !strcmp(clase_material.arr,"2"))) {
+                        fprintf (fp, "%5s","70/75 ");
+              }
+              else if ((!strcmp(clase_mat_fac.arr,"1")  ||
+                        !strcmp(clase_mat_fac.arr,"2"))  &&
+                        diametro              == 70  &&
+                       (!strcmp(terminado.arr,"T") || !strcmp(terminado.arr,"F"))) {
+                       fprintf (fp, "%5s","70/75 ");
+                   }
+                   else if (!strcmp(esp_cial.arr,"E") && d_diametro > 0)
+                             fprintf (fp, "%4.0f  ",d_diametro);
+                        else fprintf (fp, "%4.0f  ",diametro);
+              fprintf (fp, "         ");
+              fprintf (fp, "%6.2f ",esfera);
+              fprintf (fp, "%8.2f     ",cilindro);
+              fprintf (fp, "%3d  "  ,eje);
+              fprintf (fp, "%6.1f  ",prisma);
+              fprintf (fp, "%2s"  ,base.arr);
+              if (dir_prisma > 0) {
+                 sprintf (cadena,"%1.1f",dir_prisma);
+                 fmtnum("z.z",cadena,r_t);
+              }
+              else
+                 strcpy(cadena,"  ");
+              fprintf (fp, "%3s",cadena);
+              fprintf (fp, "%6.2f ",adicion);
+              fprintf (fp, "%9d  ",cantidad);
+              sprintf (cadena, "%7.0f",cantidad*valor_venta);
+              subtotal+=cantidad*valor_venta;
+              costo_venta+=cantidad*costo_promedio_p;
+              fmtnum("zz,zzz,zz9",cadena,r_t);
+/*
+              fprintf (fp, "%s%s%11s\n",condensado_off,elite,r_t);
+              con_len++;
+              con_lin++;
+*/
+          }
+          fprintf (fp, "%s%s",condensado_off,elite);
+          if (cantidad > 0) {
+              fprintf (fp, "%11s\n",r_t);
+              tpuntos+=puntos;
+//              if (puntos > 0 && cantidad > 0)
+              if ( cantidad > 0)
+                  tcantidad+=cantidad;
+              con_len++;
+              con_lin++;
+          }
+    }
+    if (tcantidad < 2)
+       borro_puntos();
+//    printf("3)npromo<%d>",npromo); getchar();
+    totales();
+/*    fprintf(fp,"%c\r",11); */
+    Rx_procesor();
+
+    cierre_impresora();
+
+    EXEC SQL CLOSE C2;
+    EXEC SQL CLOSE C7;
+
+  EXEC SQL COMMIT WORK RELEASE;
+//  EXEC SQL ROLLBACK WORK RELEASE;
+
+    exit   (0);
+}
+
+void borro_puntos()
+{
+  EXEC SQL update ordenes_c set puntos = 0
+           where  numero_orden = to_number(:orden);
+  puntosc = 0;
+  tpuntos = 0;
+
+ if (sqlca.sqlcode) printf("Error actualizando ordenes_c en rutina borro_puntos (%d)\n",
+                           sqlca.sqlcode);
+}
+
+void ver_tipo_material()
+{
+ tip=atoi(d_tipo_material.arr);
+ if (!strcmp(d_tipo_material.arr,"11") && !strcmp(tipo_lista.arr,"N") ||
+     !strcmp(d_tipo_material.arr,"21") && !strcmp(tipo_lista.arr,"N")) {
+       strcpy(tipo_mat.arr,tipo_material.arr);
+       strcpy(tipo_lis.arr,tipo_lista.arr);
+       tipos1();
+ }
+ else if (!strcmp(d_tipo_material.arr,"11") || !strcmp(d_tipo_material.arr,"56")) {
+           strcpy(tipo_mat.arr,d_tipo_material.arr);
+           tipos2();
+ }
+ else if (tip >= 60 && tip <= 65) {
+          if (!strcmp(tipo_mat_fac.arr,"60")) {
+             strcpy(tipo_mat.arr,tipo_mat_fac.arr);
+          }
+          else {
+             strcpy(tipo_mat.arr,"11");
+          }
+          if (!strcmp(terminado.arr,"T")) {
+             if(strcmp(clase_material.arr,"B"))
+                strcpy(tipo_mat.arr,"6");
+             if (!strcmp(tipo_lista.arr,"AR")) {
+                strcpy(tipo_lis.arr,tipo_lista.arr);
+                tipos1();
+             }
+             else tipos2();
+          }
+          else {
+                if (!strcmp(terminado.arr,"F"))
+                   strcpy(nombre_tipo,"MONOFOCAL");
+                else tipos2();
+          }
+      }
+      else if (!strcmp(tipo_material.arr,"51") && !strcmp(clase_material.arr,"3")) {
+              strcpy(tipo_mat.arr,tipo_material.arr);
+              tipos2();
+           }
+                else if (!strcmp(tipo_material.arr,"11") &&
+                         (!strcmp(tipo_lista.arr,"LEN") ||
+                          !strcmp(tipo_lista.arr,"AR")  ||
+                          !strcmp(tipo_lista.arr,"N"))) {
+                         strcpy(tipo_mat.arr,tipo_material.arr);
+                         strcpy(tipo_lis.arr,tipo_lista.arr);
+                         tipos1();
+                     }
+                else if (!strcmp(tipo_material.arr,"21") &&
+                         !strcmp(tipo_lista.arr,"N")) {
+                         strcpy(tipo_mat.arr,tipo_material.arr);
+                         strcpy(tipo_lis.arr,tipo_lista.arr);
+                         tipos1();
+                     }
+                     else {
+                           if (!strcmp(tipo_material.arr,"21")) {
+                               if (esfera >= 0 && esfera <= 2 && cilindro==0 &&
+                                   !strcmp(terminado.arr,"F")) {
+                                   strcpy(tipo_mat.arr,"7");
+                                   tipos2();
+                               }
+                               else {
+                                strcpy(tipo_mat.arr,tipo_material.arr);
+                                tipos2();
+                               }
+                           }
+                           else if (strcmp(d_tipo_material.arr,"")) {
+                                    strcpy(tipo_mat.arr,d_tipo_material.arr);
+                                    tipos2();
+                                }
+                                else {
+                                      strcpy(tipo_mat.arr,tipo_material.arr);
+                                      tipos2();
+                                }
+                     }
+}
+
+void tipos1()
+{
+ strcpy(clase_mat.arr,clase_material.arr);
+ tipo_mat.len  = strlen(tipo_mat.arr);
+ tipo_lis.len  = strlen(tipo_lis.arr);
+ clase_mat.len = strlen(clase_mat.arr);
+
+ EXEC SQL select nombre into :nomb_tipol
+          from   tipos
+          where  tipo_material  = :tipo_mat and
+                 tipo_lista     = :tipo_lis and
+	         clase_material = :clase_mat;
+ oraest  = sqlca.sqlcode;
+ if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error leyendo Tipos (clase_mat=%s tipo_mat=%s tipo_lis=%s) C3 (%d)\n", clase_mat.arr, tipo_mat.arr, tipo_lis.arr, sqlca.sqlcode);
+
+ nomb_tipol.arr [nomb_tipol.len] = '\0';
+ strcpy(nombre_tipo,nomb_tipol.arr);
+}
+
+void tipos2()
+{
+ strcpy(clase_mat.arr,clase_material.arr);
+ if (strcmp(clase_mat_fac.arr,""))
+    strcpy(clase_mat.arr,clase_mat_fac.arr);
+ tipo_mat.len  = strlen(tipo_mat.arr);
+ clase_mat.len = strlen(clase_mat.arr);
+
+ EXEC SQL select nombre into :nomb_tipo
+          from   tipos
+          where  tipo_material  = :tipo_mat and
+		 clase_material = :clase_mat;
+ oraest  = sqlca.sqlcode;
+ if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error leyendo Tipos (clase_mat=%s tipo_mat=%s tipo_lis=%s) C4 (%d)\n", clase_mat.arr, tipo_mat.arr, tipo_lis.arr, sqlca.sqlcode);
+
+ nomb_tipo.arr [nomb_tipo.len] = '\0';
+ strcpy(nombre_tipo,nomb_tipo.arr);
+}
+
+void leer_material()
+{
+ codigo_art.len = strlen(codigo_art.arr);
+ EXEC SQL select nombre into :nomb_tipoa
+          from   almacen
+          where  codigo_articulo = :codigo_art;
+ oraest  = sqlca.sqlcode;
+ if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error leyendo Almacen C5 (%d)\n", sqlca.sqlcode);
+
+ nomb_tipoa.arr [nomb_tipoa.len] = '\0';
+ strcpy(nombre_tipo,nomb_tipoa.arr);
+}
+
+void leer_coloresv()
+{
+ colorva.len = strlen(colorva.arr);
+ EXEC SQL select nombre into :nomb_color
+          from   coloresv
+          where  colorv = :colorva;
+ oraest  = sqlca.sqlcode;
+ if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error leyendo Coloresv C12 (%d)\n", sqlca.sqlcode);
+
+ nomb_color.arr [nomb_color.len] = '\0';
+}
+
+void leer_servicios()
+{
+ tipo_servicio.len = strlen(tipo_servicio.arr);
+ EXEC SQL OPEN C7;
+
+ EXEC SQL FETCH C7 INTO :nomb_servicio, :cantidad_srv, :valor_servicio;
+ oraest  = sqlca.sqlcode;
+ if (oraest == -1405)
+     oraest  = 0;
+}
+
+/************************
+* TOTALES()
+*    Imprime totales en el archivo de spool.
+*/
+
+void totales()
+{
+    int rc;
+    fprintf (fp,"%s\r",elite);
+    if (strcmp (lado_lente.arr,"S")||!strcmp(lado_lente.arr,"O")) {
+       if (valor_material != valor_total) {
+           if (con_lin > 18)
+               titulos();
+           sprintf (cadena,"%6.2f",valor_material);
+           sprintf (cadena2,"%5d",tcantidad);
+           fprintf (fp,"%s%s%64s%s%21s%12s\n",condensado_off,enfatizado_on,"VALOR MATERIAL : ................................",enfatizado_off,cadena2,fmtnum("$,$$$,$$9",cadena,r_t));
+           con_lin++;
+       }
+    }
+    if (subtotal!=valor_material) {
+        fprintf (fp,"%s%s%57s%s\n",condensado_off,enfatizado_on,"****** DESCUADRE EN VALOR MATERIAL *******",enfatizado_off);
+        con_lin++;
+    }
+    subtotal = valor_material;
+
+    strcpy(tipo_servicio.arr,"TR");
+    leer_servicios();
+    if (!oraest) {
+       if (con_lin > 21)
+          titulos();
+       fprintf (fp,"%s%32s%s\r",enfatizado_on,"TRATAMIENTO : ",enfatizado_off);
+       imprimo_servicios();
+       if (tot_servicio!=valor_trat) {
+           fprintf (fp,"%s%s%57s%s\n",condensado_off,enfatizado_on,"****** DESCUADRE EN VALOR TRATAMIENTO *******",enfatizado_off);
+           con_lin++;
+       }
+
+    }
+
+    strcpy(tipo_servicio.arr,"CO");
+    EXEC SQL CLOSE C7;
+    leer_servicios();
+    if (!oraest) {
+       if (con_lin > 21)
+          titulos();
+       fprintf (fp,"%s%32s%s\r",enfatizado_on,"COLOR : ",enfatizado_off);
+       imprimo_servicios();
+       if (tot_servicio!=valor_color) {
+           fprintf (fp,"%s%s%57s%s\n",condensado_off,enfatizado_on,"****** DESCUADRE EN VALOR COLOR *******",enfatizado_off);
+           con_lin++;
+       }
+
+    }
+
+    strcpy(tipo_servicio.arr,"BM");
+    EXEC SQL CLOSE C7;
+    leer_servicios();
+    if (!oraest) {
+       if (con_lin > 21)
+          titulos();
+       fprintf (fp,"%s%32s%s\r",enfatizado_on,"BISEL Y MONTAJE : ",enfatizado_off);
+       imprimo_servicios();
+       if (tot_servicio!=valor_bis_mont) {
+           fprintf (fp,"%s%s%57s%s\n",condensado_off,enfatizado_on,"****** DESCUADRE EN VALOR BISEL MONTAJE *******",enfatizado_off);
+           con_lin++;
+       }
+    }
+
+    rc=0;
+    strcpy(tipo_servicio.arr,"RC");
+    EXEC SQL CLOSE C7;
+    leer_servicios();
+    if (!oraest) {
+       if (con_lin > 21)
+          titulos();
+       fprintf (fp,"%s%32s%s\r",enfatizado_on,"SERV. A MONTURA - ELEM. DE RECAMBIO : ",enfatizado_off);
+       imprimo_servicios();
+       rc=1;
+    }
+
+    strcpy(tipo_servicio.arr,"RP");
+    EXEC SQL CLOSE C7;
+    leer_servicios();
+    if (!oraest) {
+       if (con_lin > 21)
+          titulos();
+       if (rc == 0)
+          fprintf (fp,"%s%32s%s\r",enfatizado_on,"SERV. A MONTURA - REPARACION : ",enfatizado_off);
+       else fprintf (fp,"%s%32s%s\r",enfatizado_on,"REPARACION : ",enfatizado_off);
+       imprimo_servicios();
+    }
+//    printf("5)npromo<%d>",npromo); getchar();
+
+    strcpy(tipo_servicio.arr,"FE");
+    EXEC SQL CLOSE C7;
+    leer_servicios();
+    if (!oraest) {
+       if (con_lin > 21)
+          titulos();
+       fprintf (fp,"%s%32s%s\r",enfatizado_on,"FLETES : ",enfatizado_off);
+       fletes += valor_servicio;
+       imprimo_servicios();
+    }
+
+    strcpy(tipo_servicio.arr,"OT");
+    EXEC SQL CLOSE C7;
+    leer_servicios();
+    if (!oraest) {
+       if (con_lin > 21)
+          titulos();
+       fprintf (fp,"%s%32s%s\r",enfatizado_on,"OTROS : ",enfatizado_off);
+       imprimo_servicios();
+    }
+
+    if (subtotal != valor_total) {
+       if (con_lin > 21)
+          titulos();
+       sprintf (cadena,"%6.2f",subtotal);
+       fprintf (fp,"%s%32s%s%65s\n",enfatizado_on,"SUBTOTAL ",enfatizado_off,fmtnum("z,zzz,zz9",cadena,r_t));
+       con_lin++;
+    }
+    if (valor_desctos > 0) {
+       if (con_lin > 21)
+           titulos();
+       sprintf (cadena,"%6.2f",valor_desctos);
+       if (tipo_descto > 0)
+          fprintf (fp,"%s%32s%s%65s\n",enfatizado_on,"DESCUENTO POR CASO ESPECIAL ",enfatizado_off,fmtnum("zzz,zz9",cadena,r_t));
+       else fprintf (fp,"%s%32s%s%65s\n",enfatizado_on,"DESCUENTOS ",enfatizado_off,fmtnum("zzz,zz9",cadena,r_t));
+       con_lin++;
+    }
+
+    if ((subtotal-valor_desctos)!=valor_total) {
+        fprintf (fp,"%s%s%57s%s\n",condensado_off,enfatizado_on,"****** DESCUADRE EN VALOR LIQUIDACION *******",enfatizado_off);
+        con_lin++;
+    }
+
+    if (con_lin <= 21)
+       fprintf(fp,"%c\r",11);
+    sprintf (cadena,"%6.2f",valor_total);
+    base_gravable = valor_total;
+
+    busco_nro_factura();
+    sprintf (numero_factura.arr,"%6.0f",ultimo_numero);
+    if (total_paginas > 1)
+       sprintf (cadena2,"%6.0f-%6.0f",ultimo_numero,ultimo_numero+total_paginas-1);
+    else sprintf (cadena2,"%6.0f",ultimo_numero);
+
+//  strcpy(cadena3,"Puntos de esta orden ");    //21
+//  sprintf(cadena4,"%6d",tpuntos+puntosc);
+//  strcpy(cadena4,fmtnum("zzz9",cadena4,r_t));  //4
+//  strcat(cadena3,cadena4);
+//  strcat(cadena3,", puntos acumulados ");     //20
+//  sprintf(cadena4,"%6d",puntos_ac);
+//  strcpy(cadena4,fmtnum("zzzz9",cadena4,r_t)); //5=50
+//  strcat(cadena3,cadena4);
+
+//  fprintf (fp,"%s%s%-8s%56s%s%33s%s\n",condensado_off,enfatizado_on,cadena2,"Res.Dian#20000094986 2008/08/27 Hab.Fac.27023 a 30000 ",enfatizado_off,fmtnum("$$$,$$$,$$9",cadena,r_t),diezcpi);
+    strcpy(cadena4,"Para su consignacio\b'n en DAVIVIENDA anote en Referencia 1:");
+    fprintf (fp,"%s%63s%-67s%s%20s%s\n",condensado_on," ",cadena4,condensado_off,fmtnum("$$$,$$$,$$9",cadena,r_t),diezcpi);
+    fnit(cadena,nit,digito);
+    strtri(cadena);
+    factura(cadena2);
+    strtri(cadena2);
+    sprintf(cadena3,"%s y en Referencia 2: %s.",cadena2,cadena);
+//    fprintf(fp,"%sPara su consignacio\b'n en DAVIVIENDA anote en Referencia 1: %s y en Referencia 2: %s.\n",condensado_on,cadena2,cadena);
+    con_lin++;
+    con_pag=0;
+
+    nro_despachos = 0;
+    if (strcmp(clase_material.arr,"C")) {
+       sub_total_c   = 0;
+       sub_total_o   = valor_total;
+       nro_ordenes_o = 1;
+    }
+    else {
+       sub_total_o   = 0;
+       sub_total_c   = valor_total;
+       nro_ordenes_c = 1;
+    }
+
+/*
+    tot_servicio  = 0;
+    strcpy(tipo_servicio.arr,"FE");
+    EXEC SQL CLOSE C7;
+    leer_servicios();
+    fletes      = tot_servicio;
+*/
+    actu_totales();
+}
+
+void imprimo_servicios()
+{
+ int i=0;
+ tot_servicio=0;
+ while (!oraest) {
+       nomb_servicio.arr [nomb_servicio.len] = '\0';
+       i++;
+       subtotal+=valor_servicio;
+       tot_servicio+=valor_servicio;
+       sprintf (cadena,"%6d",cantidad_srv);
+       if (i>1)
+          fprintf (fp,".\r");
+       fprintf (fp,"%39s%-40s%6s"," ",nomb_servicio.arr,fmtnum("zz,zz9",cadena,r_t));
+       sprintf (cadena,"%6.0f",valor_servicio);
+       fprintf (fp,"%12s\n",fmtnum("zz,zzz,zz9",cadena,r_t));
+       con_lin++;
+       EXEC SQL FETCH C7 INTO :nomb_servicio, :cantidad_srv, :valor_servicio;
+       oraest  = sqlca.sqlcode;
+       if (oraest == -1405)
+           oraest  = 0;
+ }
+}
+
+/************************
+* Rx_procesor
+*    Imprime Rx_procesor.
+*/
+
+void Rx_procesor()
+{
+/*  system("rx_procesor"); */
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+
+  for (i=0;i<32-con_lin;i++)
+       fprintf(fp,"\n");
+
+  con_pag++;
+  con_len=0;
+  strcpy(cadena,fecha);
+  numero_fecha(cadena);
+  fprintf (fp,"%s%s%s\n\n\n",condensado_off,diezcpi,elite);
+  fprintf (fp,"%5s\n%s%\n",codigo_cliente.arr,enfatizado_on);
+  fprintf (fp,"%-53s%5.0f%s%s%s",nomb_clie.arr,consecutivo,elite,ancho_on,enfatizado_on);
+  fprintf (fp,"%5.0f%s%s%s%s %s%s %s\n",numero_caja,"-",color_caja.arr,ancho_off,diezcpi,cadena,enfatizado_off,cadena);
+  fprintf (fp,"%-51s\n",direccion.arr);
+  fprintf (fp,"%-20s",nomb_ciu.arr);
+
+/*
+  fprintf (fp,"%s%12.0f","NIT : ",nit);
+  if (digito > 0) {
+      sprintf (cadena,"%d",digito);
+      fprintf (fp,"-%s",fmtnum("z",cadena,r_t));
+  }
+  else if (digito == 0)
+           fprintf (fp,"-%s","0");
+*/
+
+  fprintf (fp,"%25s%-29s%s%02d    %02.0f\n\n"," ","OFTALMICA",enfatizado_off,con_pag,total_paginas);
+  sprintf(cadena,"%6.0f",nfactura);
+  fmtnum("ZZZZZZ",cadena,r_t);
+  fprintf (fp,"%9s",cadena);
+  sprintf(cadena,"%6.0f",gaveta);
+  fmtnum("ZZZZZZ",cadena,r_t);
+  fprintf (fp,"%14s  %-32s  ORDEN: %8.0f\n\n\n",cadena,observacion.arr,numero_orden);
+  con_lin = 11;
+  if (!strcmp(estado.arr,"R")) {
+      fprintf (fp,"%30s%s%s\n",ancho_on,"**** A N U L A D A ****",ancho_off);
+      con_lin++;
+  }
+  strcpy(wcod.arr,codigo_cliente.arr);
+  strcpy(fecha_corte.arr,fecha);
+  strcpy(fecha_vencmto.arr,fecha);
+
+}
+
+void actu_totales()
+{
+ /* calculo_desctos();
+ calculo_fletes();
+ if (valor_env == 0)
+    {
+     if (c >= 1 && c <= 1.5)
+        fletes=nro_despachos*fletes*cob_fletes;
+     else fletes=nro_ordenes*fletes*cob_fletes;
+    }
+ */
+ sub_total=sub_total_o+sub_total_c;
+// if(!strcmp(tipo_cliente.arr,"0"))
+ impue=0;
+ impue=(base_gravable*ptaje_iva)/100;
+ impue=redondo(impue);
+ costo_factura=sub_total-total_descto+impue; //+fletes;
+
+ fprintf(fp,"%s%54s%-67s%2d%s%s",condensado_on," ",cadena3,ptaje_iva,"%",condensado_off);
+ fprintf(fp,"%s%s",enfatizado_off,elite);
+ sprintf (cadena,"%8.0f",impue);
+ fprintf(fp,"%10s\n",fmtnum("zz,zzz,zz9",cadena,r_t));
+ sprintf (cadena,"%8.0f",costo_factura);
+ fprintf(fp,"%74s%23s\n"," ",fmtnum("zz,zzz,zz9",cadena,r_t));
+ con_lin+=2;
+
+ EXEC ORACLE OPTION (RELEASE_CURSOR=YES);
+ EXEC SQL select codigo_emp
+          into  :codigo_emp_op
+          from opticasp
+          where codigo_cliente = :wcod and
+                codigo_emp is not null;
+ codigo_emp_op.arr   [codigo_emp_op.len]  = '\0';
+ oraest2  = sqlca.sqlcode;
+ rete_fte = 0;
+ if (!strcmp(clase_docu.arr,"N")) {
+    if (base_gravable >= monto_retefte || oraest2 == 0 || oraest2 ==  -1405 ) {  //Para las opticas propias debe calcular la ferefuente por cualquier monto
+        rete_fte = costo_factura*retefte/100;
+        rete_fte = redondo( rete_fte );
+    }
+ }
+
+ EXEC ORACLE OPTION (RELEASE_CURSOR=NO);
+ costo_factura=base_gravable+impue-rete_fte; //Total factura
+ actualizo_facturas();
+
+ strcpy(mensaje," ");
+/*
+ if ( tcantidad > 1 && valor_total > 0 ) {
+     if ( npremio == 60 && (strcmp(terminado.arr,"T") && strcmp(terminado.arr,"F") && strcmp(terminado.arr,"C") ) )  { //Acolade
+//          strcat(mensaje,"Obsequio Carnaval");
+          strcat(mensaje," ");
+     }
+     else {
+           if ( npromo == 1 ) {
+//               strcpy(mensaje,"Obsequio Carnaval");  //Solo multifocales
+                 strcat(mensaje," ");
+           }
+           if ( nclaprom == 1 ) { //Transitions
+//                strcpy(mensaje,"Obsequio Carnaval");
+                strcpy(mensaje," ");
+           }
+     }
+ }
+
+    if ( nclaprom ==1 ) { //Promover Transitions 2010
+       if (tcantidad > 1 && valor_total > 0) {
+           if (npromo == 1) {    //Solo multifocales
+               strcpy(mensaje,"Promover Transitions 2010 - Cupo\b'n Naranja, 185 puntos");  
+           }
+           else { //Bifocales y Monofocales
+               strcpy(mensaje,"Promover Transitions 2010 - Cupo\b'n Azul, 85 puntos");
+               sprintf(mensaje,"%s%d%s","Promover Transitions 2010 - Cupo\b'n Azul, 85 puntos (",tcantidad/2,")");
+           }
+           if ( npremio == 60 && (strcmp(terminado.arr,"T") && strcmp(terminado.arr,"F") && strcmp(terminado.arr,"C") ) )  { //Acolade
+               strcpy(mensaje,"Promover Transitions 2010 - Cupo\b'n Naranja, 185 puntos");  
+           }
+       }
+   }
+
+//  if ( nclaprom ==1 ) {  //Promover Transitions 2009
+
+       if (tcantidad > 1 && valor_total > 0) {
+           if (npromo == 1) {
+                strcpy(mensaje,"Kit Varilux. ");  //Solo multifocales
+           }
+           else {
+              strcpy(mensaje," ");
+           }
+           if ( nclaprom == 1 ) { //Registrese y gane al instante con Essilor y Transition
+              if ( npremio == 51 || npremio == 54 || npremio == 55 || npremio == 57 ) {
+                   strcat(mensaje,"Varilux Transitions, 40 puntos");
+              }
+              else {
+                   if ( npremio == 56 || npremio == 60 ) {
+                        strcat(mensaje,"Acolade y Ovation Transitions, 20 puntos");
+                   }
+                   else {
+                        if ( npremio == 50 || npremio == 59 ) {
+                             strcat(mensaje,"Adaptar y Smallfit Transitions, 10 puntos");
+                        }
+                        else {
+                              strcat(mensaje," ");
+                        }
+                   }
+              }
+           }
+           else {
+                if ( npremio == 51 || npremio == 54 || npremio == 55 || npremio == 57 ) {
+                     strcat(mensaje,"Varilux Blanco, 20 puntos");
+                }
+                else {
+                     if ( npremio == 56 || npremio == 60 && (strcmp(terminado.arr,"T") && strcmp(terminado.arr,"F") && strcmp(terminado.arr,"C") ) )  {
+                          strcat(mensaje,"Acolade y Ovation Blanco, 10 puntos");
+                     }
+                     else {
+                          if ( npremio == 50 || npremio == 59 ) {
+                               strcat(mensaje,"Adaptar y Smallfit Blanco, 5 puntos");
+                          }
+                          else {
+                                strcat(mensaje," ");
+                          }
+                     }
+                }
+           }
+       }
+*/
+//  }
+
+ sprintf (cadena,"%9.0f",rete_fte);
+ fprintf(fp,"%74s%23s\n"," ",  fmtnum("z,zzz,zzz,zz9",cadena,r_t));
+ sprintf (cadena,"%9.0f",costo_factura);
+ fprintf(fp,"\r%74s%23s\n"," ",fmtnum("z,zzz,zzz,zz9",cadena,r_t));
+
+ con_lin+=2;
+/*
+ sprintf (cadena,"%6d",tpuntos+puntosc);
+ fprintf (fp,"Puntos de esta orden %s,",fmtnum("zzz9",cadena,r_t));
+ sprintf (cadena2,"%6d",puntos_ac);
+ fprintf (fp," puntos acumulados %s\n",fmtnum("zzzz9",cadena2,r_t));
+*/
+ fprintf (fp,"\n");
+// if ( strcmp(wcod.arr,"BM037") ) {
+    for (l=0;l<length(aInvima);l++) {
+        if (strlen(aInvima[l])>0) {
+            fprintf (fp,"%s%s %s %s%s %s\n",condensado_on,clado[l],aInvima[l],"Lote:",clotes[l],mensaje);
+            con_lin+=1;
+            strcpy(mensaje,"");
+        }
+    }
+/* }
+ else {
+       fprintf (fp,"%s%s %s %s%s %s\n",condensado_on," "," "," "," ",mensaje);
+       con_lin+=1;
+ }
+*/ 
+// fprintf (fp,"%s%s %s%s %s%s\r",condensado_on,"Importado por LABOCOSTA S.A., Registro sanitario No. INVIMA 2009 DM-0003426. ","Lote(s):",clotes,mensaje,condensado_on);
+
+ if (con_lin <= 24)
+     fprintf(fp,"%c\r",11);
+
+ strcpy(wcod.arr,codigo_cliente.arr);
+ wcod.len = strlen(wcod.arr);
+ commited=0;
+ contador=0;
+ while (!commited && contador < 5) {
+       if ( hacer_asiento() == 0 ) {
+           commited=1;
+       }
+       else {
+             EXEC SQL ROLLBACK WORK RELEASE;
+             contador++;
+       }
+ }
+ borro_acumulados();
+}
+
+void busco_nro_factura()
+{
+/* C8 */
+ EXEC SQL
+      select consecutivo+1, ptaje_iva
+      into  :ultimo_numero, :ptaje_iva
+      from   control_con
+      where  codigo_emp = :codigo_emp
+      for update;
+
+      oraest  = sqlca.sqlcode;
+
+      if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 0)
+          fprintf (stderr, "Error leyendo C9 (%d)\n", sqlca.sqlcode);
+
+}
+
+void borro_acumulados()
+{
+ sub_total     =0;
+ sub_total_o   =0;
+ sub_total_c   =0;
+ nro_ordenes_o =0;
+ nro_ordenes_c =0;
+ nro_despachos =0;
+ fletes        =0;
+ costo_factura =0;
+ total_paginas =0;
+ con_pag       =0;
+ pasan         =0;
+ saldo_factura =0;
+}
+
+void actualizo_facturas()
+{
+ /* C21 */
+ EXEC SQL
+    select valor_neto
+    into  :costo_factura_an
+    from   facturas
+    where  tipo_factura   = to_number(:codigo_emp) and
+           tipo_documento =                    'C' and
+           numero_factura = to_number(:numero_factura);
+
+ oraest  = sqlca.sqlcode;
+ if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 0)
+     fprintf (stderr, "No existe factura anterior C21 %s %s (%d)\n",codigo_emp.arr,numero_factura.arr,sqlca.sqlcode);
+
+//    printf("7)npromo<%d>",npromo); getchar();
+ mover_datos_factura();
+//    printf("8)npromo<%d>",npromo); getchar();
+ actualizo_clientem();
+//    printf("9)npromo<%d>",npromo); getchar();
+ oraest = 0;
+ sprintf(total_pag_c.arr,"%2.0f",total_paginas);
+ total_pag_c.len = strlen(total_pag_c.arr);
+
+ /* C7 */
+  EXEC SQL
+        update control_con
+        set consecutivo   = consecutivo + to_number(:total_pag_c),
+            fecha         = greatest(to_date(nvl(fecha,sysdate)),to_date(:fecha_corte_c))
+        where codigo_emp  = to_number(:codigo_emp);
+ oraest  = sqlca.sqlcode;
+
+
+ /* C11 */
+ EXEC SQL
+     insert into facturas
+        (NUMERO_FACTURA,
+         CODIGO_CLIENTE,
+         FECHA_DOCUMENTO,
+         FECHA_VENCMTO,
+         CANT_ORDENES_O,
+         CANT_ORDENES_C,
+         CANT_DESPACHOS,
+         VALOR_OFTALMICA,
+         VALOR_CONTACTO,
+         VALOR_DESCUENTO,
+         VALOR_FLETES,
+         VALOR_IVA,
+         PTAJE_IVA,
+         VALOR_NETO,
+         VALOR_PAGOS,
+         FECHA_PAGO,
+         ESTADO_CARTERA,
+         TIPO_FACTURA,
+         TIPO_DOCUMENTO,
+         ESTADO_FACTURA,
+         HOJAS,
+         CONTADO,
+         CODIGO_NIT,
+         RETE_FTE)
+     values (to_number(:ultimo_numero_c),
+            (:codigo_cliente_c),
+             to_date(:fecha_corte_c),
+             to_date(:fecha_vencmto_c),
+             to_number(:nro_ordenes_oc),
+             to_number(:nro_ordenes_cc),
+             to_number(:nro_despachos_c),
+             to_number(:sub_total_oc),
+             to_number(:sub_total_cc),
+             to_number(:total_descto_c),
+             to_number(:fletes_c),
+             to_number(:valor_iva_c),
+             to_number(:ptaje_iva_c),
+             to_number(:costo_factura_c),
+             to_number(:valor_pagos_c),
+             null,0,
+             to_number(:codigo_emp),
+             'C',0,
+             to_number(:total_pag_c),
+             'C',
+             null,
+             to_number(:rete_fte_c));
+      oraest  = sqlca.sqlcode;
+
+      if (sqlca.sqlcode !=  1403 &&
+          sqlca.sqlcode != -1405 &&
+          sqlca.sqlcode != 0)
+          fprintf (stderr, "Error leyendo C11 (%d)\n", sqlca.sqlcode);
+
+      if (saldo_cliente < 0) {
+          if (abs((long int)saldo_cliente) > costo_factura)
+              sprintf(costo_factura_c.arr,"%8.2f",0);
+          else sprintf(costo_factura_c.arr,"%8.2f",costo_factura+saldo_cliente);
+          costo_factura_c.len = strlen(costo_factura_c.arr);
+      }
+//    printf("10)npromo<%d>",npromo); getchar();
+}
+
+void actualizo_clientem()
+{
+ oraest = 0;
+/* C15 */
+   EXEC SQL
+        select saldoc
+        into  :saldo_cliente
+        from  clientem
+        where codigo_emp     = to_number(:codigo_emp) and
+              codigo_cliente =          (:wcod) and
+              ano_mes        = to_number(:ano_mes_c);
+
+   oraest  = sqlca.sqlcode;
+
+   if (sqlca.sqlcode !=  1403 &&
+       sqlca.sqlcode != -1405 &&
+       sqlca.sqlcode != 0)
+       fprintf (stderr, "Error leyendo C15 (%d)\n", sqlca.sqlcode);
+
+}
+
+void mover_datos_factura()
+{
+int x;
+ sprintf(ultimo_numero_c.arr,"%6.0f",ultimo_numero);
+ ultimo_numero_c.len  = strlen(ultimo_numero_c.arr);
+ strcpy(codigo_cliente_c.arr,wcod.arr);
+ codigo_cliente_c.len = strlen(codigo_cliente_c.arr);
+ strcpy(fecha_corte_c.arr,fecha_corte.arr);
+ fecha_corte_c.len    = strlen(fecha_corte_c.arr);
+ strcpy(fecha_vencmto_c.arr,fecha_vencmto.arr);
+ fecha_vencmto_c.len  = strlen(fecha_vencmto_c.arr);
+ sprintf(nro_ordenes_oc.arr,"%d",nro_ordenes_o);
+ nro_ordenes_oc.len   = strlen(nro_ordenes_oc.arr);
+ sprintf(nro_ordenes_cc.arr,"%d",nro_ordenes_c);
+ nro_ordenes_cc.len   = strlen(nro_ordenes_cc.arr);
+ sprintf(nro_despachos_c.arr,"%3.0f",nro_despachos);
+ nro_despachos_c.len  = strlen(nro_despachos_c.arr);
+//    printf("12)npromo<%d>",npromo); getchar();
+ for (x=1;x<=10000;x++) {
+ }
+ if (sub_total_o > 0) {
+    sprintf(sub_total_oc.arr,"%9.0f",sub_total_o - fletes);
+    sub_total_oc.len     = strlen(sub_total_oc.arr);
+    sprintf(sub_total_cc.arr,"%7.0f",0);
+    sub_total_cc.len     = strlen(sub_total_cc.arr);
+ }
+ else {
+    sprintf(sub_total_oc.arr,"%9.0f",sub_total_o - fletes);
+    sub_total_oc.len     = strlen(sub_total_oc.arr);
+    sprintf(sub_total_cc.arr,"%7.0f",0);
+    sub_total_cc.len     = strlen(sub_total_cc.arr);
+ }
+//    printf("13)npromo<%d>",npromo); getchar();
+ sprintf(total_descto_c.arr,"%6.0f",total_descto);
+ total_descto_c.len   = strlen(total_descto_c.arr);
+ sprintf(fletes_c.arr,"%4.0f",fletes);
+ fletes_c.len         = strlen(fletes_c.arr);
+ sprintf(valor_iva_c.arr,"%8.0f",impue);
+ valor_iva_c.len      = strlen(valor_iva_c.arr);
+ sprintf(ptaje_iva_c.arr,"%d",ptaje_iva);
+ ptaje_iva_c.len      = strlen(ptaje_iva_c.arr);
+ sprintf(costo_factura_c.arr,"%9.0f",costo_factura);
+ costo_factura_c.len  = strlen(costo_factura_c.arr);
+ sprintf(valor_pagos_c.arr,"%9.0f",costo_factura);
+ sprintf(valor_pagos_c.arr,"%9.0f",0);
+ valor_pagos_c.len = strlen(valor_pagos_c.arr);
+ strcpy(tipo_cliente_c.arr,codigo_emp.arr);
+ tipo_cliente_c.len   = strlen(tipo_cliente_c.arr);
+ sprintf(rete_fte_c.arr,"%9.0f",rete_fte);
+ rete_fte_c.len  = strlen(rete_fte_c.arr);
+//    printf("14)npromo<%d>",npromo); getchar();
+
+}
+
+void calculo_desctos()
+{
+ total_descto=0;
+ ptaje_oftal=0;
+ ptaje_conta=0;
+/* C10 */
+ EXEC SQL
+       select pctaje_oftal, pctaje_conta
+       into  :ptaje_oftal, :ptaje_conta
+       from   descuentos
+       where  codigo_cliente  = (:wcod)            and
+              numero_quincena = (:numero_quincena) and
+              estado          = 'A';
+
+ oraest  = sqlca.sqlcode;
+
+ if (oraest == 0 || oraest ==  -1405 ) {
+     total_descto=sub_total_o*ptaje_oftal+sub_total_c*ptaje_conta;
+     total_descto=redondo(total_descto);
+ }
+}
+
+void calculo_fletes()
+{
+ /**** Veo si tiene fletes ****/
+
+ EXEC SQL OPEN C6;
+ EXEC SQL FETCH C6 INTO :cob_fletes;
+ oraest4  = sqlca.sqlcode;
+ if (oraest4) {
+    fprintf (stderr, "Error leyendo C6 (%d)\n", sqlca.sqlcode);
+    if (oraest4 == 1403)
+         cob_fletes=0;
+ EXEC SQL CLOSE C6;
+ }
+
+ /**** Veo los envios ****/
+
+ valor_env=-1;
+/* C5 */
+ EXEC SQL
+      select nvl(cantidad,0), nvl(valor,0)
+      into  :nro_despachos, :valor_env
+      from  envios, control_fac
+      where codigo_cliente = (:wcod) and
+            control_fac.codigo_emp = to_number(:codigo_emp)         and
+            to_number(control_fac.ano||lpad(control_fac.mes_proceso,2,0))
+               = envios.ano_mes                                     and
+          control_fac.numero_quincena = envios.numero_quincena;
+
+ oraest4  = sqlca.sqlcode;
+
+ if (oraest4==1403)
+     valor_env=-1;
+
+ if (valor_env == 0)
+    {
+     nro_ordenes=nro_ordenes_c+nro_ordenes_o;
+     c=nro_ordenes/nro_despachos;
+     sprintf(cantidad_envios.arr,"%2.2f",c);
+     cantidad_envios.len = strlen(cantidad_envios.arr);
+
+/* C4 */
+     EXEC SQL
+          select nvl(valor,0)
+          into  :fletes
+          from  fletes
+          where cantidad_mayor >= to_number(:cantidad_envios) and
+                cantidad_menor <= to_number(:cantidad_envios) and
+                fecha           = (select max(f.fecha)
+                                   from   fletes f, control_fac cf
+                                   where  codigo_emp = (:codigo_emp) and
+                                          f.fecha <= to_date(
+                decode(to_number(:numero_quincena),
+                       1,to_number(cf.ano||lpad(cf.mes_proceso,2,0)||15),
+                       2,to_number(to_char(last_day(to_date(cf.ano||
+                       lpad(cf.mes_proceso,2,0),'yymm')),'yyyymmdd'))),'yymmdd'));
+
+     oraest  = sqlca.sqlcode;
+
+     if (sqlca.sqlcode !=  1403 &&
+         sqlca.sqlcode != -1405 &&
+         sqlca.sqlcode != 0)
+         fprintf (stderr, "Error leyendo C4 (%d)\n", sqlca.sqlcode);
+
+ }
+ else
+     if (valor_env == -1)
+        {
+         nro_ordenes=1;
+         fletes=valor_env=0;
+        }
+     else
+        {
+         nro_ordenes=1;
+         fletes=valor_env;
+        }
+}
+
+int hacer_asiento()
+{
+
+  if (control_asiento())
+      return 1;
+
+//  printf("3) codigo_emp<%s> ano_mesa<%s> comprobanteb<%s> consecutivob<%s> fechab<%s>", codigo_emp.arr,ano_mesa.arr,comprobanteb.arr,consecutivob.arr,fechab.arr); getchar();
+  EXEC SQL insert into movto_c
+       (CODIGO_EMP, ANO_MES, COMPROBANTE, CONSECUTIVO, CLASE, DESCRIPCION, FECHA, TIPO,
+	ESTADO, NITB, CODIGO_NITB, VALORB, RETENCION, CONTADO )
+           values(:codigo_emp, :ano_mesa, :comprobanteb, :consecutivob, 'VT',
+                  'LENTES OFTALMICOS Y/O CONTACTO',:fechab,'3', '0','','','','','C');
+
+  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+      fprintf (stderr, "Error insertando Movto_C (%d)\n", sqlca.sqlcode);
+      return 1;
+  }
+
+  staora  = 0;
+  strcpy(cuenta_db.arr,"13050590");
+  strcpy(cuenta_cr.arr,"41359515");
+  cuenta_db.arr  [cuenta_db.len]  = '\0';
+  cuenta_cr.arr  [cuenta_cr.len]  = '\0';
+  fecha_asto.arr [fecha_asto.len] = '\0';
+  codigo.arr     [codigo.len]     = '\0';
+  codigo.len  =  strlen(codigo.arr);
+
+/***************************************/
+/* CARTERA CONTRA VENTAS               */
+/***************************************/
+
+/* 1) Grabar Cartera ( Debito ) */
+
+  secuencia++;
+  sprintf(secuenciab.arr,"%6.0f",secuencia);
+  secuenciab.len = strlen(secuenciab.arr);
+
+  costo_factura = ( float ) atof(costo_factura_c.arr);
+
+//  printf("4) costo_factura <%12.0f> ", costo_factura); getchar();
+  for (i=1;i<=4;i++) {
+       strcpy(inf[i],"");
+  }
+  if (costo_factura> 0) {
+     strcpy(cuentab.arr,"13050590");
+     cuentab.len = strlen(cuentab.arr);
+     cuentab.arr  [cuentab.len]  = '\0';
+
+     strcpy(inf[3],comprobanteb.arr);
+     strcpy(codigox.arr,"01");
+     codigox.len = strlen(codigox.arr);
+     nitn = 1;
+
+     ver_inf();
+     sprintf(valor_debb.arr,"%10.2f",costo_factura);
+     valor_debb.len = strlen(valor_debb.arr);
+     strcpy (valor_creb.arr,"");
+     valor_creb.len = strlen(valor_creb.arr);
+                                          /* Graba en movto_d el Debito (C4) */
+//  printf("5) codigo_emp<%s> ano_mesa<%s> consecutivob<%s> secuenciab<%s> cuentab<%s> infa<%s> infb<%s> infc<%s> infd<%s> codigo_nitb<%s> valor_debb<%s> valor_creb<%s>", codigo_emp.arr,ano_mesa.arr,consecutivob.arr,secuenciab.arr,cuentab.arr,infa.arr,infb.arr,infc.arr,infd.arr,codigo_nitb.arr,valor_debb.arr,valor_creb.arr ); getchar();
+     EXEC SQL insert into movto_d
+     	      (CODIGO_EMP, ANO_MES,CONSECUTIVO,SECUENCIA,CUENTA,
+		INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_COS)
+              values(:codigo_emp, :ano_mesa, :consecutivob, :secuenciab,
+                     :cuentab, :infa, :infb, :infc, :infd,
+                     :codigo_nitb, :valor_debb, :valor_creb, '001', 1);
+
+     if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+         fprintf (stderr, "Error Grabando Debito (%d)\n", sqlca.sqlcode);
+         return 1;
+     }
+/* 2) Grabar Ventas ( Credito ) */
+
+     secuencia++;
+     sprintf(secuenciab.arr,"%6.0f",secuencia);
+     secuenciab.len = strlen(secuenciab.arr);
+
+     strcpy(cuentab.arr,"41359515");
+     cuentab.len = strlen(cuentab.arr);
+     cuentab.arr  [cuentab.len]  = '\0';
+
+     strcpy(codigox.arr,cuentab.arr);
+     codigox.len = strlen(codigox.arr);
+
+  /* Lee codigo nit de clientes */
+
+     EXEC SQL select n.codigo_nit, n.nit into :codigo_nitb, :nitn
+              from clientes c, nits n
+              where c.codigo_cliente = :codigo_cliente_c and
+                    c.codigo_nit     = n.codigo_nit;
+
+     if (sqlca.sqlcode) {
+         fprintf (stderr, "Error leyendo Clientes (%d)\n", sqlca.sqlcode);
+//         return 1;
+     }
+
+     for (i=1;i<=4;i++) {
+          strcpy(inf[i],"");
+     }
+     if (codigo_nit==0)
+        strcpy(codigo_nitb.arr,"");
+     else sprintf(codigo_nitb.arr,"%5d",codigo_nit);
+     codigo_nitb.len = strlen(codigo_nitb.arr);
+     strcpy(inf[2],comprobanteb.arr);
+
+     ver_inf();
+     strcpy (valor_debb.arr,"");
+     valor_debb.len = strlen(valor_debb.arr);
+     sprintf(valor_creb.arr,"%10.2f",costo_factura-fletes-impue+rete_fte);
+     valor_creb.len = strlen(valor_creb.arr);
+                                         /* Graba en movto_d el Credito (C4) */
+//  printf("6) codigo_emp<%s> ano_mesa<%s> consecutivob<%s> secuenciab<%s> cuentab<%s> infa<%s> infb<%s> infc<%s> infd<%s> codigo_nitb<%s> valor_debb<%s> valor_creb<%s>", codigo_emp.arr,ano_mesa.arr,consecutivob.arr,secuenciab.arr,cuentab.arr,infa.arr,infb.arr,infc.arr,infd.arr,codigo_nitb.arr,valor_debb.arr,valor_creb.arr ); getchar();
+     EXEC SQL insert into movto_d
+     	      (CODIGO_EMP, ANO_MES,CONSECUTIVO,SECUENCIA,CUENTA,
+		INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_COS)
+              values(:codigo_emp, :ano_mesa, :consecutivob, :secuenciab,
+                     :cuentab, :infa, :infb, :infc, :infd,
+                     :codigo_nitb, :valor_debb, :valor_creb, '001', 1);
+
+     if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+         fprintf (stderr, "Error Grabando Credito (%d)\n", sqlca.sqlcode);
+//         return 1;
+     }
+
+  }
+
+/* 3) Grabar FLETES (Credito) */
+
+  if ( fletes  > 0 ) {
+     secuencia++;
+     sprintf(secuenciab.arr,"%6.0f",secuencia);
+     secuenciab.len = strlen(secuenciab.arr);
+
+     strcpy(cuentab.arr,"42358001");
+     cuentab.len = strlen(cuentab.arr);
+     cuentab.arr  [cuentab.len]  = '\0';
+
+     strcpy(codigox.arr,cuentab.arr);
+     codigox.len = strlen(codigox.arr);
+
+     for (i=1;i<=4;i++) {
+          strcpy(inf[i],"");
+     }
+     codigo_nit = 0;
+     if (codigo_nit==0)
+        strcpy(codigo_nitb.arr,"");
+     else sprintf(codigo_nitb.arr,"%5d",codigo_nit);
+     codigo_nitb.len = strlen(codigo_nitb.arr);
+     strcpy(inf[2],comprobanteb.arr);
+
+     ver_inf();
+     strcpy (valor_debb.arr,"");
+     valor_debb.len = strlen(valor_debb.arr);
+     sprintf(valor_creb.arr,"%10.2f",fletes);
+     valor_creb.len = strlen(valor_creb.arr);
+                                         /* Graba en movto_d el Credito (C4) */
+//  printf("6) codigo_emp<%s> ano_mesa<%s> consecutivob<%s> secuenciab<%s> cuentab<%s> infa<%s> infb<%s> infc<%s> infd<%s> codigo_nitb<%s> valor_debb<%s> valor_creb<%s>", codigo_emp.arr,ano_mesa.arr,consecutivob.arr,secuenciab.arr,cuentab.arr,infa.arr,infb.arr,infc.arr,infd.arr,codigo_nitb.arr,valor_debb.arr,valor_creb.arr ); getchar();
+     EXEC SQL insert into movto_d
+     	      (CODIGO_EMP, ANO_MES,CONSECUTIVO,SECUENCIA,CUENTA,
+		INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_COS)
+              values(:codigo_emp, :ano_mesa, :consecutivob, :secuenciab,
+                     :cuentab, :infa, :infb, :infc, :infd,
+                     :codigo_nitb, :valor_debb, :valor_creb, '001', 1);
+
+     if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+         fprintf (stderr, "Error Grabando FLETES (Credito) (%d)\n", sqlca.sqlcode);
+//         return 1;
+     }
+  }
+
+/* 4) Grabar IVA (Credito) */
+
+  if ( impue > 0 ) {
+     secuencia++;
+     sprintf(secuenciab.arr,"%6.0f",secuencia);
+     secuenciab.len = strlen(secuenciab.arr);
+
+     strcpy(cuentab.arr,"24080101");
+     cuentab.len = strlen(cuentab.arr);
+     cuentab.arr  [cuentab.len]  = '\0';
+
+     strcpy(codigox.arr,cuentab.arr);
+     codigox.len = strlen(codigox.arr);
+
+     for (i=1;i<=4;i++) {
+          strcpy(inf[i],"");
+     }
+     codigo_nit = 0;
+     if (codigo_nit==0)
+        strcpy(codigo_nitb.arr,"");
+     else sprintf(codigo_nitb.arr,"%5d",codigo_nit);
+     codigo_nitb.len = strlen(codigo_nitb.arr);
+     strcpy(inf[2],comprobanteb.arr);
+
+     ver_inf();
+     strcpy (valor_debb.arr,"");
+     valor_debb.len = strlen(valor_debb.arr);
+     sprintf(valor_creb.arr,"%10.2f",impue);
+     valor_creb.len = strlen(valor_creb.arr);
+                                         /* Graba en movto_d el Credito (C4) */
+//  printf("7) codigo_emp<%s> ano_mesa<%s> consecutivob<%s> secuenciab<%s> cuentab<%s> infa<%s> infb<%s> infc<%s> infd<%s> codigo_nitb<%s> valor_debb<%s> valor_creb<%s>", codigo_emp.arr,ano_mesa.arr,consecutivob.arr,secuenciab.arr,cuentab.arr,infa.arr,infb.arr,infc.arr,infd.arr,codigo_nitb.arr,valor_debb.arr,valor_creb.arr ); getchar();
+     EXEC SQL insert into movto_d
+     	      (CODIGO_EMP, ANO_MES,CONSECUTIVO,SECUENCIA,CUENTA,
+		INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_COS)
+              values(:codigo_emp, :ano_mesa, :consecutivob, :secuenciab,
+                     :cuentab, :infa, :infb, :infc, :infd,
+                     :codigo_nitb, :valor_debb, :valor_creb, '001', 1);
+
+     if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+         fprintf (stderr, "Error Grabando FLETES (Credito) (%d)\n", sqlca.sqlcode);
+//         return 1;
+     }
+  }
+
+// Grabar Retefte //
+
+if ( rete_fte > 0 ) {
+     secuencia++;
+     sprintf(secuenciab.arr,"%6.0f",secuencia);
+     secuenciab.len = strlen(secuenciab.arr);
+
+     strcpy(cuentab.arr,"13551501");
+     cuentab.len = strlen(cuentab.arr);
+     cuentab.arr  [cuentab.len]  = '\0';
+
+     for (i=1;i<=4;i++) {
+          strcpy(inf[i],"");
+     }
+     if (codigo_nit==0)
+        strcpy(codigo_nitb.arr,"");
+     else sprintf(codigo_nitb.arr,"%5.0f",codigo_nit);
+     codigo_nitb.len = strlen(codigo_nitb.arr);
+     strcpy(inf[2],comprobanteb.arr);
+
+     ver_inf();
+     strcpy (valor_creb.arr,"");
+     valor_creb.len = strlen(valor_creb.arr);
+     sprintf(valor_debb.arr,"%10.2f",rete_fte);
+     valor_debb.len = strlen(valor_debb.arr);
+
+// printf("8) codigo_emp<%s> ano_mesa<%s> consecutivob<%s> secuenciab<%s> cuentab<%s> infa<%s> infb<%s> infc<%s> infd<%s> codigo_nitb<%s> valor_debb<%s> valor_creb<%s>", codigo_emp.arr,ano_mesa.arr,consecutivob.arr,secuenciab.arr,cuentab.arr,infa.arr,infb.arr,infc.arr,infd.arr,codigo_nitb.arr,valor_debb.arr,valor_creb.arr ); getchar();
+     EXEC SQL insert into movto_d
+              (CODIGO_EMP,
+	       ANO_MES,
+               CONSECUTIVO,
+	       SECUENCIA,
+	       CUENTA,
+	       INFA,
+	       INFB,
+	       INFC,
+	       INFD,
+	       CODIGO_NIT,
+	       VALOR_DEB,
+	       VALOR_CRE,
+	       SUCURSAL,
+	       CEN_COS)
+              values(:codigo_emp, :ano_mesa, :consecutivob, :secuenciab,
+                     :cuentab, :infa, :infb, :infc, :infd,
+                     :codigo_nitb, :valor_debb, :valor_creb,'001',1);
+
+     if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+         fprintf (stderr, "Error Grabando Credito (%d)\n", sqlca.sqlcode);
+}
+
+
+/***************************************/
+/* COSTO DE VENTAS CONTRA INVENTARIOS  */
+/***************************************/
+
+  EXEC SQL select consecutivo
+           into :consecutivo
+           from movto_c
+           where codigo_emp  = :codigo_emp   and
+                 ano_mes     = :ano_mesa     and
+                 comprobante = :orden        and
+                 clase       = 'CV'          and
+                 tipo        = 9;
+
+  secuencia = 0;
+  if (sqlca.sqlcode==0) {
+      sprintf(consecutivob.arr,"%5.0f",consecutivo);
+      consecutivob.len = strlen(consecutivob.arr);
+      reverso_asiento();
+  }
+  else {
+        if(control_asiento())
+           return 1;
+
+//  printf("9) codigo_emp<%s> ano_mesa<%s> comprobanteb<%s> consecutivob<%s> fechab<%s>", codigo_emp.arr,ano_mesa.arr,comprobanteb.arr,consecutivob.arr,fechab.arr); getchar();
+        EXEC SQL insert into movto_c
+       (CODIGO_EMP, ANO_MES, COMPROBANTE, CONSECUTIVO, CLASE, DESCRIPCION, FECHA, TIPO,
+	ESTADO, NITB, CODIGO_NITB, VALORB, RETENCION, CONTADO )
+                 values(:codigo_emp, :ano_mesa, :orden, :consecutivob, 'CV',
+                        'LENTES OFTALMICOS',:fechab,'9', '0','','','','','C');
+
+        if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+            fprintf (stderr, "Error insertando Movto_C (%d)\n", sqlca.sqlcode);
+            return 1;
+        }
+
+  }
+
+/* 5) Grabar Costo de ventas ( Debito ) */
+
+  if ( costo_venta > 0) {
+     secuencia++;
+     sprintf(secuenciab.arr,"%6.0f",secuencia);
+     secuenciab.len = strlen(secuenciab.arr);
+
+     strcpy(cuentab.arr,"61359501");
+     cuentab.len = strlen(cuentab.arr);
+     cuentab.arr  [cuentab.len]  = '\0';
+
+     strcpy(codigox.arr,cuentab.arr);
+     codigox.len = strlen(codigox.arr);
+
+     for (i=1;i<=4;i++) {
+          strcpy(inf[i],"");
+     }
+     strcpy(inf[2],comprobanteb.arr);
+
+     ver_inf();
+     strcpy (valor_creb.arr,"");
+     valor_creb.len = strlen(valor_debb.arr);
+     sprintf(valor_debb.arr,"%10.2f",costo_venta);
+     valor_debb.len = strlen(valor_debb.arr);
+                                         /* Graba en movto_d el Debito (C4) */
+//  printf("10) codigo_emp<%s> ano_mesa<%s> consecutivob<%s> secuenciab<%s> cuentab<%s> infa<%s> infb<%s> infc<%s> infd<%s> codigo_nitb<%s> valor_debb<%s> valor_creb<%s>", codigo_emp.arr,ano_mesa.arr,consecutivob.arr,secuenciab.arr,cuentab.arr,infa.arr,infb.arr,infc.arr,infd.arr,codigo_nitb.arr,valor_debb.arr,valor_creb.arr ); getchar();
+     EXEC SQL insert into movto_d
+     	      (CODIGO_EMP, ANO_MES,CONSECUTIVO,SECUENCIA,CUENTA,
+		INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_COS)
+              values(:codigo_emp, :ano_mesa, :consecutivob, :secuenciab,
+                     :cuentab, :infa, :infb, :infc, :infd,
+                     :codigo_nitb, :valor_debb, :valor_creb, '001', 1);
+
+     if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+         fprintf (stderr, "Error Grabando Debito (%d)\n", sqlca.sqlcode);
+//         return 1;
+     }
+  }
+
+/* 6) Grabar Inventarios ( Credito ) */
+
+  if ( costo_venta > 0 ) {
+     secuencia++;
+     sprintf(secuenciab.arr,"%6.0f",secuencia);
+     secuenciab.len = strlen(secuenciab.arr);
+
+     strcpy(cuentab.arr,"14350120");
+     cuentab.len = strlen(cuentab.arr);
+     cuentab.arr  [cuentab.len]  = '\0';
+
+     strcpy(codigox.arr,cuentab.arr);
+     codigox.len = strlen(codigox.arr);
+
+     for (i=1;i<=4;i++) {
+          strcpy(inf[i],"");
+     }
+
+     strcpy(inf[2],comprobanteb.arr);
+
+     ver_inf();
+     strcpy (valor_debb.arr,"");
+     valor_debb.len = strlen(valor_debb.arr);
+     sprintf(valor_creb.arr,"%10.2f",costo_venta);
+     valor_creb.len = strlen(valor_creb.arr);
+                                         /* Graba en movto_d el Debito (C4) */
+//     printf("11) codigo_emp<%s> ano_mesa<%s> consecutivob<%s> secuenciab<%s> cuentab<%s> infa<%s> infb<%s> infc<%s> infd<%s> codigo_nitb<%s> valor_debb<%s> valor_creb<%s>", codigo_emp.arr,ano_mesa.arr,consecutivob.arr,secuenciab.arr,cuentab.arr,infa.arr,infb.arr,infc.arr,infd.arr,codigo_nitb.arr,valor_debb.arr,valor_creb.arr ); getchar();
+     EXEC SQL insert into movto_d
+     	      (CODIGO_EMP, ANO_MES,CONSECUTIVO,SECUENCIA,CUENTA,
+		INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_COS)
+              values(:codigo_emp, :ano_mesa, :consecutivob, :secuenciab,
+                     :cuentab, :infa, :infb, :infc, :infd,
+                     :codigo_nitb, :valor_debb, :valor_creb, '001', 1);
+
+     if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+         fprintf (stderr, "Error Grabando Debito (%d)\n", sqlca.sqlcode);
+//         return 1;
+     }
+  }
+  return 0;
+}
+
+int control_asiento()
+{
+  strcpy(fuenteb.arr,"15");
+  fuenteb.len = strlen(fuenteb.arr);
+
+  strcpy(comprobanteb.arr,ultimo_numero_c.arr);
+  comprobanteb.len = strlen(comprobanteb.arr);
+
+  strcpy(fechab.arr,fecha_corte_c.arr);
+  fechab.len = strlen(fechab.arr);
+
+//  printf("0) codigo_emp<%s> ano_mesa<%s> comprobanteb<%s> fechab<%s>", codigo_emp.arr, ano_mesa.arr, comprobanteb.arr, fechab.arr); getchar();
+
+/* Lee consecutivo de control_mes Fte 15 Cns ultimo Asiento Aj x Depreciacion */
+//  printf("1) fuenteb<%s> ano_mesa<%s> codigo_emp<%s>",fuenteb.arr,ano_mesa.arr,codigo_emp.arr); getchar();
+  EXEC SQL select consecutivo   into :consecutivo15
+           from control_mes
+           where fuente       = to_number(:fuenteb)       and
+                 ano_mes      = to_number(:ano_mesa)      and
+                 codigo_emp   = to_number(:codigo_emp);
+
+  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+      fprintf (stderr, "Error leyendo Control_Mes (%d)\n", sqlca.sqlcode);
+  else {
+        sprintf(consecutivob.arr,"%5.0f",consecutivo15);
+        consecutivob.len = strlen(consecutivob.arr);
+  }
+
+  strcpy(fuenteb.arr,"08");
+  fuenteb.len = strlen(fuenteb.arr);
+
+  /* Lee consecutivo de Control_mes Fte 08 sgte consecutivo */
+
+//  printf("2) fuenteb<%s> ano_mesa<%s> codigo_emp<%s>",fuenteb.arr,ano_mesa.arr,codigo_emp.arr); getchar();
+  EXEC SQL select consecutivo+1, version
+           into :consecutivo, :version
+           from control_mes
+           where fuente       = to_number(:fuenteb)       and
+                 ano_mes      = to_number(:ano_mesa)      and
+                 codigo_emp   = to_number(:codigo_emp);
+
+  if (sqlca.sqlcode)
+     {
+      fprintf (stderr, "Error leyendo Control_Mes 08 (%d)\n", sqlca.sqlcode);
+      consecutivo=1;
+      sprintf(consecutivob.arr,"%5.0f",consecutivo);
+      consecutivob.len = strlen(consecutivob.arr);
+               /* Inserta en Control_Mes Fte 08 si no existe (C11) */
+      EXEC SQL insert into control_mes
+               (FUENTE,ANO_MES,NOMBRE,CONSECUTIVO,CODIGO_EMP,VERSION)
+               values (:fuenteb, :ano_mesa, 'CONTROL VENTA CONTADO',
+                       :consecutivob, :codigo_emp,1);
+     }
+  else {
+        sprintf(consecutivob.arr,"%5.0f",consecutivo);
+        consecutivob.len = strlen(consecutivob.arr);
+               /* Actualiza Cns de Fte 08 en control_mes (C12) */
+        EXEC SQL update control_mes
+                 set    consecutivo = :consecutivob
+                 where codigo_emp   = to_number(:codigo_emp)    and
+                       ano_mes      = to_number(:ano_mesa)      and
+                       fuente       = :fuenteb                  and
+                       version      = :version;
+  }
+  if (sqlca.sqlcode) {
+      return 1;
+  }
+
+  strcpy(fuenteb.arr,"15");
+  fuenteb.len = strlen(fuenteb.arr);
+
+  EXEC SQL select consecutivo, version
+           into :consecutivo15, :version
+           from control_mes
+           where fuente       = to_number(:fuenteb)       and
+                 ano_mes      = to_number(:ano_mesa)      and
+                 codigo_emp   = to_number(:codigo_emp);
+
+  if (sqlca.sqlcode)
+     {
+      fprintf (stderr, "Error leyendo Control_Mes 15 (%d)\n", sqlca.sqlcode);
+               /* Inserta en Control_Mes Fte 15 si no existe (C11) */
+      EXEC SQL insert into control_mes
+              (FUENTE,ANO_MES,NOMBRE,CONSECUTIVO,CODIGO_EMP,VERSION)
+               values (:fuenteb, :ano_mesa, 'CONTROL VENTA CONTADO',
+                       :consecutivob, :codigo_emp,1);
+     }
+  else {
+               /* Actualiza Cns de Fte 15 en control_mes (C12) */
+        EXEC SQL update control_mes
+                 set    consecutivo = :consecutivob
+                 where codigo_emp   = to_number(:codigo_emp)    and
+                       ano_mes      = to_number(:ano_mesa)      and
+                       fuente       = :fuenteb                  and
+                       version      = :version;
+  }
+  if (sqlca.sqlcode) {
+      return 1;
+  }
+  return 0;
+}
+
+void reverso_asiento()
+{
+    EXEC SQL
+         select max(secuencia)
+         into   :secuenciab
+         from movto_d d, movto_c c
+         where c.codigo_emp  = to_number(:codigo_emp)    and
+               c.codigo_emp  = d.codigo_emp              and
+               c.ano_mes     = d.ano_mes                 and
+               c.consecutivo = d.consecutivo             and
+               c.consecutivo = to_number(:consecutivob)  and
+               c.clase       = 'CV'                      and
+               c.tipo        = 9                         and
+               c.ano_mes     = to_number(:ano_mesa);
+
+    secuenciab.len = strlen(secuenciab.arr);
+    secuencia = atof(secuenciab.arr);
+
+    if ( secuencia > 0 ) {
+
+       EXEC SQL DECLARE C9 CURSOR FOR
+            select d.consecutivo, d.cuenta, d.infa, d.infb, d.infc, d.infd, d.codigo_nit,
+                   sum(nvl(d.valor_deb,0)-nvl(d.valor_cre,0))
+            from movto_d d, movto_c c
+            where c.codigo_emp  = to_number(:codigo_emp)    and
+                  c.codigo_emp  = d.codigo_emp              and
+                  c.ano_mes     = d.ano_mes                 and
+                  c.consecutivo = d.consecutivo             and
+                  c.consecutivo = to_number(:consecutivob)  and
+                  c.clase       = 'CV'                      and
+                  c.tipo        = 9                         and
+                  c.ano_mes     = to_number(:ano_mesa)
+            group by d.consecutivo, d.cuenta, d.infa, d.infb, d.infc, d.infd, d.codigo_nit;
+
+      EXEC SQL OPEN C9;
+
+      EXEC SQL FETCH C9 INTO :consecutivo, :cuentab,
+                             :infa, :infb, :infc, :infd,
+                             :codigo_nit,  :valor;
+
+      oraest  = sqlca.sqlcode;
+
+      if (sqlca.sqlcode == -1405 )
+          oraest = 0;
+      else {
+            if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+                fprintf (stderr, "Error leyendo C9 (%d)\n", sqlca.sqlcode);
+      }
+
+      cuentab.arr             [cuentab.len]            = '\0';
+      infa.arr                [infa.len]               = '\0';
+      infb.arr                [infb.len]               = '\0';
+      infc.arr                [infc.len]               = '\0';
+      infd.arr                [infd.len]               = '\0';
+
+      while (oraest==0) {
+
+           sprintf(consecutivob.arr,"%5.0f",consecutivo);
+           consecutivob.len = strlen(consecutivob.arr);
+
+           secuencia++;
+           sprintf(secuenciab.arr,"%6.0f",secuencia);
+           secuenciab.len = strlen(secuenciab.arr);
+
+           if (codigo_nit==0)
+              strcpy(codigo_nitb.arr,"");
+           else sprintf(codigo_nitb.arr,"%5d",codigo_nit);
+           codigo_nitb.len = strlen(codigo_nitb.arr);
+
+           if ( valor > 0 ) {
+               strcpy (valor_debb.arr,"");
+               valor_debb.len = strlen(valor_debb.arr);
+               sprintf(valor_creb.arr,"%10.2f",valor);
+               valor_creb.len = strlen(valor_creb.arr);
+           }
+           else {
+              strcpy (valor_creb.arr,"");
+              valor_creb.len = strlen(valor_creb.arr);
+              sprintf(valor_debb.arr,"%10.2f",valor*-1);
+              valor_debb.len = strlen(valor_debb.arr);
+           }
+
+           EXEC SQL insert into movto_d
+     	      (CODIGO_EMP, ANO_MES,CONSECUTIVO,SECUENCIA,CUENTA,
+		INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_COS)
+                    values(:codigo_emp, :ano_mesa, :consecutivob, :secuenciab,
+                           :cuentab, :infa, :infb, :infc, :infd,
+                           :codigo_nitb, :valor_debb, :valor_creb, '001', 1);
+
+           if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+               fprintf (stderr, "Error Grabando movto_d (%d)\n", sqlca.sqlcode);
+
+           EXEC SQL FETCH C9 INTO :consecutivo,  :cuentab,
+                                  :infa, :infb,  :infc, :infd,
+                                  :codigo_nit,   :valor;
+
+           cuentab.arr             [cuentab.len]            = '\0';
+           infa.arr                [infa.len]               = '\0';
+           infb.arr                [infb.len]               = '\0';
+           infc.arr                [infc.len]               = '\0';
+           infd.arr                [infd.len]               = '\0';
+
+           oraest  = sqlca.sqlcode;
+           if (sqlca.sqlcode == 1403) break;
+
+           if (sqlca.sqlcode == -1405 )
+               oraest = 0;
+           else {
+                 if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+                     fprintf (stderr, "Error leyendo C9 (%d)\n", sqlca.sqlcode);
+           }
+
+      }
+
+    }
+}
+
+void ver_inf()
+{
+  EXEC SQL select infa, infb, infc, infd
+           into :veca, :vecb, :vecc, :vecd
+           from   plan
+           where  codigo_emp = :codigo_emp and
+                  cuenta     = :cuentab;
+
+  if (sqlca.sqlcode == 1403)
+      printf ("Cuentab (%-s) no existe\n", cuentab.arr);
+
+  veca.arr [veca.len] = '\0';
+  vecb.arr [vecb.len] = '\0';
+  vecc.arr [vecc.len] = '\0';
+  vecd.arr [vecd.len] = '\0';
+
+  strcpy (vecplan[1], veca.arr);
+  strcpy (vecplan[2], vecb.arr);
+  strcpy (vecplan[3], vecc.arr);
+  strcpy (vecplan[4], vecd.arr);
+
+  i=j=0;
+  for (i=1;i<=4;i++) {
+      if (!strcmp(vecplan[i],"NIT")) {
+          sprintf(inf[i],"%12.0f",nitn);
+      }
+      else {
+            for (j=1;j<=k;j++) {
+                if (!strcmp(vecplan[i],vecinf[j].arr) && strcmp(vecplan[i],"") ) {
+                   strcpy(inf[i],codigox.arr);
+                }
+            }
+      }
+  }
+  strtri(inf[1]);
+  strtri(inf[2]);
+  strtri(inf[3]);
+  strtri(inf[4]);
+  strcpy (infa.arr, inf[1]);
+  strcpy (infb.arr, inf[2]);
+  strcpy (infc.arr, inf[3]);
+  strcpy (infd.arr, inf[4]);
+  infa.len = strlen(infa.arr);
+  infb.len = strlen(infb.arr);
+  infc.len = strlen(infc.arr);
+  infd.len = strlen(infd.arr);
+}
+
+

@@ -1,0 +1,567 @@
+/*****************************************************************
+* CLISTPEN.PC Version 1.0 - Rev 1.2 - Sep. 26/91.
+*
+* clistana.c Programa de facturacion para listar las clistana de la quincena
+*
+* Uso : clistpen codigo_emp codigo_cliente fecha_corte fecha_movto
+*                device     userid/password
+*
+* Martin A. Toloza L. Creado Diciembre 03-1997
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+void titulos();
+void acumulo_cliente();
+void acum_facturas();
+void imprime_facturas();
+void calcula_dias();
+void imprime_vencmtos();
+void borra_acumulados();
+void titulo_ciudad();
+/* void grabar(); */
+
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100]; 
+                                 /* Clientes (C1) */
+VARCHAR codigo_cliente[6];
+VARCHAR nomb_clie     [41];
+double  saldo_cliente;
+VARCHAR codigo_emp    [3];
+VARCHAR ano_mes       [20];
+VARCHAR cod_clie      [6];
+                                 /* Facturas (C2) */
+VARCHAR fecha_vencmto [20];
+double  saldo_factura;
+double  numero_factura;
+VARCHAR tipo_documento[3];
+                                 /* Empresa (C3) */
+VARCHAR nomb_emp      [50];
+                                 /* Ciudades (C4) */
+VARCHAR nomb_ciu      [30];
+VARCHAR cod_ciu       [3];
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+				     /* Parametros de comunicacion con ORACLE */
+/*
+  Arreglo que contienen los valores de total deuda del cliente,
+          lo que esta por vencer, a 30 dias, 90 dias, 60 dias,
+          120 o mas dias.
+  El primer elemento de cada arreglo se|ala al cliente, 
+  el segundo se|ala los totales por ciudad y el tercero los generales.
+
+*/ 
+
+double total_deuda[4];   /* Total deuda del cliente      */
+double por_vencer [4];   /* Total por vencer del cliente */
+double a_30_dias_1[4];   /* Total en la primera quincena */
+double a_30_dias_2[4];   /* Total en la segunda quincena */
+double a_60_dias_1[4];   /* Total en la primera quincena */
+double a_60_dias_2[4];   /* Total en la segunda quincena */
+double a_90_dias_1[4];   /* Total en la primera quincena */
+double a_90_dias_2[4];   /* Total en la segunda quincena */
+double a_120_dias [4];   /* Total en las dos quincenas   */
+
+char    *fmtnum(), r_t[100];
+int     con_pag=0;
+int     con_lin=66;
+int     staora = 0;
+char    pagina_ini[3];
+int     pag_ini;
+char    pagina_fin[3];
+int     pag_fin;
+char    copias[3];
+int     i;
+int     tit_ciu=0;
+int     w_ano_corte;
+int     w_mes_corte;
+int     w_dia_corte;
+int     ano_corte;
+int     mes_corte;
+int     dia_corte;
+int     ano_movto;
+int     mes_movto;
+int     dia_movto;
+int     ano_vencmto;
+int     mes_vencmto;
+int     dia_vencmto;
+int     total_tiempo_ano;
+int     total_tiempo_mes;
+int     total_tiempo_dia;
+int     total_dias;
+char    cadena[100];
+int     tab;
+FILE    *fd2;
+char    recobrar[2];
+char    fecha_corte[20];
+char    fecha_movto[20];
+char    fecha_listado[60];
+char    linea_fecha_movto[50];
+char    titulo_listado[40];
+char    wcod_ciu[3];
+char    mensajes[20];
+char    mes_t[7][12];
+
+int     a;
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+ char	device[6];
+ int	status = 0;
+
+ if (argc < 6)
+    {
+     printf ("Incorrecta invocacion:\n");
+     printf ("Uso : clistpen codigo_emp codigo_cliente\n");
+     printf ("fecha_corte(aaaammdd) fecha_movimiento(aaaammdd)\n");
+     printf ("device userid/password\n");
+     printf ("      device : t salida por terminal\n");
+     printf ("               Px salida por impresora (x nro printer)\n");
+     printf ("               userid/password nombre usuario y password\n");
+     exit (1);
+    }
+
+ strcpy (codigo_emp.arr, argv[1]);
+ codigo_emp.len =        strlen(codigo_emp.arr);
+ strcpy (cod_clie.arr,   argv[2]);
+ cod_clie.len   =        strlen(cod_clie.arr);
+ strcpy (cod_ciu.arr,    cod_clie.arr);
+ strorg (cod_ciu.arr,1,2);
+ cod_ciu.len    =        strlen(cod_ciu.arr);
+ strcpy (fecha_corte,    argv[3]);
+ strcpy (ano_mes.arr,fecha_corte);
+ strorg (ano_mes.arr,1,6);
+ ano_mes.len    =        strlen(ano_mes.arr);
+ strcpy (fecha_movto,argv[4]);
+ if ( strlen(fecha_corte) != 8 || strlen(fecha_movto) != 8 ) {
+    printf("Error, la fecha debe ser de 8 digitos y formato AAAAMMDD");
+    exit (1);
+ }
+ strcpy (device,     argv[5]);
+ strlow (device);
+ strcpy(recobrar,"N");
+ strcpy(cadena,fecha_corte);
+ strorg(cadena,7,2);
+ dia_corte =  atoi(cadena);
+ strcpy(cadena,fecha_corte);
+ strorg(cadena,5,2);
+ mes_corte =  atoi(cadena);
+ strcpy(cadena,fecha_corte);
+ strorg(cadena,1,4);
+ ano_corte =  atoi(cadena);
+
+ strcpy(cadena,fecha_movto);
+ strorg(cadena,7,2);
+ dia_movto =  atoi(cadena);
+ strcpy(cadena,fecha_movto);
+ strorg(cadena,5,2);
+ mes_movto =  atoi(cadena);
+ strcpy(cadena,fecha_movto);
+ strorg(cadena,1,4);
+ ano_movto =  atoi(cadena);
+
+ strcpy(titulo_listado,"Analisis de Cartera");
+ sprintf(fecha_listado,"%s %s %d %s%d","Fecha de corte a",mes[mes_corte-1],dia_corte,"de ",ano_corte);
+ a=0;
+ if ((mes_corte==1) && dia_corte <16)
+    a=26;
+ else {
+       if (mes_corte == 1)
+          a=2;
+       else a=mes_corte*2;
+      }
+ if (dia_corte < 16) 
+     a-=1;
+ strcpy(mes_t[1],meq[a-1]);
+ a--;
+ if (a==0)
+    a=23;
+ strcpy(mes_t[2],meq[a-1]);
+ a--;
+ if (a==0)
+    a=23;
+ strcpy(mes_t[3],meq[a-1]);
+ a--;
+ if (a==0)
+    a=23;
+ strcpy(mes_t[4],meq[a-1]);
+ a--;
+ if (a==0)
+    a=23;
+ strcpy(mes_t[5],meq[a-1]);
+ a--;
+ if (a==0)
+    a=23;
+ strcpy(mes_t[6],meq[a-1]);
+ a--;
+ if (a==0)
+    a=23;
+ strcpy(mes_t[7],meq[a-1]);
+ a--;
+ if (a==0)
+    a=23;
+ if (mes_corte==4 || mes_corte==6 || mes_corte==9 || mes_corte==11) {
+    if (dia_corte==30) {
+        dia_corte=31;
+        fecha_corte[4]='3';
+        fecha_corte[5]='1';
+    }
+ }
+ if (mes_corte==2) {
+    if (dia_corte==28 || dia_corte==29) {
+        dia_corte=31;
+        fecha_corte[4]='3';
+        fecha_corte[5]='1';
+    }
+ }
+ 
+ sprintf(linea_fecha_movto,"%s %s %d %s%d","Movimiento hasta",mes[mes_movto-1],dia_movto,"de ",ano_movto);
+ for (i=1;i<=3;i++) {
+      borra_acumulados(i);
+ }
+
+if (!strpos ("/",   argv[6]))
+   {
+    printf ("user id/password incorrecto.\n");
+    exit (1);
+   }
+
+strcpy (uid.arr,    argv[6]);
+uid.len    =        strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+   EXEC SQL CONNECT :uid;
+
+   if (sqlca.sqlcode==-1915)
+      {
+       fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+       exit (1);
+      }
+   else
+      if (sqlca.sqlcode==-1017)
+	 {
+	  fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	  exit (1);
+	 }
+      else
+         if (sqlca.sqlcode)
+	    exit (1);
+
+    busco_impresora(device);
+    abre_impresora(copias);
+
+/*****************************************
+ * Procesar una Sentencia SQL (oexec).   *
+ *****************************************/
+    
+    EXEC SQL DECLARE C2 CURSOR FOR
+             select to_char(fecha_vencmto,'yyyymmdd'), facturam.saldo,
+                    facturas.numero_factura, facturas.tipo_documento
+             from   facturas, facturam
+             where  facturas.tipo_factura   = to_number(:codigo_emp)  and
+                    facturas.tipo_factura   = facturam.tipo_factura   and
+                    facturas.tipo_documento = facturam.tipo_documento and
+                    facturas.numero_factura = facturam.numero_factura and
+                    facturam.ano_mes        =
+                    (select max(ano_mes)
+                     from facturam fm
+                     where fm.tipo_factura   = facturas.tipo_factura   and
+                           fm.tipo_documento = facturas.tipo_documento and
+                           fm.numero_factura = facturas.numero_factura and
+                           fm.ano_mes       <= to_number(:ano_mes))    and
+              facturas.codigo_cliente        = :cod_clie               and
+              facturas.estado_factura        = 0                       and
+              facturas.estado_cartera        = 0;
+    
+    EXEC SQL OPEN C2;
+    
+    EXEC SQL select n.nombre into :nomb_emp
+             from   nits n, empresas e
+             where  n.codigo_nit = e.codigo_nit and
+                    e.codigo_emp =  :codigo_emp;
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) 
+        fprintf (stderr, "Error leyendo Empresa (%d)\n", sqlca.sqlcode);
+    nomb_emp.arr   [nomb_emp.len]  = '\0';
+
+    EXEC SQL select clientes.codigo_cliente, nombre, clientem.saldo
+             into :codigo_cliente, :nomb_clie, saldo_cliente
+             from   clientes, clientem, nits
+             where  clientes.codigo_cliente = clientem.codigo_cliente  and
+                    clientem.ano_mes        =
+                    (select max(ano_mes)
+                     from clientem cm
+                     where cm.codigo_emp     = to_number(:codigo_emp)  and
+                           cm.codigo_cliente = clientes.codigo_cliente and
+                           cm.ano_mes       <= to_number(:ano_mes))    and
+             clientem.codigo_emp             = to_number(:codigo_emp)  and
+             clientes.estado                != 'R'                     and
+             clientes.codigo_nit             = nits.codigo_nit         and
+             clientes.codigo_cliente         = :cod_clie
+             order by clientes.codigo_cliente;
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) 
+        fprintf (stderr, "Error leyendo Clientes (%d)\n", sqlca.sqlcode);
+    else {
+       codigo_cliente.arr [codigo_cliente.len]  = '\0';
+       nomb_clie.arr      [nomb_clie.len]       = '\0';
+       acumulo_cliente();
+    }
+    cierre_impresora();
+
+    EXEC SQL CLOSE C2;
+
+    EXEC SQL COMMIT WORK RELEASE;
+
+    exit   (0);
+}
+
+void titulos()
+{
+ int j=0;
+    if (!strcmp(codigo_emp.arr,"3")) 
+        strcpy(nomb_emp.arr,"");
+    strful(cadena,(int)(132-strlen(nomb_emp.arr))/2,' ');
+    fprintf(fp,"%s%s%s\n\n",condensado_on,cadena,nomb_emp.arr);
+    strful(cadena,(int)(132-strlen(fecha_listado))/2,' ');
+    fprintf(fp,"%s%s\n\n",cadena,fecha_listado);
+    strful(cadena,(int)(132-strlen(linea_fecha_movto))/2,' ');
+    fprintf(fp,"%s%s\n\n",cadena,linea_fecha_movto);
+    fprintf(fp,"Cliente : %-35s",nomb_clie.arr);
+    titulo_ciudad();
+    fprintf(fp,"%s","                      ");
+    fprintf(fp,"%s","POR                30 DIAS                     60 DIAS   ");
+    fprintf(fp,"%s\n","                  90 DIAS             120  DIAS");
+    fprintf(fp,"%s","DOCUMENTOS           V");
+    fprintf(fp,"%s","ENCER    --------------------------- --------------------");
+    fprintf(fp,"%s\n","------- --------------------------- -------------");
+    fprintf(fp,"%s","         DIAS");
+    for (j=1;j<=7;j++) {
+        fprintf(fp,"%14s",mes_t[j]);
+    }
+    fprintf(fp,"\n%s","       VENCMTO --------------- -----");
+    fprintf(fp,"%s","-------- ------------- ------------- ------------- ------");
+    fprintf(fp,"%s\n","------- ------------- -------------");
+ con_lin = 4;
+}
+
+void acumulo_cliente()
+{
+ if (saldo_cliente > 0) {
+     staora  = 0;
+     while (staora == 0) {
+
+            EXEC SQL FETCH C2 into :fecha_vencmto, :saldo_factura,
+                                   :numero_factura, :tipo_documento;
+            staora  = sqlca.sqlcode;
+            if (sqlca.sqlcode == 1403) break;
+
+            if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) 
+                fprintf (stderr, "Error leyendo C2 (%d)\n", sqlca.sqlcode);
+
+            fecha_vencmto.arr   [fecha_vencmto.len]  = '\0';
+            tipo_documento.arr  [tipo_documento.len] = '\0';
+            acum_facturas();
+     }
+ }
+ total_deuda[1]+= saldo_cliente;
+ total_deuda[2]+= saldo_cliente;
+ total_deuda[3]+= saldo_cliente;
+ imprime_vencmtos();
+}
+
+void acum_facturas()
+{
+ if (strcmp(fecha_vencmto.arr,fecha_corte) > 0) {
+    por_vencer[1]+=saldo_factura;
+    por_vencer[2]+=saldo_factura;
+    por_vencer[3]+=saldo_factura;
+    tab=3;
+ }
+ else {
+       calcula_dias();
+       if (total_dias < 15) {
+	  a_30_dias_1[1]+=saldo_factura;
+	  a_30_dias_1[2]+=saldo_factura;
+	  a_30_dias_1[3]+=saldo_factura;
+          tab=17;
+       }
+      else {
+      if (total_dias < 30) {
+	  a_30_dias_2[1]+=saldo_factura;
+	  a_30_dias_2[2]+=saldo_factura;
+	  a_30_dias_2[3]+=saldo_factura;
+          tab=31;
+      }
+      else {
+      if (total_dias < 45) {
+	  a_60_dias_1[1]+=saldo_factura;
+	  a_60_dias_1[2]+=saldo_factura;
+	  a_60_dias_1[3]+=saldo_factura;
+          tab=45;
+      }
+      else {
+      if (total_dias < 60) {
+	  a_60_dias_2[1]+=saldo_factura;
+	  a_60_dias_2[2]+=saldo_factura;
+	  a_60_dias_2[3]+=saldo_factura;
+          tab=59;
+      }
+      else {
+      if (total_dias < 75) {
+	  a_90_dias_1[1]+=saldo_factura;
+	  a_90_dias_1[2]+=saldo_factura;
+	  a_90_dias_1[3]+=saldo_factura;
+          tab=73;
+      }
+      else {
+      if (total_dias < 90) {
+	  a_90_dias_2[1]+=saldo_factura;
+	  a_90_dias_2[2]+=saldo_factura;
+	  a_90_dias_2[3]+=saldo_factura;
+          tab=87;
+      }
+      else {
+           a_120_dias[1]+=saldo_factura;
+	   a_120_dias[2]+=saldo_factura;
+	   a_120_dias[3]+=saldo_factura;
+          tab=101;
+      }
+     }
+    }
+   }
+  }
+ }
+}
+imprime_facturas();
+}
+
+void imprime_facturas()
+{
+ extern char linea[255];
+ if (con_lin > 62)
+     titulos();
+ espacios(tab);
+ sprintf(cadena,"%9.2f",saldo_factura);
+ fprintf(fp,"%2s%06.0f %4d%s%14s\n",tipo_documento.arr,numero_factura,total_dias,linea,fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+ con_lin++;
+}
+
+void calcula_dias()
+{
+ w_dia_corte=dia_corte;
+ w_mes_corte=mes_corte;
+ w_ano_corte=ano_corte;
+ strcpy(cadena,fecha_vencmto.arr);
+ strorg(cadena,7,2);
+ dia_vencmto=atoi(cadena);
+ if (dia_vencmto > 27 && dia_vencmto < 32)
+     dia_vencmto=30;
+ strcpy(cadena,fecha_vencmto.arr);
+ strorg(cadena,5,2);
+ mes_vencmto=atoi(cadena);
+ strcpy(cadena,fecha_vencmto.arr);
+ strorg(cadena,1,4);
+ ano_vencmto=atoi(cadena);
+ if (dia_vencmto > w_dia_corte) {
+     w_mes_corte--;
+     w_dia_corte+=30;
+ }
+ if (mes_vencmto > w_mes_corte) {
+     w_ano_corte--;
+     w_mes_corte+=12;
+ }
+ total_tiempo_dia=w_dia_corte-dia_vencmto;
+ total_tiempo_mes=w_mes_corte-mes_vencmto;
+ total_tiempo_ano=w_ano_corte-ano_vencmto;
+ total_dias=total_tiempo_dia+(total_tiempo_mes*30)+(total_tiempo_ano*360);
+}
+
+void imprime_vencmtos()
+{
+ if (con_lin > 62)
+     titulos();
+ if (!strcmp(recobrar,"N")) {
+     fprintf(fp,"%s","               --------------- -----");
+     fprintf(fp,"%s","-------- ------------- ------------- ------------- ------");
+     fprintf(fp,"%s\n","------- ------------- -------------");
+     fprintf(fp,"  %14s"," ");
+     sprintf(cadena,"%9.2f",por_vencer[1]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_30_dias_1[1]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_30_dias_2[1]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_60_dias_1[1]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_60_dias_2[1]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_90_dias_1[1]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_90_dias_2[1]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_120_dias[1]);
+     fprintf(fp,"%14s",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+     sprintf(cadena,"%9.2f",total_deuda[1]);
+     fprintf(fp,"\n\n%s%14s\n","TOTAL DEUDA ===>",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+/*     grabar(); */
+ }
+ con_lin++;
+ borra_acumulados(1);
+}
+
+void borra_acumulados(i)
+int i;
+{
+ total_deuda[i]=0;
+ por_vencer [i]=0;
+ a_30_dias_1[i]=0;
+ a_30_dias_2[i]=0;
+ a_60_dias_1[i]=0;
+ a_60_dias_2[i]=0;
+ a_90_dias_1[i]=0;
+ a_90_dias_2[i]=0;
+ a_120_dias [i]=0;
+}
+
+void titulo_ciudad()
+{
+ if (!strcmp(recobrar,"N")) {
+      EXEC SQL select nombre into :nomb_ciu
+               from   ciudades
+               where  codigo = :cod_ciu;
+
+      if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) 
+          fprintf (stderr, "Error leyendo Ciudades (%d)\n", sqlca.sqlcode);
+
+      nomb_ciu.arr   [nomb_ciu.len]  = '\0';
+      fprintf(fp,"%s%s\n\n","     Ciudad : ",nomb_ciu.arr);
+ }
+ con_lin+=3;
+}
+
+/* void grabar()
+{
+ FILE  *pa, *fopen();
+ int i;
+ pa = fopen("clistpen.err","w");
+ if ( pa == NULL ) {
+    fprintf(stderr,"Error abrindo el archivo clistpen.err");
+    exit(1);
+ }
+ fputc(condensado_off,pa);
+}
+*/

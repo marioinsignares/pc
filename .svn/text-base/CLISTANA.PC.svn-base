@@ -1,0 +1,690 @@
+/*****************************************************************
+* ROTULODE.C Version 1.0 - Rev 1.2 - Sep. 26/91.
+*
+* clistana.c Programa de facturacion para listar las clistana de la quincena
+*
+* Uso : clistana codigo_emp fecha_corte fecha_movto pagina_ini pagina_fin
+*       device   copias     userid/password
+*
+* Mario E. Santiago I. Creado Septiembre 26-1991
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+void titulos();
+void acumulo_cliente();
+void acum_facturas();
+void calcula_dias();
+void imprime_vencmtos();
+void imprime_totales(int i);
+void porcentajes(int i);
+void borra_acumulados(int i);
+void titulo_ciudad();
+
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+                                 /* Empresa (C1) */
+VARCHAR nomb_emp    [51];
+double  nit;
+int     digito;
+int     a2k;
+VARCHAR codigo_emp  [3];
+
+/*
+  Arreglo que contienen los valores de total deuda del cliente,
+          lo que esta por vencer, a 30 dias, 90 dias, 60 dias,
+          120 o mas dias.
+  El primer elemento de cada arreglo se|ala al cliente,
+  el segundo se|ala los totales por ciudad y el tercero los generales.
+
+*/
+
+double total_deuda[4];   /* Total deuda del cliente      */
+double por_vencer [4];   /* Total por vencer del cliente */
+double a_30_dias_1[4];   /* Total en la primera quincena */
+double a_30_dias_2[4];   /* Total en la segunda quincena */
+double a_60_dias_1[4];   /* Total en la primera quincena */
+double a_60_dias_2[4];   /* Total en la segunda quincena */
+double a_90_dias_1[4];   /* Total en la primera quincena */
+double a_90_dias_2[4];   /* Total en la segunda quincena */
+double a_120_dias [4];   /* Total en las dos quincenas   */
+
+VARCHAR nomb_ciu[60];
+
+VARCHAR cliente_ini   [9];
+VARCHAR cliente_fin   [9];
+
+VARCHAR codigo_cliente[10];
+VARCHAR nomb_clie[60];
+double  saldo_cliente;
+
+VARCHAR fecha_vencmto[20];
+double  saldo_factura;
+
+double  suma_total;
+char    *fmtnum(), r_t[100];
+int     con_pag=0;
+int     con_lin=66;
+VARCHAR cod_clie[10];
+char    pagina_ini[10];
+int     pag_ini;
+char    pagina_fin[10];
+int     pag_fin;
+char    copias[10];
+VARCHAR ano_mes[20];
+char    mes_t[10][20];
+int     i;
+int     tit_ciu=0;
+int     w_ano_corte;
+int     w_mes_corte;
+int     w_dia_corte;
+int     ano_corte;
+int     mes_corte;
+int     dia_corte;
+int     ano_movto;
+int     mes_movto;
+int     dia_movto;
+int     ano_vencmto;
+int     mes_vencmto;
+int     dia_vencmto;
+int     total_tiempo_ano;
+int     total_tiempo_mes;
+int     total_tiempo_dia;
+int     total_dias;
+char    cadena[120];
+char    cadena2[120];
+char    recobrar[9];
+char    fecha_corte[20];
+char    fecha_movto[20];
+char    fecha_listado[80];
+char    linea_fecha_movto[80];
+char    titulo_listado[80];
+VARCHAR cod_ciu[10];
+char    wcod_ciu[10];
+char    mensajes[70];
+int	oraest;
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+
+int     a;
+double  redondo();
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+ char	device[6];
+ int	status = 0;
+
+ if (argc < 9)
+    {
+     printf ("Incorrecta invocacion:\n");
+     printf ("Uso : clistana codigo_emp cliente_ini cliente_fin fecha_corte fecha_movto\n");
+     printf ("pagina_ini pagina_fin\n");
+     printf ("device copias userid/password\n");
+     printf ("      device : t salida por terminal\n");
+     printf ("               Px salida por impresora (x nro printer)\n");
+     printf ("               userid/password nombre usuario y password\n");
+     exit (1);
+    }
+
+ strcpy (codigo_emp.arr ,argv[1]);
+ codigo_emp.len = strlen(codigo_emp.arr);
+
+ strcpy (cliente_ini.arr  , argv[2]);
+ cliente_ini.len   =        strlen(cliente_ini.arr);
+ strcpy (cliente_fin.arr  , argv[3]);
+ cliente_fin.len   =        strlen(cliente_fin.arr);
+
+ strcpy (fecha_corte,argv[4]);
+ strcpy (fecha_movto,argv[5]);
+ if ( strlen(fecha_corte) != 8 || strlen(fecha_movto) != 8 ) {
+    printf("Error, la fecha debe ser de 8 digitos y formato AAAAMMDD");
+    exit (1);
+ }
+ strcpy (pagina_ini, argv[6]);
+ pag_ini=atoi(pagina_ini);
+ strcpy (pagina_fin, argv[7]);
+ pag_fin=atoi(pagina_fin);
+ strcpy (device,     argv[8]);
+ strlow (device);
+ strcpy (copias,     argv[9]);
+ strcpy(recobrar,"N");
+ if (pag_ini > 1)
+    strcpy(recobrar,"S");
+ for (i=1;i<=3;i++) {
+      borra_acumulados(i);
+ }
+
+if (!strpos ("/",   argv[10]))
+   {
+    printf ("user id/password incorrecto.\n");
+    exit (1);
+   }
+
+strcpy (uid.arr,    argv[10]);
+uid.len = strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+EXEC SQL CONNECT :uid;
+
+if (oraest==-1915)
+   {
+    fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+    oraest);
+    exit (1);
+   }
+else
+  if (oraest==-1017)
+  {
+   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+   exit (1);
+  }
+  else
+  if (oraest)
+     exit (1);
+
+  strcpy (ano_mes.arr,fecha_corte);
+  strorg (ano_mes.arr,1,6);
+  ano_mes.len = strlen(ano_mes.arr);
+
+  strcpy(cadena,fecha_corte);
+  strorg(cadena,7,2);
+  dia_corte =  atoi(cadena);
+  strcpy(cadena,fecha_corte);
+  strorg(cadena,5,2);
+  mes_corte =  atoi(cadena);
+  strcpy(cadena,fecha_corte);
+  strorg(cadena,1,4);
+  ano_corte =  atoi(cadena);
+  strcpy(cadena,fecha_movto);
+  strorg(cadena,7,2);
+  dia_movto =  atoi(cadena);
+  strcpy(cadena,fecha_movto);
+  strorg(cadena,5,2);
+  mes_movto =  atoi(cadena);
+  strcpy(cadena,fecha_movto);
+  strorg(cadena,1,4);
+  ano_movto =  atoi(cadena);
+
+  strcpy(titulo_listado,"Analisis de Cartera");
+  sprintf(cadena,"%d",ano_corte);
+  fmtnum("zz,zzz",cadena,r_t);
+  sprintf(fecha_listado,"%s %s %d %s%s","Fecha de corte a",mes[mes_corte-1],dia_corte,"de",r_t);
+
+
+  a=0;
+  if ((mes_corte==1) && dia_corte <16)
+     a=26;
+  else {
+        if (mes_corte == 1)
+           a=2;
+        else a=mes_corte*2;
+       }
+  if (dia_corte < 16)
+      a-=1;
+  strcpy(mes_t[1],meq[a-1]);
+  a--;
+  if (a==0)
+     a=24;
+  strcpy(mes_t[2],meq[a-1]);
+  a--;
+  if (a==0)
+     a=24;
+  strcpy(mes_t[3],meq[a-1]);
+  a--;
+  if (a==0)
+     a=24;
+  strcpy(mes_t[4],meq[a-1]);
+  a--;
+  if (a==0)
+     a=24;
+  strcpy(mes_t[5],meq[a-1]);
+  a--;
+  if (a==0)
+     a=24;
+  strcpy(mes_t[6],meq[a-1]);
+  a--;
+  if (a==0)
+     a=24;
+  strcpy(mes_t[7],meq[a-1]);
+  a--;
+  if (a==0)
+     a=24;
+  if (mes_corte==4 || mes_corte==6 || mes_corte==9 || mes_corte==11) {
+     if (dia_corte==30) {
+         dia_corte=31;
+         fecha_corte[6]='3';
+         fecha_corte[7]='1';
+     }
+  }
+  if (mes_corte==2) {
+     if (dia_corte==28 || dia_corte==29) {
+         dia_corte=31;
+         fecha_corte[6]='3';
+         fecha_corte[7]='1';
+     }
+  }
+
+  sprintf(cadena,"%d",ano_movto);
+  fmtnum("zz,zzz",cadena,r_t);
+  sprintf(linea_fecha_movto,"%s %s %d %s%s","Movimiento hasta",mes[mes_movto-1],dia_movto,"de",r_t);
+       EXEC SQL DECLARE C1 CURSOR FOR
+       select clientes.codigo_cliente, nombre, clientem.saldo
+        from   clientes, clientem, nits
+        where  clientes.codigo_cliente = clientem.codigo_cliente  and
+               clientes.codigo_cliente >= :cliente_ini            and
+               clientes.codigo_cliente <= :cliente_fin            and
+               clientem.ano_mes        =
+               (select max(ano_mes)
+                from clientem cm
+                where cm.codigo_emp     = to_number(:codigo_emp)  and
+                      cm.codigo_cliente = clientes.codigo_cliente and
+                      cm.ano_mes       <= to_number(:ano_mes))    and
+        clientem.codigo_emp             = to_number(:codigo_emp)  and
+        clientes.estado                != 'R'                     and
+        clientes.codigo_nit             = nits.codigo_nit         and
+        clientem.saldo                 <> 0                       and
+          not exists
+              (select 'x'
+               from   clienser
+               where  clientes.codigo_cliente = codigo_cliente)
+        order by clientes.codigo_cliente;
+
+       busco_impresora(device);
+       abre_impresora(copias);
+
+       EXEC SQL select nombre into :nomb_emp
+                from   empresas, nits
+                where  empresas.codigo_nit = nits.codigo_nit and
+                       empresas.codigo_emp = to_number(:codigo_emp);
+
+      nomb_emp.arr[nomb_emp.len] = '\0';
+
+   EXEC SQL OPEN C1;
+
+    oraest = 0;
+while (oraest ==0) {
+      EXEC SQL FETCH C1 INTO :codigo_cliente, :nomb_clie, :saldo_cliente;
+
+      oraest = sqlca.sqlcode;
+
+      if (oraest == 1403) break;
+      else if (oraest == -1405) oraest = 0;
+           else if (oraest) printf ("Error C1 (%d)\n", oraest);
+
+      codigo_cliente.arr[codigo_cliente.len] = '\0';
+      nomb_clie.arr[nomb_clie.len] = '\0';
+
+      if (status == 0) {
+         strcpy(cadena,codigo_cliente.arr);
+         strorg(cadena,1,2);
+         strcpy(cod_ciu.arr,cadena);
+         cod_ciu.len = strlen(cod_ciu.arr);
+         status = 1;
+      }
+
+      strcpy(cadena,codigo_cliente.arr);
+      strorg(cadena,1,2);
+      strcpy(wcod_ciu,cadena);
+      if (strcmp(cod_ciu.arr,wcod_ciu)) {
+          strcpy(mensajes,"TOTAL CIUDAD     ");
+          imprime_totales(2);
+          strcpy(cadena,codigo_cliente.arr);
+          strorg(cadena,1,2);
+          strcpy(cod_ciu.arr,cadena);
+          cod_ciu.len = strlen(cod_ciu.arr);
+          titulo_ciudad();
+      }
+      acumulo_cliente();
+}
+strcpy(mensajes,"TOTAL CIUDAD     ");
+imprime_totales(2);
+strcpy(mensajes,"TOTALES GENERALES");
+imprime_totales(3);
+cierre_impresora();
+
+/************************************************
+ * Borrar el cursor. (oclose).                  *
+ ***********************************************/
+EXEC SQL CLOSE C1;
+
+/************************************************
+ * Desconectarse de ORACLE. (ologof)            *
+ ************************************************/
+EXEC SQL COMMIT WORK RELEASE;
+exit   (0);
+}
+
+void titulos()
+{
+ int j=0;
+ con_pag++;
+ if (con_pag > pag_fin)
+    {
+     oraest = 1;
+     return;
+    }
+ if (!strcmp(recobrar,"S") && con_pag  ==  pag_ini)
+    {
+     printf ("Impresion en proceso : ");
+     strcpy(recobrar,"N");
+    }
+ if (!strcmp(recobrar,"N")) {
+    if (!strcmp(codigo_emp.arr,"3"))
+        strcpy(nomb_emp.arr,"");
+    strful(cadena,(int)(68-strlen(nomb_emp.arr))/2,' ');
+    fprintf(fp,"%s%s%s%s%s%s\n\n",salte_pagina,diezcpi,ancho_on,cadena,nomb_emp.arr,elite);
+    strful(cadena,(int)(81-strlen(titulo_listado))/2,' ');
+    fprintf(fp,"%s%s%s%s%40s%d\n\n",cadena,titulo_listado,ancho_off,diezcpi,"Pagina ",con_pag);
+    strful(cadena,(int)(117-strlen(fecha_listado))/2,' ');
+    fprintf(fp,"%s%s%s%s\n\n",condensado_on,ancho_on,cadena,fecha_listado);
+    strful(cadena,(int)(117-strlen(linea_fecha_movto))/2,' ');
+    fprintf(fp,"%s%s\n\n",cadena,linea_fecha_movto);
+    fprintf(fp,"%s%s%s%s",condensado_off,ancho_off,elite,"N O M B R E   D E L   C L I E N T E    TOTAL             ");
+    fprintf(fp,"%s","POR                30 DIAS                     60 DIAS   ");
+    fprintf(fp,"%s\n","                  90 DIAS             120  DIAS");
+    fprintf(fp,"%s","                                       DEUDA            V");
+    fprintf(fp,"%s","ENCER    --------------------------- --------------------");
+    fprintf(fp,"%s\n","------- --------------------------- -------------");
+    fprintf(fp,"%s","                                                ");
+    for (j=1;j<=7;j++) {
+        fprintf(fp,"%14s",mes_t[j]);
+    }
+    fprintf(fp,"\n%s","                                    --------------- -----");
+    fprintf(fp,"%s","-------- ------------- ------------- ------------- ------");
+    fprintf(fp,"%s\n","------- ------------- -------------");
+ }
+ con_lin = 12;
+ if (tit_ciu==0)
+    titulo_ciudad();
+}
+
+void acumulo_cliente()
+{
+int	oraest;
+       EXEC SQL DECLARE C2 CURSOR FOR
+       select to_char(fecha_vencmto,'yyyymmdd'), nvl(facturam.saldo,0)
+       from   facturas, facturam
+       where  facturas.tipo_factura   = to_number(:codigo_emp)  and
+              facturas.tipo_factura   = facturam.tipo_factura   and
+              facturas.tipo_documento = facturam.tipo_documento and
+              facturas.numero_factura = facturam.numero_factura and
+              facturam.ano_mes        =
+              (select max(ano_mes)
+               from facturam fm
+               where fm.tipo_factura   = facturas.tipo_factura   and
+                     fm.tipo_documento = facturas.tipo_documento and
+                     fm.numero_factura = facturas.numero_factura and
+                     fm.ano_mes       <= to_number(:ano_mes))    and
+        facturas.codigo_cliente        = :cod_clie               and
+        facturas.estado_factura        = 0                       and
+        facturam.saldo                 > 0                       and
+        facturas.contado               is null;
+
+ if (saldo_cliente > 0) {
+     oraest=0;
+     strcpy(cod_clie.arr,codigo_cliente.arr);
+     cod_clie.len = strlen(cod_clie.arr);
+
+     EXEC SQL OPEN C2;
+
+     while (oraest ==0) {
+           EXEC SQL FETCH C2 INTO :fecha_vencmto, :saldo_factura;
+
+           oraest = sqlca.sqlcode;
+           if (oraest == 1403) break;
+           else if (oraest == -1405) oraest = 0;
+                else if (oraest) printf ("Error C2 (%d)\n", oraest);
+
+           fecha_vencmto.arr[fecha_vencmto.len] = '\0';
+
+           acum_facturas();
+     }
+ }
+ total_deuda[1]+= saldo_cliente;
+ total_deuda[2]+= saldo_cliente;
+ total_deuda[3]+= saldo_cliente;
+ imprime_vencmtos();
+EXEC SQL CLOSE C2;
+}
+
+void acum_facturas()
+{
+ strcpy(cadena,fecha_vencmto.arr);
+ strorg(cadena,7,2);
+ dia_vencmto=atoi(cadena);
+ if (dia_vencmto > 27 && dia_vencmto < 32) {
+     fecha_vencmto.arr[6]='3';
+     fecha_vencmto.arr[7]='0';
+ }
+ if (strcmp(fecha_vencmto.arr,fecha_corte) > 0) {
+    por_vencer[1]+=saldo_factura;
+    por_vencer[2]+=saldo_factura;
+    por_vencer[3]+=saldo_factura;
+ }
+ else {
+       calcula_dias();
+       if (total_dias < 15) {
+	  a_30_dias_1[1]+=saldo_factura;
+	  a_30_dias_1[2]+=saldo_factura;
+	  a_30_dias_1[3]+=saldo_factura;
+       }
+      else {
+      if (total_dias < 30) {
+	  a_30_dias_2[1]+=saldo_factura;
+	  a_30_dias_2[2]+=saldo_factura;
+	  a_30_dias_2[3]+=saldo_factura;
+      }
+      else {
+      if (total_dias < 45) {
+	  a_60_dias_1[1]+=saldo_factura;
+	  a_60_dias_1[2]+=saldo_factura;
+	  a_60_dias_1[3]+=saldo_factura;
+      }
+      else {
+      if (total_dias < 60) {
+	  a_60_dias_2[1]+=saldo_factura;
+	  a_60_dias_2[2]+=saldo_factura;
+	  a_60_dias_2[3]+=saldo_factura;
+      }
+      else {
+      if (total_dias < 75) {
+	  a_90_dias_1[1]+=saldo_factura;
+	  a_90_dias_1[2]+=saldo_factura;
+	  a_90_dias_1[3]+=saldo_factura;
+      }
+      else {
+      if (total_dias < 90) {
+	  a_90_dias_2[1]+=saldo_factura;
+	  a_90_dias_2[2]+=saldo_factura;
+	  a_90_dias_2[3]+=saldo_factura;
+      }
+      else {
+           a_120_dias[1]+=saldo_factura;
+	   a_120_dias[2]+=saldo_factura;
+	   a_120_dias[3]+=saldo_factura;
+      }
+     }
+    }
+   }
+  }
+ }
+}
+}
+
+void calcula_dias()
+{
+ w_dia_corte=dia_corte;
+ w_mes_corte=mes_corte;
+ w_ano_corte=ano_corte;
+ strcpy(cadena,fecha_vencmto.arr);
+ strorg(cadena,7,2);
+ dia_vencmto=atoi(cadena);
+ if (dia_vencmto > 27 && dia_vencmto < 32)
+     dia_vencmto=30;
+ strcpy(cadena,fecha_vencmto.arr);
+ strorg(cadena,5,2);
+ mes_vencmto=atoi(cadena);
+ strcpy(cadena,fecha_vencmto.arr);
+ strorg(cadena,1,4);
+ ano_vencmto=atoi(cadena);
+ if (dia_vencmto > w_dia_corte) {
+     w_mes_corte--;
+     w_dia_corte+=30;
+ }
+ if (mes_vencmto > w_mes_corte) {
+     w_ano_corte--;
+     w_mes_corte+=12;
+ }
+ total_tiempo_dia=w_dia_corte-dia_vencmto;
+ total_tiempo_mes=w_mes_corte-mes_vencmto;
+ total_tiempo_ano=w_ano_corte-ano_vencmto;
+ total_dias=total_tiempo_dia+(total_tiempo_mes*30)+(total_tiempo_ano*360);
+}
+
+void imprime_vencmtos()
+{
+ if (con_lin > 62)
+     titulos();
+ if (!strcmp(recobrar,"N")) {
+     strorg(nomb_clie.arr,1,35);
+     fprintf(fp,"%-35s ",nomb_clie.arr);
+     sprintf(cadena,"%11f",total_deuda[1]);
+     fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+     sprintf(cadena,"%9.2f",por_vencer[1]);
+     fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_30_dias_1[1]);
+     fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_30_dias_2[1]);
+     fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_60_dias_1[1]);
+     fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_60_dias_2[1]);
+     fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_90_dias_1[1]);
+     fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_90_dias_2[1]);
+     fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+     sprintf(cadena,"%9.2f",a_120_dias[1]);
+     fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+     fprintf(fp,"\n");
+     if (total_deuda[1] > 0) {
+        suma_total = (por_vencer[1]+a_30_dias_1[1]+a_30_dias_2[1]+a_60_dias_1[1]+a_60_dias_2[1]+a_90_dias_1[1]+a_90_dias_2[1]+a_120_dias[1]);
+        if (total_deuda[1] != suma_total) {
+           fprintf(fp,"%s %s Suma:$%9.2f dif.:$%9.2f\n","*************** SALDO DESCUADRADO ***************",codigo_cliente.arr,suma_total,total_deuda[1]-suma_total);
+           con_lin++;
+        }
+     }
+ }
+ con_lin++;
+ borra_acumulados(1);
+}
+
+void imprime_totales(i)
+int i;
+{
+ if (con_lin > 62)
+     titulos();
+ if (!strcmp(recobrar,"N")) {
+      fprintf(fp,"\n%s%-18s%s%s",ancho_on,mensajes,ancho_off,elite);
+      sprintf(cadena,"%9.2f",total_deuda[i]);
+      fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+      sprintf(cadena,"%9.2f",por_vencer[i]);
+      fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+      sprintf(cadena,"%9.2f",a_30_dias_1[i]);
+      fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+      sprintf(cadena,"%9.2f",a_30_dias_2[i]);
+      fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+      sprintf(cadena,"%9.2f",a_60_dias_1[i]);
+      fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+      sprintf(cadena,"%9.2f",a_60_dias_2[i]);
+      fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+      sprintf(cadena,"%9.2f",a_90_dias_1[i]);
+      fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+      sprintf(cadena,"%9.2f",a_90_dias_2[i]);
+      fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+      sprintf(cadena,"%9.2f",a_120_dias[i]);
+      fprintf(fp,"%14s",fmtnum("zz,zzz,zzz,zzz",cadena,r_t));
+      fprintf(fp,"\n");
+ }
+ con_lin+=2;
+ if(i==3) {
+   strcpy(mensajes,"PORCENTAJES");
+   porcentajes(3);
+ }
+ borra_acumulados(i);
+}
+
+void porcentajes(i)
+int i;
+{
+ if (con_lin > 62)
+     titulos();
+ if (!strcmp(recobrar,"N") && total_deuda[i] != 0 ) {
+      fprintf(fp,"\n%s%-18s%s%s",ancho_on,mensajes,ancho_off,elite);
+      sprintf(cadena,"%9.2f",total_deuda[i]/total_deuda[i]*100);
+      fprintf(fp,"%14s",fmtnum("zzz.zz%",cadena,r_t));
+      sprintf(cadena,"%9.2f",redondo(por_vencer[i]/total_deuda[i]*100));
+      fprintf(fp,"%14s",fmtnum("zzz.zz%",cadena,r_t));
+      sprintf(cadena,"%9.2f",redondo(a_30_dias_1[i]/total_deuda[i]*100));
+      fprintf(fp,"%14s",fmtnum("zzz.zz%",cadena,r_t));
+      sprintf(cadena,"%9.2f",redondo(a_30_dias_2[i]/total_deuda[i]*100));
+      fprintf(fp,"%14s",fmtnum("zzz.zz%",cadena,r_t));
+      sprintf(cadena,"%9.2f",redondo(a_60_dias_1[i]/total_deuda[i]*100));
+      fprintf(fp,"%14s",fmtnum("zzz.zz%",cadena,r_t));
+      sprintf(cadena,"%9.2f",redondo(a_60_dias_2[i]/total_deuda[i]*100));
+      fprintf(fp,"%14s",fmtnum("zzz.zz%",cadena,r_t));
+      sprintf(cadena,"%9.2f",redondo(a_90_dias_1[i]/total_deuda[i]*100));
+      fprintf(fp,"%14s",fmtnum("zzz.zz%",cadena,r_t));
+      sprintf(cadena,"%9.2f",redondo(a_90_dias_2[i]/total_deuda[i]*100));
+      fprintf(fp,"%14s",fmtnum("zzz.zz%",cadena,r_t));
+      sprintf(cadena,"%9.2f",redondo(a_120_dias[i]/total_deuda[i]*100));
+      fprintf(fp,"%14s",fmtnum("zzz.zz%",cadena,r_t));
+      fprintf(fp,"\n");
+ }
+ con_lin+=2;
+}
+
+void borra_acumulados(i)
+int i;
+{
+ total_deuda[i]=0;
+ por_vencer [i]=0;
+ a_30_dias_1[i]=0;
+ a_30_dias_2[i]=0;
+ a_60_dias_1[i]=0;
+ a_60_dias_2[i]=0;
+ a_90_dias_1[i]=0;
+ a_90_dias_2[i]=0;
+ a_120_dias [i]=0;
+}
+
+void titulo_ciudad()
+{
+ tit_ciu=1;
+ if (con_lin > 59)
+     titulos();
+ if (!strcmp(recobrar,"N")) {
+
+       EXEC SQL select nombre into :nomb_ciu
+                from   ciudades
+                where  codigo = :cod_ciu;
+
+       nomb_ciu.arr[nomb_ciu.len] = '\0';
+
+      fprintf(fp,"\n%s%s%s%s%s\n\n",elite,ancho_on,"     Ciudad : ",nomb_ciu.arr,ancho_off);
+ }
+ tit_ciu=0;
+ con_lin+=3;
+}
