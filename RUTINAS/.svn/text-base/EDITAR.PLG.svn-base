@@ -1,0 +1,15 @@
+--------------------Configuration: editar - Win32 Release--------------------
+Begining build with project "C:\Rutinas\editar.dsp", with item "editar.c"
+Active configuration is Win32 (x86) Console Application (based on Win32 (x86) Console Application)
+
+
+Creating temp file "C:\WINDOWS\TEMP\RSP60A3.TMP" with contents </nologo /ML /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Release/editar.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Rutinas\editar.c"
+>
+Creating command line "cl.exe @C:\WINDOWS\TEMP\RSP60A3.TMP" 
+Compiling...
+editar.c
+
+
+
+editar.obj - 0 error(s), 0 warning(s)

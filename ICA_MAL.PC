@@ -1,0 +1,624 @@
+/*****************************************************************
+* AJUSTEINF.PC Version 1.0 - Rev 1.2 - Jun. 30/92.
+*
+* impuestos.pc. Impuestos.
+*
+* Uso: impuestos codigo_emp aamm device copias userid/password
+*
+* Mario Santiago Insignares. Creado en Octubre 18 de 2006.
+* Laboratorio Oftálmico de la Costs S.A.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <setjmp.h>
+#include <stdlib.h>
+#include <math.h>
+
+double redondo();
+
+void hacer_asiento();
+void ver_inf();
+void inserta_deb();
+void inserta_cre();
+
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+                                 /* Empresa (C1) */
+VARCHAR nomb_emp    [41];
+VARCHAR cadenab     [41];
+double  nitn;
+double  nitb;
+int     digito;
+VARCHAR codigo_emp  [3];
+                                 /* Infacu (C2) */
+VARCHAR vecinf      [20][14];
+                                 /* Movto_C (C3) */
+//VARCHAR ano_mesf    [20];
+VARCHAR comprobanteb[7];
+VARCHAR consecutivob[7];
+VARCHAR fechab      [20];
+                                 /* Movto_D (C4) */
+VARCHAR secuenciab  [7];
+VARCHAR cuentab     [13];
+VARCHAR infa        [14];
+VARCHAR infb        [14];
+VARCHAR infc        [14];
+VARCHAR infd        [14];
+VARCHAR codigo_nitb [6];
+VARCHAR valor_debb  [15];
+VARCHAR valor_creb  [15];
+char    inf         [5][14];
+                                 /* Control_Mes (C5) */
+double  consecutivo;
+VARCHAR fuenteb     [3];
+double  consecutivo12;
+                                 /* Acumulados (C6) */
+VARCHAR tipo        [11];
+VARCHAR cuenta_db   [13];
+VARCHAR cuenta_cr   [13];
+double  valor;
+VARCHAR fecha_asto  [20];
+//VARCHAR ano_mesi    [20];
+VARCHAR ano_mes     [20];
+VARCHAR codigo      [11];
+VARCHAR cuenta_crb  [13];
+                                 /* Plan (C8) */
+VARCHAR veca        [14];
+VARCHAR vecb        [14];
+VARCHAR vecc        [14];
+VARCHAR vecd        [14];
+char    vecplan     [5][14];
+int     codigo_nit;
+//VARCHAR cuenta      [13];
+VARCHAR gasto_cc    [10];
+
+float   ptajesuc;
+int     ultimo;
+
+/* sucursales y c.costo */
+
+VARCHAR sucursal_im[05];
+VARCHAR cen_cos_im [03];
+VARCHAR sucursalb  [05];
+VARCHAR cen_cosb   [03];
+
+float   ptaje;
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+				     /* Parametros de comunicacion con ORACLE */
+
+                                            /* Variables globales del usuario */
+char    tipoa[5];
+double  valort     =0;
+char    pagina[4];                                   /* Contador de Paginas */
+int     con_pag=0;                                   /* Contador de Paginas */
+int     con_lin=66;                                  /* Contador de Lineas  */
+int     cl;
+int     staora     =0;
+int     traidos    =0;
+int     num_ret    =0;
+int     loop_2     =0;
+double  secuencia  =0;
+        		                /* Variables de recepcion para datos */
+int     staorag;
+double  valor_s;
+double  valor_r;
+double  valor_d;
+
+char *fmtnum(), r_t[100];
+int     diai;
+int     mesx, mesi, mesf;
+int     anox, anoi, anof;
+int     i, j, k;
+char    ptajeb[7];
+char    cadena[100];
+char    login[20];
+char    copias[5];
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int	status = 0;
+
+    if (argc < 8)
+       {
+	printf ("Incorrecta invocacion:\n");
+        printf ("Uso : codigo_emp aaaamm copias pagina device nro_cpbte userid/password\n");
+	printf ("      device : t salida por terminal\n");
+	printf ("      device : s salida standar     \n");
+	printf ("               Px salida por impresora (x nro printer)\n");
+	printf ("               userid/password nombre usuario y password\n");
+        exit (1);
+       }
+       strcpy (codigo_emp.arr, argv[1]);
+       codigo_emp.len =        strlen(codigo_emp.arr);
+       strcpy (copias,           argv[3]);
+       strcpy (pagina,           argv[4]);
+       strcpy (device,           argv[5]);
+       strlow (device);
+       strcpy (comprobanteb.arr, argv[6]);
+       comprobanteb.len =        strlen(comprobanteb.arr);
+
+    if (!strpos ("/", argv[7]))
+       {
+        printf ("user id/password incorrecto.\n");
+	exit (1);
+       }
+
+    strcpy (uid.arr,    argv[7]);
+    uid.len =           strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora(copias);
+
+/*********************************************
+ * Procesar una sentencia SQL (oexec).       *
+ *********************************************/
+    strcpy (ano_mes.arr,   argv[2]);
+    ano_mes.len = strlen(ano_mes.arr);
+    strcpy (cadena,argv[2]);
+    strorg (cadena,1,4);
+    anoi         =        atoi(cadena);
+    strcpy (cadena,argv[2]);
+    strorg (cadena,5,2);
+    mesi         =        atoi(cadena);
+    anof=anoi;
+    mesf=mesi+1;
+
+    if (mesi==12) {
+        anof=anoi+1;
+        mesf=1;
+    }
+    EXEC SQL DECLARE C2 CURSOR FOR
+             select inf
+             from   infacu;
+
+    EXEC SQL OPEN C2;
+
+    staora  = 0;
+    traidos = 0;
+    num_ret = 0;
+    while (staora == 0) {
+
+          EXEC SQL FETCH C2 INTO :vecinf;
+
+          if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+             fprintf (stderr, "Error leyendo C2 (%d)\n", sqlca.sqlcode);
+
+          staora  = sqlca.sqlcode;
+          if (staora == -1405) 
+              staora = 0;
+          traidos = sqlca.sqlerrd[2];
+
+          for (loop_2 = 0; loop_2 < (traidos - num_ret); loop_2++) {
+              vecinf[loop_2].arr  [vecinf[loop_2].len] = '\0';
+          }
+          num_ret = traidos;
+    }
+    k = traidos;
+    EXEC SQL CLOSE C2;
+    EXEC SQL DECLARE C6 CURSOR FOR
+	  select e.tipo, e.cuenta_db, e.cuenta_cr,
+	         round(abs(sum((nvl(valor_cre,0)-nvl(valor_deb,0))))*e.operacion*c.ica/100,0)*ptaje/100 as valor_sinop,
+	         to_char(last_day(to_date(:ano_mes,'yyyymm')),'DD-MON-YYYY') as fecha, a.sucursal, a.cen_cos, ptaje,
+	         e.codigo_nit, e.nit
+	  from   acumulados a, ica e, actividadeco c
+	  where  a.codigo_emp = :codigo_emp    and
+	         a.ano_mes    = :ano_mes       and
+	         a.codigo_emp = e.codigo_emp   and
+           a.sucursal   = e.sucursal     and
+	         substr(a.cuenta,1,length(e.cuenta)) = e.cuenta and
+           e.codigo_ac  = c.codigo_ac
+   	group by e.tipo, e.cuenta_db, e.cuenta_cr,
+	         e.operacion, c.ica,
+	         a.sucursal, a.cen_cos,
+	         e.codigo_nit, e.nit, ptaje
+   	order by a.sucursal,1,6,4;
+    EXEC SQL OPEN C6;
+
+    EXEC SQL DECLARE C8 CURSOR FOR
+             select sucursal, ptaje, ultimo
+             from   SUCURSAL
+             where  codigo_emp = :codigo_emp and
+                    ptaje > 0
+             order by ultimo, ptaje, sucursal;
+                                                                        
+    hacer_asiento();
+
+    cierre_impresora();
+
+    EXEC SQL CLOSE C2;
+    EXEC SQL CLOSE C6;
+
+    EXEC SQL COMMIT WORK RELEASE;
+//    EXEC SQL ROLLBACK WORK RELEASE;
+
+    exit   (0);
+}
+
+void hacer_asiento()
+{
+int x;
+  strcpy(fuenteb.arr,"22");
+  fuenteb.len = strlen(fuenteb.arr);
+
+ /* Lee consecutivo de control_mes Fte 22 Cns ultimo Asiento impuestos */
+  EXEC SQL select consecutivo   into :consecutivo12
+           from control_mes
+           where fuente       = to_number(:fuenteb)       and
+                 ano_mes      = to_number(:ano_mes)       and
+                 codigo_emp   = to_number(:codigo_emp);
+
+  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+      fprintf (stderr, "Error leyendo Control_Mes (%d)\n", sqlca.sqlcode);
+//    printf("Paso-5"); getchar();
+  }
+  else {
+        sprintf(consecutivob.arr,"%5.0f",consecutivo12);
+        consecutivob.len = strlen(consecutivob.arr);
+//    printf("Paso-5.2"); getchar();
+
+        EXEC SQL delete from movto_d
+                 where codigo_emp   = to_number(:codigo_emp)   and
+                       ano_mes      = to_number(:ano_mes)      and
+                       consecutivo  = to_number(:consecutivob);
+
+//    printf("Paso-5.3"); getchar();
+        if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+            fprintf (stderr, "Error leyendo Movto_D (%d)\n", sqlca.sqlcode);
+//    printf("Paso-5.1"); getchar();
+
+        EXEC SQL delete from movto_c
+                 where codigo_emp   = to_number(:codigo_emp)   and
+                       comprobante  = to_number(:comprobanteb) and
+                       clase        = 'CD'                     and
+                       tipo         = '13'                     and
+                       ano_mes      = to_number(:ano_mes);
+
+        if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+            fprintf (stderr, "Error leyendo Movto_Cx (%d)\n", sqlca.sqlcode);
+  }
+
+  strcpy(fuenteb.arr,"08");
+  fuenteb.len = strlen(fuenteb.arr);
+
+  /* Lee consecutivo de Control_mes Fte 08 sgte consecutivo */
+
+  EXEC SQL select consecutivo+1 into :consecutivo
+           from control_mes
+           where fuente       = to_number(:fuenteb)       and
+                 ano_mes      = to_number(:ano_mes)       and
+                 codigo_emp   = to_number(:codigo_emp)
+                 for update of consecutivo;
+
+//    printf("Paso-5.4"); getchar();
+  if (sqlca.sqlcode)
+     {
+      fprintf (stderr, "Error leyendo Control_Mes Fte 08 (%d)\n", sqlca.sqlcode);
+      consecutivo=1;
+      sprintf(consecutivob.arr,"%5.0f",consecutivo);
+      consecutivob.len = strlen(consecutivob.arr);
+               /* Inserta en Control_Mes Fte 08 si no existe (C11) */
+//    printf("Paso-5.5"); getchar();
+      EXEC SQL insert into control_mes
+      (FUENTE,ANO_MES,NOMBRE,CONSECUTIVO,CODIGO_EMP)
+               values (:fuenteb, :ano_mes, 'CONTROL ICA',
+                       :consecutivob, :codigo_emp);
+//    printf("Paso-5.5.1"); getchar();
+     }
+  else {
+        sprintf(consecutivob.arr,"%5.0f",consecutivo);
+        consecutivob.len = strlen(consecutivob.arr);
+               /* Actualiza Cns de Fte 08 en control_mes (C12) */
+//    printf("Paso-5.6"); getchar();
+        EXEC SQL update control_mes
+                 set    consecutivo = :consecutivob
+                 where codigo_emp   = to_number(:codigo_emp)    and
+                       ano_mes      = to_number(:ano_mes)       and
+                       fuente       = :fuenteb;
+//    printf("Paso-5.6.1"); getchar();
+  }
+
+//    printf("Paso-6"); getchar();
+  strcpy(fuenteb.arr,"22");
+  fuenteb.len = strlen(fuenteb.arr);
+
+  EXEC SQL select consecutivo   into :consecutivo12
+           from control_mes
+           where fuente       = to_number(:fuenteb)       and
+                 ano_mes      = to_number(:ano_mes)       and
+                 codigo_emp   = to_number(:codigo_emp)
+                 for update of consecutivo;
+
+  if (sqlca.sqlcode)
+     {
+      fprintf (stderr, "Error leyendo Control_Mes Fte 22 (%d)\n", sqlca.sqlcode);
+               /* Inserta en Control_Mes Fte 12 si no existe (C11) */
+      EXEC SQL insert into control_mes
+              (FUENTE,ANO_MES,NOMBRE,CONSECUTIVO,CODIGO_EMP)
+               values (:fuenteb, :ano_mes, 'CONTROL IMPUESTOS',
+                       :consecutivob, :codigo_emp);
+     }
+  else {
+               /* Actualiza Cns de Fte 22 en control_mes (C12) */
+        EXEC SQL update control_mes
+                 set    consecutivo = :consecutivob
+                 where codigo_emp   = to_number(:codigo_emp)    and
+                       ano_mes      = to_number(:ano_mes)       and
+                       fuente       = :fuenteb;
+  }
+  EXEC SQL FETCH C6 INTO :tipo, :cuenta_db, :cuenta_cr, :valor, :fecha_asto, :sucursal_im, :cen_cos_im,
+                         :ptaje, :codigo_nit, :nitn;
+/*
+              printf("0) sqlca.sqlcode (%d)\n", sqlca.sqlcode);
+              fprintf(stderr,"tipo <%s>\n",tipo.arr);
+              fprintf(stderr,"cuenta_db <%s>\n",cuenta_db.arr);
+              fprintf(stderr,"valor <%10.2f>\n",valor);
+              fprintf(stderr,"fecha_asto <%s>\n",fecha_asto.arr);
+              fprintf(stderr,"sucursal_im <%s>\n",sucursal_im.arr);
+              fprintf(stderr,"cen_cos_im <%s>\n",cen_cos_im.arr);
+              fprintf(stderr,"ptaje <%5.2f>\n",ptaje);
+              fprintf(stderr,"codigo_nit <%8.0f>\n",codigo_nit);
+              fprintf(stderr,"nitn <%12.0f>\n",nitn);
+              fprintf(stderr,"fecha_asto<%s>, fechab <%s>\n",fecha_asto.arr,fechab.arr); getchar();
+*/
+  fecha_asto.arr  [fecha_asto.len] = '\0';
+  strcpy(fechab.arr,fecha_asto.arr);
+  fechab.len = strlen(fechab.arr);
+  strcpy(tipoa,tipo.arr);
+  staora  = sqlca.sqlcode;
+  if (staora == -1405) 
+      staora = 0;
+//  fprintf(stderr,"1) (ORA%d) fecha_asto<%s>, fechab <%s>\n",staora,fecha_asto.arr,fechab.arr); getchar();
+  if (sqlca.sqlcode != 0) {
+      fprintf(stderr, "Error leyendo C6 (%d)\n", sqlca.sqlcode);
+      fprintf(stderr,"codigo_emp <%s>\n",codigo_emp.arr);
+      fprintf(stderr,"ano_mes <%s>\n",ano_mes.arr);
+      fprintf(stderr,"comprobanteb <%s>\n",comprobanteb.arr);
+      fprintf(stderr,"consecutivob <%s>\n",consecutivob.arr);
+      fprintf(stderr,"cadenab <%s>\n",cadenab.arr);
+      fprintf(stderr,"fecha_asto<%s>, fechab <%s>\n",fecha_asto.arr,fechab.arr); getchar();
+}
+
+//  printf("1) %s %s %s %s %s",codigo_emp.arr, ano_mesf.arr, comprobanteb.arr, consecutivob.arr, fechab.arr); getchar();
+
+  sprintf(cadenab.arr,"PROV DE IND Y COMERCIO %c%c%c/%4d",mes[mesi-1][0],mes[mesi-1][1],mes[mesi-1][2],anoi);
+  cadenab.len = strlen(cadenab.arr);
+/*
+      fprintf(stderr, "Error leyendo C6 (%d)\n", sqlca.sqlcode);
+      fprintf(stderr,"codigo_emp <%s>\n",codigo_emp.arr);
+      fprintf(stderr,"ano_mes <%s>\n",ano_mes.arr);
+      fprintf(stderr,"comprobanteb <%s>\n",comprobanteb.arr);
+      fprintf(stderr,"consecutivob <%s>\n",consecutivob.arr);
+      fprintf(stderr,"cadenab <%s>\n",cadenab.arr);
+      fprintf(stderr,"fechab <%s>\n",fechab.arr); getchar();
+*/      
+  EXEC SQL insert into movto_c
+          (CODIGO_EMP,ANO_MES,COMPROBANTE,CONSECUTIVO,CLASE,DESCRIPCION,FECHA,TIPO,ESTADO,NITB,CODIGO_NITB,VALORB,RETENCION,CONTADO)
+           values(:codigo_emp, :ano_mes, :comprobanteb, :consecutivob, 'CD',
+                  :cadenab,:fechab,'13', '0','','','','','');
+
+//  fprintf(stderr,"2) (ORA%d) fecha_asto<%s>, fechab <%s>\n",staora,fecha_asto.arr,fechab.arr); getchar();
+  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+      fprintf (stderr, "Error insertando en Movto_C (%d)\n", sqlca.sqlcode);
+      fprintf(stderr,"codigo_emp <%s>\n",codigo_emp.arr);
+      fprintf(stderr,"ano_mes <%s>\n",ano_mes.arr);
+      fprintf(stderr,"comprobanteb <%s>\n",comprobanteb.arr);
+      fprintf(stderr,"consecutivob <%s>\n",consecutivob.arr);
+      fprintf(stderr,"cadenab <%s>\n",cadenab.arr);
+      fprintf(stderr,"fecha_asto<%s>, fechab <%s>\n",fecha_asto.arr,fechab.arr); getchar();
+  }
+
+  while (staora == 0) {
+
+//        printf("1) sqlca.sqlcode (%d), staora (%d)\n", sqlca.sqlcode, staora);
+        cuenta_db.arr   [cuenta_db.len]  = '\0';
+        cuenta_cr.arr   [cuenta_cr.len]  = '\0';
+        fecha_asto.arr  [fecha_asto.len] = '\0';
+        secuencia++;
+
+        sprintf(secuenciab.arr,"%6.0f",secuencia);
+        secuenciab.len = strlen(secuenciab.arr);
+        if (codigo_nit==0) {
+           strcpy(infa.arr,"");
+           nitb=0;
+        }
+        else {
+           sprintf(codigo_nitb.arr,"%5d",codigo_nit);
+           nitb=nitn;
+        }
+        codigo_nitb.len = strlen(codigo_nitb.arr);
+        strcpy(codigo.arr,cuenta_db.arr);
+        codigo.len = strlen(codigo.arr);
+        strcpy(cuentab.arr,cuenta_db.arr);
+        cuentab.len = strlen(cuentab.arr);
+        ver_inf();
+        strcpy(sucursalb.arr,sucursal_im.arr);
+        sucursalb.len = strlen(sucursalb.arr);
+        strcpy(cen_cosb.arr,cen_cos_im.arr);
+        cen_cosb.len = strlen(cen_cosb.arr);
+
+        strcpy(cuenta_crb.arr,cuenta_cr.arr);
+        cuenta_crb.len = strlen(cuenta_crb.arr);
+
+
+        valort += valor;
+        EXEC SQL FETCH C6 INTO :tipo, :cuenta_db, :cuenta_cr, :valor, :fecha_asto, :sucursal_im, :cen_cos_im,
+                               :ptaje, :codigo_nit, :nitn;
+        tipo.arr   [tipo.len]  = '\0';
+        staora  = sqlca.sqlcode;
+        if (staora == -1405) 
+            staora = 0;
+
+        sprintf(valor_debb.arr,"%10.2f",valort);
+        valor_debb.len = strlen(valor_debb.arr);
+        valor_s = atof(valor_debb.arr);
+        strcpy (valor_creb.arr,"");
+        valor_creb.len = strlen(valor_creb.arr);
+
+        if (valort> 0) {
+           if (valor_s > 0) {
+                  x=0;
+                    inserta_deb(); 
+           }
+           strcpy(codigo.arr,cuenta_crb.arr);
+           codigo.len = strlen(codigo.arr);
+           strcpy(cuentab.arr,cuenta_crb.arr);
+           cuentab.len = strlen(cuentab.arr);
+           ver_inf();
+           strcpy (valor_debb.arr,"");
+           valor_debb.len = strlen(valor_debb.arr);
+           sprintf(valor_creb.arr,"%10.2f",valort);
+           valor_creb.len = strlen(valor_creb.arr);
+           valor_s = atof(valor_creb.arr);
+                                         /* Graba en movto_d el Credito (C4) */
+           if (valor_s > 0) {
+              x=0;
+              inserta_cre(); 
+           }
+        }
+        strcpy(tipoa,tipo.arr);
+        valort = 0;
+  }
+
+}
+
+void inserta_deb()
+{
+
+    sprintf(valor_debb.arr,"%10.2f",valor_s);
+    valor_debb.len = strlen(valor_debb.arr);
+
+    EXEC SQL insert into movto_d
+             (CODIGO_EMP,ANO_MES,CONSECUTIVO,SECUENCIA,CUENTA,INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_COS)
+             values(:codigo_emp, :ano_mes, :consecutivob, :secuenciab,
+                    :cuentab, :infa, :infb, :infc, :infd,
+                    :codigo_nitb, to_number(:valor_debb,'9999999999.99'), :valor_creb,:sucursalb,:cen_cosb);
+//                    :codigo_nitb, :valor_debb, :valor_creb,:sucursalb,:cen_cosb);
+
+//    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+//        printf("Error Grabando Debito (%d)\n", sqlca.sqlcode);
+        printf("codigo_emp <%s>\n",codigo_emp.arr);
+        printf("ano_mes <%s>\n",ano_mes.arr);
+        printf("consecutivob <%s>\n",consecutivob.arr);
+        printf("secuenciab <%s>\n",secuenciab.arr);
+        printf("cuentab <%s>\n",cuentab.arr);
+        printf("infa <%s>\n",infa.arr);
+        printf("infb <%s>\n",infb.arr);
+        printf("infc <%s>\n",infc.arr);
+        printf("infd <%s>\n",infd.arr);
+        printf("codigo_nitb <%s>\n",codigo_nitb.arr);
+        printf("valor_debb <%s>\n",valor_debb.arr);
+        printf("valor_creb <%s>\n",valor_creb.arr);
+        printf("sucursalb <%s>\n",sucursalb.arr);
+        printf("cen_cosb <%s>\n",cen_cosb.arr); getchar();
+//    }
+
+}
+
+void inserta_cre()
+{
+
+    sprintf(valor_creb.arr,"%10.2f",valor_s);
+    valor_creb.len = strlen(valor_creb.arr);
+
+    EXEC SQL insert into movto_d
+             (CODIGO_EMP,ANO_MES,CONSECUTIVO,SECUENCIA,CUENTA,INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_COS)
+             values(:codigo_emp, :ano_mes, :consecutivob, :secuenciab,
+                    :cuentab, :infa, :infb, :infc, :infd,
+                    :codigo_nitb, :valor_debb, to_number(:valor_creb,'9999999999.99'),:sucursalb,:cen_cosb);
+
+//    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
+        printf("Error Grabando Credito (%d)\n", sqlca.sqlcode);
+        printf("codigo_emp <%s>\n",codigo_emp.arr);
+        printf("ano_mes <%s>\n",ano_mes.arr);
+        printf("consecutivob <%s>\n",consecutivob.arr);
+        printf("secuenciab <%s>\n",secuenciab.arr);
+        printf("cuentab <%s>\n",cuentab.arr);
+        printf("infa <%s>\n",infa.arr);
+        printf("infb <%s>\n",infb.arr);
+        printf("infc <%s>\n",infc.arr);
+        printf("infd <%s>\n",infd.arr);
+        printf("codigo_nitb <%s>\n",codigo_nitb.arr);
+        printf("valor_debb <%s>\n",valor_debb.arr);
+        printf("valor_creb <%s>\n",valor_creb.arr);
+        printf("sucursalb <%s>\n",sucursalb.arr);
+        printf("cen_cosb <%s>\n",cen_cosb.arr); getchar();
+//    }
+
+}
+
+void ver_inf()
+{
+  EXEC SQL select infa, infb, infc, infd, nvl(gasto_comun,'D')
+           into :veca, :vecb, :vecc, :vecd, :gasto_cc
+           from   plan
+           where  codigo_emp = :codigo_emp and
+                  cuenta     = :cuentab;
+
+  if (sqlca.sqlcode == 1403)
+      printf ("Cuentab (%-s) no existe\n", cuentab.arr);
+
+  veca.arr [veca.len] = '\0';
+  vecb.arr [vecb.len] = '\0';
+  vecc.arr [vecc.len] = '\0';
+  vecd.arr [vecd.len] = '\0';
+
+  strcpy (vecplan[1], veca.arr);
+  strcpy (vecplan[2], vecb.arr);
+  strcpy (vecplan[3], vecc.arr);
+  strcpy (vecplan[4], vecd.arr);
+
+  for (i=1;i<=4;i++) {
+       strcpy(inf[i],"");
+  }
+  i=j=0;
+  for (i=1;i<=4;i++) {
+      if (!strcmp(vecplan[i],"NIT")) {
+          sprintf(inf[i],"%12.0f",nitb);
+      }
+      for (j=1;j<=k;j++) {
+          if (!strcmp(vecplan[i],vecinf[j].arr) && strcmp(vecplan[i],"") ) {
+              strcpy(inf[i],codigo.arr);
+          }
+      }
+  }
+  strcpy (infa.arr, inf[1]);
+  strcpy (infb.arr, inf[2]);
+  strcpy (infc.arr, inf[3]);
+  strcpy (infd.arr, inf[4]);
+  infa.len = strlen(infa.arr);
+  infb.len = strlen(infb.arr);
+  infc.len = strlen(infc.arr);
+  infd.len = strlen(infd.arr);
+}

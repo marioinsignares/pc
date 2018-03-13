@@ -1,0 +1,267 @@
+    1     1        /******************************************************************
+    2     2        * (MESI). precios_lista.C Version 1.0 - Rev 1.2 - Mar. 3/90.
+    3     3        *
+    4     4        * precios_lista.c. Lista de precios de lentes oftalmicos
+    5     5        *
+    6     6        * uso : precios_lista DD-MMM-AA device userid/password
+    7     7        *
+    8     8        * Mario E. Santiago I. Creado Marzo 23-1990.
+    9     9        * Teodoro tarud & cia ltda.
+   10    10        *
+   11    11        *
+   12    12        */
+   13    13        
+   14    14        #include <stdio.h>
+   15    15        #include <string.h>
+   16    16        #include <ctype.h>
+   17    17        #include <setjmp.h>
+   18    18        #include <stdlib.h>
+   19    19        #include <sys/types.h>
+   20    20        #include <sqlproto.h>
+   21    21        
+   22    22        int strorg();
+   23    23        
+   24    24        EXEC SQL BEGIN DECLARE SECTION;
+   25    25        
+   26    26        /* Variables de la tabla impresora. */
+   27    27        VARCHAR    w_impresora     [03];
+   28    28        VARCHAR    w_modelo        [26];
+   29    29        VARCHAR    w_diezcpi       [06];
+   30    30        VARCHAR    w_elite         [06];
+   31    31        VARCHAR    w_salte_pagina  [06];
+   32    32        VARCHAR    w_salte_linea   [06];
+   33    33        VARCHAR    w_condensado_on [06];
+   34    34        VARCHAR    w_condensado_off[06];
+   35    35        VARCHAR    w_ancho_on      [06];
+   36    36        VARCHAR    w_ancho_off     [06];
+   37    37        VARCHAR    w_enfatizado_on [06];
+   38    38        VARCHAR    w_enfatizado_off[06];
+   39    39        VARCHAR    w_italica_on    [06];
+   40    40        VARCHAR    w_italica_off   [06];
+   41    41        VARCHAR    w_subrayado_on  [06];
+   42    42        VARCHAR    w_subrayado_off [06];
+   43    43        VARCHAR    w_set_vertical  [06];
+   44    44        VARCHAR    w_vertical      [06];
+   45    45        VARCHAR    w_clear_buffer  [06];
+   46    46        VARCHAR    w_line_feed8    [06];
+   47    47        VARCHAR    w_line_feed6    [06];
+   48    48        VARCHAR    w_grafica       [06];
+   49    49        VARCHAR    w_line_feed8vo  [06];
+   50    50        VARCHAR    w_alto_on       [06];
+   51    51        VARCHAR    w_alto_off      [06];
+   52    52        VARCHAR    w_tamano_pagina [06];
+   53    53        VARCHAR    w_nql_on        [07];
+   54    54        VARCHAR    w_nql_off       [06];
+   55    55        VARCHAR    w_color         [11];
+   56    56        VARCHAR    w_idioma        [06];
+   57    57        
+   58    58        VARCHAR	impresorat[3];
+   59    59        VARCHAR     w_ruta    [101];
+   60    60        
+   61    61        EXEC SQL END DECLARE SECTION;
+   62    62        EXEC SQL INCLUDE SQLCA;
+   63    63        
+   64    64        FILE    *fp;
+   65    65        
+   66    66        char    impresora       [03];
+   67    67        char    modelo          [26];
+   68    68        char    diezcpi         [06];
+   69    69        char    elite           [06];
+   70    70        char    salte_pagina    [06];
+   71    71        char    salte_linea     [06];
+   72    72        char    condensado_on   [06];
+   73    73        char    condensado_off  [06];
+   74    74        char    ancho_on        [06];
+   75    75        char    ancho_off       [06];
+   76    76        char    enfatizado_on   [06];
+   77    77        char    enfatizado_off  [06];
+   78    78        char    italica_on      [06];
+   79    79        char    italica_off     [06];
+   80    80        char    subrayado_on    [06];
+   81    81        char    subrayado_off   [06];
+   82    82        char    set_vertical    [06];
+   83    83        char    vertical        [06];
+   84    84        char    clear_buffer    [06];
+   85    85        char    line_feed8      [06];
+   86    86        char    line_feed6      [06];
+   87    87        char    grafica         [06];
+   88    88        char    line_feed8vo    [06];
+   89    89        char    alto_on         [06];
+   90    90        char    alto_off        [06];
+   91    91        char    tamano_pagina   [06];
+   92    92        char    nql_on          [07];
+   93    93        char    nql_off         [06];
+   94    94        char    color           [11];
+   95    95        char    idioma          [06];
+   96    96        
+   97    97        int abre_impresora();
+   98    98        
+   99    99        int busco_impresora(device)
+  100   100        char    device[];
+  101   101        {
+  102   102        strlow (device);
+  103   103        
+  104   104        strcpy (impresorat.arr, device);
+  105   105        impresorat.len = strlen(impresorat.arr);
+  106   106        
+  107   107        EXEC SQL SELECT   ruta into :w_ruta
+  108   108                 FROM     modelos
+  109   109                 WHERE    impresora = :impresorat and
+  110   110                          usuario   = USER;
+  111   111          
+  112   112        
+  113   113        if (sqlca.sqlcode) {
+  114   114           printf ("Device Incorrecto o no existe.\n");
+  115   115           exit (1);
+  116   116        }
+  117   117        w_ruta.arr [w_ruta.len] = '\0';
+  118   118        return (0);
+  119   119        }
+  120   120        int abre_impresora(copia)
+  121   121        char    copia[];
+  122   122        {
+  123   123          char copias[3];
+  124   124          strcpy (copias, copia);
+  125   125        
+  126   126             EXEC SQL SELECT   impresora, modelo, normal, elite,  salte_pagina,
+  127   127                               salte_linea, condensado_on, condensado_off, ancho_on,
+  128   128                               ancho_off, enfatizado_on, enfatizado_off, italica_on,
+  129   129                               italica_off, subrayado_on, subrayado_off, set_vertical,
+  130   130                               vertical, clear_buffer, line_feed8, line_feed6, grafica,
+  131   131                               line_feed8vo, alto_on, alto_off, tamano_pagina, nql_on,
+  132   132                               nql_off, color, idioma
+  133   133                      INTO     :w_impresora, :w_modelo, :w_diezcpi, :w_elite,  
+  134   134                               :w_salte_pagina, :w_salte_linea, :w_condensado_on, 
+  135   135                               :w_condensado_off, :w_ancho_on, :w_ancho_off, 
+  136   136                               :w_enfatizado_on, :w_enfatizado_off, :w_italica_on,
+  137   137                               :w_italica_off, :w_subrayado_on, :w_subrayado_off, 
+  138   138                               :w_set_vertical, :w_vertical, :w_clear_buffer, 
+  139   139                               :w_line_feed8, :w_line_feed6, :w_grafica, 
+  140   140                               :w_line_feed8vo, :w_alto_on, 
+  141   141                               :w_alto_off, :w_tamano_pagina, :w_nql_on,
+  142   142                               :w_nql_off, :w_color, :w_idioma
+  143   143        		 FROM  impresora
+  144   144        		 WHERE impresora = :impresorat;
+  145   145        
+  146   146            if (!sqlca.sqlcode || sqlca.sqlcode != 1403) {
+  147   147                w_impresora.arr[w_impresora.len]          = '\0';
+  148   148                w_modelo.arr[w_modelo.len]                = '\0';
+  149   149                w_diezcpi.arr[w_diezcpi.len]              = '\0';
+  150   150                w_elite.arr[w_elite.len]                  = '\0';
+  151   151                w_salte_pagina.arr[w_salte_pagina.len]    = '\0';
+  152   152                w_salte_linea.arr[w_salte_linea.len]      = '\0';
+  153   153                w_condensado_on.arr[w_condensado_on.len]  = '\0';
+  154   154                w_condensado_off.arr[w_condensado_off.len]= '\0';
+  155   155                w_ancho_on.arr[w_ancho_on.len]            = '\0';
+  156   156                w_ancho_off.arr[w_ancho_off.len]          = '\0';
+  157   157                w_enfatizado_on.arr[w_enfatizado_on.len]  = '\0';
+  158   158                w_enfatizado_off.arr[w_enfatizado_off.len]= '\0';
+  159   159                w_italica_on.arr[w_italica_on.len]        = '\0';
+  160   160                w_italica_off.arr[w_italica_off.len]      = '\0';
+  161   161                w_subrayado_on.arr[w_subrayado_on.len]    = '\0';
+  162   162                w_subrayado_off.arr[w_subrayado_off.len]  = '\0';
+  163   163                w_set_vertical.arr[w_set_vertical.len]    = '\0';
+  164   164                w_vertical.arr[w_vertical.len]            = '\0';
+  165   165                w_clear_buffer.arr[w_clear_buffer.len]    = '\0';
+  166   166                w_line_feed8.arr[w_line_feed8.len]        = '\0';
+  167   167                w_line_feed6.arr[w_line_feed6.len]        = '\0';
+  168   168                w_grafica.arr[w_grafica.len]              = '\0';
+  169   169                w_line_feed8vo.arr[w_line_feed8vo.len]    = '\0';
+  170   170                w_alto_on.arr[w_alto_on.len]              = '\0';
+  171   171                w_alto_off.arr[w_alto_off.len]            = '\0';
+  172   172                w_tamano_pagina.arr[w_tamano_pagina.len]  = '\0';
+  173   173                w_nql_on.arr[w_nql_on.len]                = '\0';
+  174   174                w_nql_off.arr[w_nql_off.len]              = '\0';
+  175   175                w_color.arr[w_color.len]                  = '\0';
+  176   176                w_idioma.arr[w_idioma.len]                = '\0';
+  177   177        
+  178   178                strcpy(impresora,w_impresora.arr);
+  179   179                strcpy(modelo,w_modelo.arr);
+  180   180                strcpy(diezcpi,w_diezcpi.arr);
+  181   181                strcpy(elite,w_elite.arr);
+  182   182                strcpy(salte_pagina,w_salte_pagina.arr);
+  183   183                strcpy(salte_linea,w_salte_linea.arr);
+  184   184                strcpy(condensado_on,w_condensado_on.arr);
+  185   185                strcpy(condensado_off,w_condensado_off.arr);
+  186   186                strcpy(ancho_on,w_ancho_on.arr);
+  187   187                strcpy(ancho_off,w_ancho_off.arr);
+  188   188                strcpy(enfatizado_on,w_enfatizado_on.arr);
+  189   189                strcpy(enfatizado_off,w_enfatizado_off.arr);
+  190   190                strcpy(italica_on,w_italica_on.arr);
+  191   191                strcpy(italica_off,w_italica_off.arr);
+  192   192                strcpy(subrayado_on,w_subrayado_on.arr);
+  193   193                strcpy(subrayado_off,w_subrayado_off.arr);
+  194   194                strcpy(set_vertical,w_set_vertical.arr);
+  195   195                strcpy(vertical,w_vertical.arr);
+  196   196                strcpy(clear_buffer,w_clear_buffer.arr);
+  197   197                strcpy(line_feed8,w_line_feed8.arr);
+  198   198                strcpy(line_feed6,w_line_feed6.arr);
+  199   199                strcpy(grafica,w_grafica.arr);
+  200   200                strcpy(line_feed8vo,w_line_feed8vo.arr);
+  201   201                strcpy(alto_on,w_alto_on.arr);
+  202   202                strcpy(alto_off,w_alto_off.arr);
+  203   203                strcpy(tamano_pagina,w_tamano_pagina.arr);
+  204   204                strcpy(nql_on,w_nql_on.arr);
+  205   205                strcpy(nql_off,w_nql_off.arr);
+  206   206                strcpy(color,w_color.arr);
+  207   207                strcpy(idioma,w_idioma.arr);
+  208   208            }
+  209   209        
+  210   210          if ((fp = fopen(w_ruta.arr, "w")) == NULL) 
+  211   211             {
+  212   212              fprintf (stderr,"Error abriendo archivo pipe \n");
+  213   213              exit (1);
+  214   214             }
+  215   215        
+  216   216        return 0;
+  217   217        } 
+  218   218        void cierre_impresora()
+  219   219        {
+  220   220          fclose(fp);
+  221   221        }
+
+
+                              Opciones del Precompilador
+-------------------------------------------------------------------------------
+Option Name    Current Value  
+-------------------------------------------------------------------------------
+asacc          no                                                               
+auto_connect   no                                                               
+code           ansi_c                                                           
+comp_charset   multi_byte                                                       
+config         default                                                          
+cpp_suffix     *none*                                                           
+dbms           native                                                           
+def_sqlcode    no                                                               
+define         *none*                                                           
+errors         yes                                                              
+fips           none                                                             
+hold_cursor    no                                                               
+iname          c:\rutinas\impresora.pc                                          
+include        include=C:\ORAWIN95\PRO22\C\INCLUDE                              
+               *none*                                                           
+ireclen        80                                                               
+lines          no                                                               
+lname          impresor                                                         
+lreclen        132                                                              
+ltype          long                                                             
+maxliteral     1024                                                             
+maxopencursors 10                                                               
+mode           oracle                                                           
+nls_char       *none*                                                           
+nls_local      no                                                               
+oname          c:\rutinas\impresora.c                                           
+oraca          no                                                               
+oreclen        80                                                               
+pagelen        80                                                               
+parse          none                                                             
+release_cursor no                                                               
+select_error   yes                                                              
+sqlcheck       syntax                                                           
+sys_include    *none*                                                           
+test           no                                                               
+threads        no                                                               
+unsafe_null    no                                                               
+userid         *none*                                                           
+varchar        no                                                               
+xref           no                                                               

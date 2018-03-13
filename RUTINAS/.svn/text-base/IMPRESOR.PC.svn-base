@@ -1,0 +1,221 @@
+/******************************************************************
+* (MESI). precios_lista.C Version 1.0 - Rev 1.2 - Mar. 3/90.
+*
+* precios_lista.c. Lista de precios de lentes oftalmicos
+*
+* uso : precios_lista DD-MMM-AA device userid/password
+*
+* Mario E. Santiago I. Creado Marzo 23-1990.
+* Teodoro tarud & cia ltda.
+*
+*
+*/
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <setjmp.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sqlproto.h>
+
+int strorg();
+
+EXEC SQL BEGIN DECLARE SECTION;
+
+/* Variables de la tabla impresora. */
+VARCHAR    w_impresora     [03];
+VARCHAR    w_modelo        [26];
+VARCHAR    w_diezcpi       [31];
+VARCHAR    w_elite         [31];
+VARCHAR    w_salte_pagina  [31];
+VARCHAR    w_salte_linea   [31];
+VARCHAR    w_condensado_on [31];
+VARCHAR    w_condensado_off[31];
+VARCHAR    w_ancho_on      [31];
+VARCHAR    w_ancho_off     [31];
+VARCHAR    w_enfatizado_on [31];
+VARCHAR    w_enfatizado_off[31];
+VARCHAR    w_italica_on    [31];
+VARCHAR    w_italica_off   [31];
+VARCHAR    w_subrayado_on  [31];
+VARCHAR    w_subrayado_off [31];
+VARCHAR    w_set_vertical  [31];
+VARCHAR    w_vertical      [31];
+VARCHAR    w_clear_buffer  [31];
+VARCHAR    w_line_feed8    [31];
+VARCHAR    w_line_feed6    [31];
+VARCHAR    w_grafica       [31];
+VARCHAR    w_line_feed8vo  [31];
+VARCHAR    w_alto_on       [31];
+VARCHAR    w_alto_off      [31];
+VARCHAR    w_tamano_pagina [31];
+VARCHAR    w_nql_on        [31];
+VARCHAR    w_nql_off       [31];
+VARCHAR    w_color         [31];
+VARCHAR    w_idioma        [31];
+
+VARCHAR	impresorat[3];
+VARCHAR     w_ruta    [101];
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+
+FILE    *fp;
+
+char    impresora       [03];
+char    modelo          [26];
+char    diezcpi         [31];
+char    elite           [31];
+char    salte_pagina    [31];
+char    salte_linea     [31];
+char    condensado_on   [31];
+char    condensado_off  [31];
+char    ancho_on        [31];
+char    ancho_off       [31];
+char    enfatizado_on   [31];
+char    enfatizado_off  [31];
+char    italica_on      [31];
+char    italica_off     [31];
+char    subrayado_on    [31];
+char    subrayado_off   [31];
+char    set_vertical    [31];
+char    vertical        [31];
+char    clear_buffer    [31];
+char    line_feed8      [31];
+char    line_feed6      [31];
+char    grafica         [31];
+char    line_feed8vo    [31];
+char    alto_on         [31];
+char    alto_off        [31];
+char    tamano_pagina   [31];
+char    nql_on          [31];
+char    nql_off         [31];
+char    color           [31];
+char    idioma          [31];
+
+int abre_impresora();
+
+int busco_impresora(device)
+char    device[];
+{
+strlow (device);
+
+strcpy (impresorat.arr, device);
+impresorat.len = strlen(impresorat.arr);
+
+EXEC SQL SELECT   ruta into :w_ruta
+         FROM     modelos
+         WHERE    impresora = :impresorat and
+                  usuario   = USER;
+
+
+if (sqlca.sqlcode) {
+   printf ("Device Incorrecto o no existe.\n");
+   exit (1);
+}
+w_ruta.arr [w_ruta.len] = '\0';
+return (0);
+}
+int abre_impresora(copia)
+char    copia[];
+{
+  char copias[3];
+  strcpy (copias, copia);
+
+     EXEC SQL SELECT   impresora, modelo, normal, elite,  salte_pagina,
+                       salte_linea, condensado_on, condensado_off, ancho_on,
+                       ancho_off, enfatizado_on, enfatizado_off, italica_on,
+                       italica_off, subrayado_on, subrayado_off, set_vertical,
+                       vertical, clear_buffer, line_feed8, line_feed6, grafica,
+                       line_feed8vo, alto_on, alto_off, tamano_pagina, nql_on,
+                       nql_off, color, idioma
+              INTO     :w_impresora, :w_modelo, :w_diezcpi, :w_elite,
+                       :w_salte_pagina, :w_salte_linea, :w_condensado_on,
+                       :w_condensado_off, :w_ancho_on, :w_ancho_off,
+                       :w_enfatizado_on, :w_enfatizado_off, :w_italica_on,
+                       :w_italica_off, :w_subrayado_on, :w_subrayado_off,
+                       :w_set_vertical, :w_vertical, :w_clear_buffer,
+                       :w_line_feed8, :w_line_feed6, :w_grafica,
+                       :w_line_feed8vo, :w_alto_on,
+                       :w_alto_off, :w_tamano_pagina, :w_nql_on,
+                       :w_nql_off, :w_color, :w_idioma
+		 FROM  impresoras
+		 WHERE impresora = :impresorat;
+
+    if (!sqlca.sqlcode || sqlca.sqlcode != 1403) {
+        w_impresora.arr[w_impresora.len]          = '\0';
+        w_modelo.arr[w_modelo.len]                = '\0';
+        w_diezcpi.arr[w_diezcpi.len]              = '\0';
+        w_elite.arr[w_elite.len]                  = '\0';
+        w_salte_pagina.arr[w_salte_pagina.len]    = '\0';
+        w_salte_linea.arr[w_salte_linea.len]      = '\0';
+        w_condensado_on.arr[w_condensado_on.len]  = '\0';
+        w_condensado_off.arr[w_condensado_off.len]= '\0';
+        w_ancho_on.arr[w_ancho_on.len]            = '\0';
+        w_ancho_off.arr[w_ancho_off.len]          = '\0';
+        w_enfatizado_on.arr[w_enfatizado_on.len]  = '\0';
+        w_enfatizado_off.arr[w_enfatizado_off.len]= '\0';
+        w_italica_on.arr[w_italica_on.len]        = '\0';
+        w_italica_off.arr[w_italica_off.len]      = '\0';
+        w_subrayado_on.arr[w_subrayado_on.len]    = '\0';
+        w_subrayado_off.arr[w_subrayado_off.len]  = '\0';
+        w_set_vertical.arr[w_set_vertical.len]    = '\0';
+        w_vertical.arr[w_vertical.len]            = '\0';
+        w_clear_buffer.arr[w_clear_buffer.len]    = '\0';
+        w_line_feed8.arr[w_line_feed8.len]        = '\0';
+        w_line_feed6.arr[w_line_feed6.len]        = '\0';
+        w_grafica.arr[w_grafica.len]              = '\0';
+        w_line_feed8vo.arr[w_line_feed8vo.len]    = '\0';
+        w_alto_on.arr[w_alto_on.len]              = '\0';
+        w_alto_off.arr[w_alto_off.len]            = '\0';
+        w_tamano_pagina.arr[w_tamano_pagina.len]  = '\0';
+        w_nql_on.arr[w_nql_on.len]                = '\0';
+        w_nql_off.arr[w_nql_off.len]              = '\0';
+        w_color.arr[w_color.len]                  = '\0';
+        w_idioma.arr[w_idioma.len]                = '\0';
+
+        strcpy(impresora,w_impresora.arr);
+        strcpy(modelo,w_modelo.arr);
+        strcpy(diezcpi,w_diezcpi.arr);
+        strcpy(elite,w_elite.arr);
+        strcpy(salte_pagina,w_salte_pagina.arr);
+        strcpy(salte_linea,w_salte_linea.arr);
+        strcpy(condensado_on,w_condensado_on.arr);
+        strcpy(condensado_off,w_condensado_off.arr);
+        strcpy(ancho_on,w_ancho_on.arr);
+        strcpy(ancho_off,w_ancho_off.arr);
+        strcpy(enfatizado_on,w_enfatizado_on.arr);
+        strcpy(enfatizado_off,w_enfatizado_off.arr);
+        strcpy(italica_on,w_italica_on.arr);
+        strcpy(italica_off,w_italica_off.arr);
+        strcpy(subrayado_on,w_subrayado_on.arr);
+        strcpy(subrayado_off,w_subrayado_off.arr);
+        strcpy(set_vertical,w_set_vertical.arr);
+        strcpy(vertical,w_vertical.arr);
+        strcpy(clear_buffer,w_clear_buffer.arr);
+        strcpy(line_feed8,w_line_feed8.arr);
+        strcpy(line_feed6,w_line_feed6.arr);
+        strcpy(grafica,w_grafica.arr);
+        strcpy(line_feed8vo,w_line_feed8vo.arr);
+        strcpy(alto_on,w_alto_on.arr);
+        strcpy(alto_off,w_alto_off.arr);
+        strcpy(tamano_pagina,w_tamano_pagina.arr);
+        strcpy(nql_on,w_nql_on.arr);
+        strcpy(nql_off,w_nql_off.arr);
+        strcpy(color,w_color.arr);
+        strcpy(idioma,w_idioma.arr);
+    }
+
+  if ((fp = fopen(w_ruta.arr, "w")) == NULL)
+     {
+      fprintf (stderr,"Error abriendo archivo pipe \n");
+      exit (1);
+     }
+
+return 0;
+}
+void cierre_impresora()
+{
+  fclose(fp);
+}

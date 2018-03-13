@@ -1,0 +1,63 @@
+        select o.codigo_cliente as codigo_cliente,
+               o.consecutivo as consecutivo,
+               o.numero_orden as numero_orden,
+               o.clase_material as clase_material,
+               o.valor_total as valor_total,
+               cf.ptaje_iva as ptaje_iva,
+               to_date(
+               decode(cf.numero_quincena,
+                      1,to_number(cf.ano||lpad(cf.mes_proceso,2,0)||15),
+                      2,to_number(to_char(last_day(to_date(cf.ano||lpad(cf.mes_proceso,2,0),'yymm')),'yyyymmdd'))),'yymmdd')+15 as fecha_vencmto,
+               to_date(to_char(to_date(
+               decode(cf.numero_quincena,
+                      1,to_number(cf.ano||lpad(cf.mes_proceso,2,0)||15),
+                      2,to_number(to_char(last_day(to_date(cf.ano||lpad(cf.mes_proceso,2,0),'yymm')),'yyyymmdd'))),'yymmdd'),'yyyymmdd'),'yymmdd') as fecha_corte,
+               retefte as retefte,
+               monto_retefte as monto_retefte
+        from ordenes_c o, clientese e, control_fac cf
+        where to_number(:codigo_emp) = nvl(e.codigo_emp,1)           and
+              to_number(:codigo_emp) = cf.codigo_emp                 and
+              o.codigo_cliente = e.codigo_cliente(+)                 and
+              (:tipo_cliente)  = nvl(e.tipo_cliente,'0')             and
+              to_number(:numero_quincena)    = e.numero_quincena(+)  and
+              (:cliente_ini)  <= o.codigo_cliente                    and
+              (:cliente_fin)  >= o.codigo_cliente                    and
+              nvl(o.estado,0) <> 'R'                                 and
+              nvl(o.contado,0) = 0                                   and
+              to_number(to_char(o.fecha_control,'yyyymmdd')) <=
+              decode(to_number(:numero_quincena),
+                     1,to_number(to_char(to_date(cf.ano||lpad(cf.mes_proceso,2,0),'yymm'),'yyyymm')||15),
+                     2,to_number(to_char(last_day(to_date(cf.ano||lpad(cf.mes_proceso,2,0),'yymm')),'yyyymmdd'))) and
+              to_number(to_char(o.fecha_control,'yyyymmdd')) >=
+              decode(to_number(:numero_quincena),
+                    1,to_number(to_char(to_date(cf.ano||lpad(cf.mes_proceso,2,0),'yymm'),'yyyymm')||lpad(1,2,0)),
+                    2,to_number(to_char(to_date(cf.ano||lpad(cf.mes_proceso,2,0),'yymm'),'yyyymm')||16))
+        group by o.codigo_cliente,
+                o.consecutivo, o.numero_orden, o.clase_material, o.valor_total,
+                cf.numero_quincena, cf.ptaje_iva, cf.ano, cf.mes_proceso,
+                retefte, monto_retefte
+        order by o.codigo_cliente, o.consecutivo, o.numero_orden;
+
+   EXEC SQL FETCH C1 INTO :codigo_cliente, :consecutivo, :numero_orden,
+                          :clase_material, :valor_total, :ptaje_iva,
+                          :fecha_vencmto,  :fecha_corte, :retefte, :monto_retefte;
+
+--------------------------
+
+        select n.nombre as nomb_clie,
+               nvl(n.nombre_muni,c.nombre) as nomb_ciu,
+               n.direccion as direccion,
+               max(nvl(t.numero,0)) as telefono,
+               n.nit as nit,
+               nvl(n.digito,-1) as digito,
+               n.clase_docu as clase_docu
+        into  :nombclie, :nombciu, :direccion, :telefono, :nit, :digito, :clasedocu
+        from  nits n, ciudades c, telefonos t, clientes cl
+        where n.codigo_nit      = cl.codigo_nit             and
+              cl.codigo_cliente = :codigo_cliente           and
+              n.codigo_ciu      = c.codigo                  and
+              n.codigo_nit      = t.codigo_nit(+)
+        group by n.nombre, n.nombre_muni, c.nombre, n.direccion,
+                 n.nit,    n.digito, n.clase_docu;
+return null;
+

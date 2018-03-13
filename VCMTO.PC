@@ -1,0 +1,433 @@
+/*****************************************************************
+* VENCMTOS.C Version 3.1 - Rev 1.1 - Sep. 10/99.
+*
+* vencmtos.c Programa de facturacion para listar las facturas de la quincena
+*
+* Uso : vencmtos codigo_emp tipo_cliente cliente_ini cliente_fin device
+* copias userid/password
+*
+* Mario E. Santiago I. Creado Junio 21-1990.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+double redondo();
+
+void imprime_vencmtos();
+void busco_cliente();
+
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100]; 
+VARCHAR codigo_emp[5];
+double  nit;
+VARCHAR tipo_cliente[5];
+VARCHAR cliente_ini[10];
+VARCHAR cliente_fin[10];
+VARCHAR codigo_cliente[10];
+VARCHAR nomb_clie[50];
+VARCHAR nomb_ciu[30];
+VARCHAR direccion[50];
+double  valor_total;
+int     mes_proceso;
+VARCHAR fecha_vencmto[20];
+VARCHAR vencimiento[20];
+VARCHAR fecha_corte[20];
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+
+                                            /* Variables globales del usuario */
+#define A_F1 "###,###,###.##"
+#define O1 " Impresion en proceso...... "
+#define O2 " Recuperacion en proceso...... "
+
+char *fmtnum(), r_t[100];
+char    copias[6];
+                          /* Variables de recepcion para datos */
+char    fecha_corte2[20];
+char    fecha_cor[20];
+char    cadena[255];
+char    cadena2[100];
+double  total_deuda;
+double  por_vencer;
+double  a_30_dias;
+double  a_60_dias;
+double  a_90_dias;
+double  a_120_dias;
+double  total_dias;
+int     w_dia_corte;
+int     dia_corte;
+int     w_mes_corte;
+int     mes_corte;
+int     w_ano_corte;
+int     ano_corte;
+int     dia_vencmto;
+int     mes_vencmto;
+int     ano_vencmto;
+int     total_tiempo_dia;
+int     total_tiempo_mes;
+int     total_tiempo_ano;
+int     oraest;
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char device[6];
+int     i;
+int status = 0;
+
+if (argc < 9)
+   {
+    printf ("Incorrecta invocacion:\n");
+    printf ("Uso : vencmtos codigo_emp tipo_cliente numero_quincena\n");
+    printf ("cliente_ini cliente_fin numero_factura \n");
+    printf ("device copias formas userid/password\n");
+    printf ("      device : t salida por terminal\n");
+    printf ("               Px salida por impresora (x nro printer)\n");
+    printf ("               userid/password nombre usuario y password\n");
+    exit (1);
+   }
+
+strcpy (codigo_emp.arr, argv[1]);
+codigo_emp.len      =   strlen(codigo_emp.arr);
+strcpy (tipo_cliente.arr,argv[2]);
+tipo_cliente.len    =   strlen(tipo_cliente.arr);
+strcpy (numero_quincena.arr,argv[3]);
+numero_quincena.len =   strlen(numero_quincena.arr);
+strcpy (cliente_ini.arr, argv[4]);
+cliente_ini.len     =   strlen(cliente_ini.arr);
+strcpy (cliente_fin.arr, argv[5]);
+cliente_fin.len     =   strlen(cliente_fin.arr);
+strcpy (numero_factura.arr, argv[6]);
+numero_factura.len  =   strlen(numero_factura.arr);
+strcpy (device,      argv[7]);
+strlow (device);
+strcpy (copias,      argv[8]);
+strcpy (formas,      argv[9]);
+
+if (!strpos ("/", argv[10]))
+   {
+    printf ("user id/password incorrecto.\n");
+    exit (1);
+   }
+
+strcpy (uid.arr,    argv[10]);
+uid.len     = strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora("1");
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+     EXEC SQL DECLARE C1 CURSOR FOR
+        select n.nombre, nvl(n.nombre_muni,c.nombre), n.direccion,
+               max(nvl(t.numero,0)), n.nit, nvl(n.digito,-1)
+        into  :nomb_clie, :nomb_ciu, :direccion, :telefono, :nit, :digito
+        from  nits n, ciudades c, telefonos t, clientes cl
+        where n.codigo_nit      = cl.codigo_nit                       and
+              cl.codigo_cliente = :wcod                               and
+              n.codigo_ciu      = c.codigo                            and
+              n.codigo_nit      = t.codigo_nit(+)
+        group by n.nombre, n.nombre_muni, c.nombre, n.direccion,
+                 n.nit,    n.digito;
+
+/* C22 */
+     EXEC SQL DECLARE C22 CURSOR FOR
+        select to_char(fecha_vencmto,'yyyymmdd'), saldo
+        from   facturam fm, facturas f
+        where  f.tipo_factura     = to_number(:codigo_emp) and
+               f.codigo_cliente   = (:wcod)                and
+               f.fecha_documento <= SYSDATE                and
+               f.estado_factura   = 0                      and
+               f.estado_cartera   = 0                      and
+               f.valor_neto       > 0                      and
+               fm.tipo_factura    = f.tipo_factura         and
+               fm.tipo_documento  = f.tipo_documento       and
+               fm.numero_factura  = f.numero_factura       and
+               fm.ano_mes         =
+               (select max(ano_mes)
+                from   facturam
+                where  facturam.tipo_factura   = to_number(:codigo_emp) and
+                       facturam.tipo_documento = f.tipo_documento       and
+                       facturam.numero_factura = f.numero_factura       and
+                       facturam.ano_mes <= :ano_mes);
+
+strcpy(wcod.arr,codigo_cliente.arr);
+wcod.len = strlen(wcod.arr);
+busco_cliente();
+
+strcpy(cadena,fecha_corte.arr);
+numero_fechaj(cadena);
+strcpy(fecha_corte2,cadena);
+strcpy(fecha_cor,fecha_corte2);
+strcpy(cadena,fecha_corte2);
+strorg(cadena,7,2);
+dia_corte=atoi(cadena);
+strcpy(cadena,fecha_corte2);
+strorg(cadena,5,2);
+mes_corte=atoi(cadena);
+strcpy(cadena,fecha_corte2);
+strorg(cadena,1,4);
+ano_corte=atoi(cadena);
+
+if (mes_corte==4 || mes_corte==6 || mes_corte==9 || mes_corte==11) {
+   if (dia_corte==30) {
+       dia_corte=31;
+       fecha_corte2[6]='3';
+       fecha_corte2[7]='1';
+   }
+}
+if (mes_corte==2) {
+   if (dia_corte>15 && dia_corte<30) {
+       dia_corte=31;
+       fecha_corte2[6]='3';
+       fecha_corte2[7]='1';
+   }
+}
+total_deuda   =0;
+por_vencer    =0;
+a_30_dias     =0;
+a_60_dias     =0;
+a_90_dias     =0;
+a_120_dias    =0;
+
+pasan=0;
+i    =0;
+EXEC SQL OPEN C1;
+
+EXEC SQL FETCH C1 INTO :nomb_clie, :nomb_ciu, :direccion,
+                       :telefono, :nit, :digito
+
+nomb_clie.arr      [nomb_clie.len]     = '\0';
+nomb_ciu.arr       [nomb_ciu.len]      = '\0';
+direccion.arr      [direccion.len]     = '\0';
+
+oraest  = sqlca.sqlcode;
+
+if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 0) 
+    fprintf (stderr, "Error leyendo C1 (%d)\n", sqlca.sqlcode);
+
+while (oraest == 0) {
+      if (strcmp(wcod.arr,codigo_cliente.arr))
+         {
+          imprime_vencmtos();
+          EXEC SQL FETCH C1 INTO :nomb_clie, :nomb_ciu, :direccion,
+                                 :telefono, :nit, :digito
+
+          nomb_clie.arr      [nomb_clie.len]     = '\0';
+          nomb_ciu.arr       [nomb_ciu.len]      = '\0';
+          direccion.arr      [direccion.len]     = '\0';
+
+          oraest  = sqlca.sqlcode;
+
+          if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 0) 
+              fprintf (stderr, "Error leyendo C1 (%d)\n", sqlca.sqlcode);
+          i=0;
+      }
+}
+
+imprime_vencmtos();
+
+void borro_acumulados()
+{
+ sub_total     =0;
+ sub_total_o   =0;
+ sub_total_c   =0;
+ nro_ordenes_o =0;
+ nro_ordenes_c =0;
+ nro_despachos =0;
+ fletes        =0;
+ costo_factura =0;
+ total_paginas =0;
+ con_pag       =0;
+ pasan         =0;
+
+ saldo_factura =0;
+ por_vencer    =0;
+ a_30_dias     =0;
+ a_60_dias     =0;
+ a_90_dias     =0;
+ a_120_dias    =0;
+}
+
+
+void imprime_vencmtos()
+{
+ total_deuda   =0;
+ por_vencer    =0;
+ a_30_dias     =0;
+ a_60_dias     =0;
+ a_90_dias     =0;
+ a_120_dias    =0;
+ oraest        =0;
+ EXEC SQL OPEN C22;
+
+ oraest  = 0;
+ while (oraest==0) {
+        EXEC SQL FETCH C22 INTO :vencimiento, :saldo_factura;
+
+        oraest  = sqlca.sqlcode;
+        if (sqlca.sqlcode == 1403) break;
+
+        if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) 
+            fprintf (stderr, "Error leyendo C22 (%d)\n", sqlca.sqlcode);
+
+        vencimiento.arr      [vencimiento.len]     = '\0';
+        acum_facturas();
+ }
+
+ if (pasan!=1) {
+     fprintf (fp,"  %s%s",elite,enfatizado_on);
+     if (por_vencer > 0)
+        fprintf (fp,"  %s","POR VENCER");
+     if (a_30_dias > 0)
+        fprintf (fp,"\r%22s%s"," ","30 DIAS");
+     if (a_60_dias > 0)
+        fprintf (fp,"\r%39s%s"," ","60 DIAS");
+     if (a_90_dias > 0)
+        fprintf (fp,"\r%55s%s"," ","90 DIAS");
+     if (a_120_dias > 0)
+        fprintf (fp,"\r%67s%s%s"," ","SOBRE 90 DIAS",enfatizado_off);
+     fprintf (fp,"\n");
+
+     if (por_vencer > 0) {
+        sprintf (cadena,"%9.2f",por_vencer);
+        fprintf (fp,"%s",fmtnum("zzz,zzz,zz9.99",cadena,r_t));
+     }
+     if (a_30_dias > 0) {
+        sprintf (cadena,"%9.2f",a_30_dias);
+        fprintf (fp,"\r%17s%s"," ",fmtnum("zzz,zzz,zz9.99",cadena,r_t));
+     }
+     if (a_60_dias > 0) {
+        sprintf (cadena,"%9.2f",a_60_dias);
+        fprintf (fp,"\r%35s%s%s",enfatizado_on," ",fmtnum("zzz,zzz,zz9.99",cadena,r_t));
+     }
+     if (a_90_dias > 0) {
+        sprintf (cadena,"%9.2f",a_90_dias);
+        fprintf (fp,"\r%51s%s"," ",fmtnum("zzz,zzz,zz9.99",cadena,r_t));
+     }
+     if (a_120_dias > 0) {
+        sprintf (cadena,"%9.2f",a_120_dias);
+        fprintf (fp,"\r%66s%s%s"," ",fmtnum("zzz,zzz,zz9.99",cadena,r_t),enfatizado_off);
+     }
+     fprintf(fp,"%s",diezcpi);
+ }
+}
+
+/* Acumula las facturas y calcula su vencimiento */
+
+void acum_facturas()
+{
+ if (strcmp(vencimiento.arr,fecha_cor) > 0) {
+    por_vencer+=saldo_factura;
+ }
+ else {
+       calcula_dias();
+       if (total_dias < 31) {
+           a_30_dias+=saldo_factura;
+       }
+       else {
+            if (total_dias < 61) {
+                a_60_dias+=saldo_factura;
+            }
+            else {
+                 if (total_dias < 91) {
+                     a_90_dias+=saldo_factura;
+                 }
+                 else {
+                      a_120_dias+=saldo_factura;
+                 }
+            }
+       }
+ }
+}
+
+/* Calculo del vencimiento de la factura */
+
+void calcula_dias()
+{
+ w_dia_corte=dia_corte;
+ w_mes_corte=mes_corte;
+ w_ano_corte=ano_corte;
+ strcpy(cadena,vencimiento.arr);
+ strorg(cadena,7,2);
+ dia_vencmto=atoi(cadena);
+ if (dia_vencmto > 27 && dia_vencmto < 32)
+     dia_vencmto=30;
+ strcpy(cadena,vencimiento.arr);
+ strorg(cadena,5,2);
+ mes_vencmto=atoi(cadena);
+ strcpy(cadena,vencimiento.arr);
+ strorg(cadena,1,4);
+ ano_vencmto=atoi(cadena);
+ if (dia_vencmto > w_dia_corte) {
+     w_mes_corte--;
+     w_dia_corte+=30;
+ }
+ if (mes_vencmto > w_mes_corte) {
+     w_ano_corte--;
+     w_mes_corte+=12;
+ }
+ total_tiempo_dia=w_dia_corte-dia_vencmto;
+ total_tiempo_mes=w_mes_corte-mes_vencmto;
+ total_tiempo_ano=w_ano_corte-ano_vencmto;
+ total_dias=total_tiempo_dia+(total_tiempo_mes*30)+(total_tiempo_ano*360);
+}
+
+void busco_cliente()
+{
+/* C9 */
+ EXEC SQL
+        select n.nombre, nvl(n.nombre_muni,c.nombre), n.direccion,
+               max(nvl(t.numero,0)), n.nit, nvl(n.digito,-1)
+        into  :nomb_clie, :nomb_ciu, :direccion, :telefono, :nit, :digito
+        from  nits n, ciudades c, telefonos t, clientes cl
+        where n.codigo_nit      = cl.codigo_nit                       and
+              cl.codigo_cliente = :wcod                               and
+              n.codigo_ciu      = c.codigo                            and
+              n.codigo_nit      = t.codigo_nit(+)
+        group by n.nombre, n.nombre_muni, c.nombre, n.direccion,
+                 n.nit,    n.digito;
+
+        nomb_clie.arr      [nomb_clie.len]     = '\0';
+        nomb_ciu.arr       [nomb_ciu.len]      = '\0';
+        direccion.arr      [direccion.len]     = '\0';
+
+        oraest  = sqlca.sqlcode;
+
+        if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 0) 
+            fprintf (stderr, "Error leyendo C9 (%d)\n", sqlca.sqlcode);
+
+}

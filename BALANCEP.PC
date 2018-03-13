@@ -1,0 +1,364 @@
+/*****************************************************************
+* BALANCEP.C Version 1.0 - Rev 1.2 - Jun. 30/92.
+*
+* balancep.c. Balance de prueba
+*
+* Uso : codigo_emp aaaamm device copias userid/password\n");
+*
+* Mario E. Santiago I. Creado Noviembre 19-1993.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <setjmp.h>
+#include <stdlib.h>
+#include <math.h>
+
+void titulos();
+void lista_balance();
+void totales();
+int  uso();
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+
+VARCHAR nomb_emp   [41];
+double  nit;
+int     digito;
+VARCHAR codigo_emp [3];
+VARCHAR nivel      [2];
+
+VARCHAR cuenta     [15];
+VARCHAR nombre_cta [61];
+double  valor_deb;
+short   int deb_i;
+double  valor_cre;
+short   int cre_i;
+VARCHAR db_cr      [3];
+VARCHAR ano_mesi   [20];
+VARCHAR ano_mes    [20];
+
+VARCHAR sucursal   [20][05];
+VARCHAR cen_cos    [20][3];
+VARCHAR sucursali  [10];
+VARCHAR sucursalf  [10];
+VARCHAR cen_cosi   [04];
+VARCHAR cen_cosf   [04];
+VARCHAR nomb_suci  [12];
+VARCHAR nomb_sucf  [12];
+VARCHAR librob     [4];
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+				     /* Parametros de comunicacion con ORACLE */
+
+                                            /* Variables globales del usuario */
+int     con_pag=0;                                   /* Contador de Paginas */
+int     con_lin=66;                                   /* Contador de Lineas  */
+int     cl;
+int     staora =0;
+        		                /* Variables de recepcion para datos */
+char *fmtnum(), r_t[90];
+int     diai;
+int     mesi;
+int     anoi;
+double  tot_deb;
+double  tot_cre;
+char    cadena[200];
+char    cadena2[200];
+char    login[20];
+char    copias[5];
+char	timbrado[2];
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int	status = 0;
+
+    if (argc < 12)
+       {
+	      printf ("Incorrecta invocacion:\n");
+        printf ("Uso : codigo_emp sucursali sucursalf c.costoi c.costof aaaamm copias device timbrado(s/n) nivel libro userid/password\n");
+      	printf ("      device : t salida por terminal\n");
+      	printf ("      device : s salida standar     \n");
+      	printf ("               Px salida por impresora (x nro printer)\n");
+        printf ("      libro(0= COLGAAP 1=IFRS)\n");
+      	printf ("               userid/password nombre usuario y password\n");
+        exit (1);
+       }
+
+       strcpy (codigo_emp.arr, argv[1]);
+       codigo_emp.len =        strlen(codigo_emp.arr);
+
+       strcpy (sucursali.arr,  argv[2]);
+       sucursali.len  =        strlen(sucursali.arr);
+       strcpy (sucursalf.arr,  argv[3]);
+       sucursalf.len  =        strlen(sucursalf.arr);
+       strcpy (cen_cosi.arr,   argv[4]);
+       cen_cosi.len   =        strlen(cen_cosi.arr);
+       strcpy (cen_cosf.arr,   argv[5]);
+       cen_cosf.len   =        strlen(cen_cosf.arr);
+
+       strcpy (copias,         argv[7]);
+       strcpy (device,         argv[8]);
+       strlow (device);
+       strcpy (timbrado,       argv[9]);
+       strlow (timbrado);
+       strcpy (nivel.arr,      argv[10]);
+       nivel.len = strlen(nivel.arr);
+       strcpy (librob.arr,     argv[11]);
+       librob.len  =           strlen(librob.arr);
+
+    if (!strpos ("/", argv[12]))
+       {
+        printf ("user id/password incorrecto.\n");
+	      exit (1);
+       }
+
+    strcpy (uid.arr,    argv[12]);
+    uid.len   =         strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora(copias);
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+
+    strcpy (ano_mes.arr,    argv[6]);
+    ano_mes.len    =        strlen(ano_mes.arr);
+
+    strcpy (cadena,         ano_mes.arr);
+    strorg (cadena,1,4);
+    anoi=atoi(cadena);
+    strcpy (cadena,         ano_mes.arr);
+    strorg (cadena,5,2);
+    mesi=atoi(cadena);
+    if (mesi==13)
+        mesi=12;
+    sprintf (ano_mesi.arr,"%04d%02d",anoi-1,13);
+    ano_mesi.len   =        strlen(ano_mesi.arr);
+
+    EXEC SQL select n.nombre, n.nit, n.digito
+                    into :nomb_emp, :nit, :digito
+             from   nits n, empresas e
+             where  n.codigo_nit = e.codigo_nit and
+                    e.codigo_emp = to_number(:codigo_emp);
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo Empresa (%d)\n", sqlca.sqlcode);
+
+/* Cx */
+
+    EXEC SQL select nombre
+             into  :nomb_suci
+             from   sucursal
+             where  sucursal   = :sucursali   and
+                    codigo_emp = to_number(:codigo_emp);
+
+    if (sqlca.sqlcode == 0)
+        nomb_emp.arr [nomb_emp.len] = '\0';
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo Sucursali=%s (%d)\n",sucursali.arr, sqlca.sqlcode);
+
+/* Cx1 */
+
+    EXEC SQL select nombre
+             into  :nomb_sucf
+             from   sucursal
+             where  sucursal   = :sucursalf   and
+                    codigo_emp = to_number(:codigo_emp);
+
+    if (sqlca.sqlcode == 0)
+        nomb_emp.arr [nomb_emp.len] = '\0';
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo Sucursali=%s (%d)\n",sucursali.arr, sqlca.sqlcode);
+
+    EXEC SQL DECLARE C2 CURSOR FOR
+    select p.cuenta,
+           Substr(p.nombre,1,31),
+           sum(valor_deb),
+           sum(valor_cre),
+           p.db_cr
+    from plan p, acumulados a
+    where p.nivel      = :nivel               and
+          p.cuenta     = substr(a.cuenta,1,decode(to_number(p.nivel),0,1,to_number(p.nivel)*2))
+                                              and
+     	    a.sucursal  >= (:sucursali)         and
+          a.sucursal  <= (:sucursalf)         and
+          a.cen_cos   >= to_number(:cen_cosi) and
+          a.cen_cos   <= to_number(:cen_cosf) and
+          a.codigo_emp = p.codigo_emp         and
+          a.codigo_emp = (:codigo_emp)        and
+          a.libro      = to_number(:librob)   and
+          a.ano_mes   >= (:ano_mesi)          and
+          a.ano_mes   <= (:ano_mes)
+    group by p.cuenta, p.nombre, p.db_cr
+    order by p.cuenta, p.nombre, p.db_cr;
+
+    EXEC SQL OPEN C2;
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo C2 (%d)\n", sqlca.sqlcode);
+    else {
+        lista_balance();
+        totales();
+    }
+
+    cierre_impresora();
+
+    EXEC SQL CLOSE C2;
+
+    EXEC SQL COMMIT WORK RELEASE;
+    exit   (0);
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+ con_pag++;
+ fprintf(fp,"%s",salte_pagina);
+ if (strcmp(timbrado,"s")) {
+     if (!strcmp(codigo_emp.arr,"3"))
+        fprintf(fp,".");
+     strful(cadena,(int)(42-strlen(nomb_emp.arr))/2,' ');
+     fprintf(fp,"%s%s%s%s%s%s\n",condensado_off,diezcpi,ancho_on,cadena,nomb_emp.arr,ancho_off);
+     uso(r_t,"###,###,###,###",nit);
+     fprintf (fp,"%s%s%25s %18s",condensado_on,ancho_on,"NIT :",r_t);
+     if (digito > 0) {
+        sprintf (cadena,"%d",digito);
+        fprintf (fp,"-%s",fmtnum("z",cadena,r_t));
+     }
+     else if (digito == 0)
+             fprintf (fp,"-%s","0");
+     sprintf(cadena2,"SUCURSAL: %s %s A %s %s C.COSTO: %s A %s",sucursali.arr,nomb_suci.arr,sucursalf.arr,nomb_sucf.arr,cen_cosi.arr,cen_cosf.arr);
+     strful(cadena,(int)(80-strlen(cadena2))/2,' ');
+     fprintf(fp,"\n%s%s%s%s",condensado_on,ancho_on,cadena,cadena2);
+     if (!strcmp(librob.arr,"0")) {
+         strcpy(cadena2," - COLGAAP");
+     }
+     else {
+         strcpy(cadena2," - IFRS");
+     }
+     fprintf(fp,"\n%s%25s%s%s%s\n\n",condensado_off," ","BALANCE DE PRUEBA",cadena2,ancho_off);
+     fecha_system(cadena);
+     if (strcmp(timbrado,"s"))
+        fprintf(fp,"%s%s%-44s%s%10s / %d",condensado_on,"FECHA PROCESO : ",cadena,"PERIODO : ",mes[mesi-1],anoi);
+     else
+        fprintf(fp,"%s%s%-44s%s%10s / %d",condensado_on,"                "," ","PERIODO : ",mes[mesi-1],anoi);
+ }
+ else {
+      fecha_system(cadena);
+      fprintf(fp,"%s%s%-44s%s%10s / %d",condensado_on,"                "," ","PERIODO : ",mes[mesi-1],anoi);
+ }
+ fprintf(fp,"%54s %d\n\n","PAGINA ",con_pag);
+ fprintf(fp,"%s%s%s%85s%s%s\n\n",condensado_off,diezcpi,enfatizado_on,"CUENTA       NOMBRE DE LA CUENTA                          DEBITOS           CREDITOS ",enfatizado_off,diezcpi);
+ con_lin = 8;
+}
+
+void lista_balance()
+{
+ staora  = 0;
+ while (staora == 0) {
+
+        EXEC SQL FETCH C2 INTO :cuenta, :nombre_cta,
+                               :valor_deb:deb_i, :valor_cre:cre_i, :db_cr;
+        staora  = sqlca.sqlcode;
+        if (sqlca.sqlcode == 1403) break;
+
+        if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+            fprintf (stderr, "Error leyendo C13 (%d)\n", sqlca.sqlcode);
+
+        if (deb_i==-1)
+            valor_deb=0;
+
+        if (cre_i==-1)
+            valor_deb=0;
+
+        cuenta.arr      [cuenta.len]     = '\0';
+        nombre_cta.arr  [nombre_cta.len] = '\0';
+        db_cr.arr       [db_cr.len]      = '\0';
+
+        if (con_lin > 60)
+            titulos();
+        if (valor_deb != valor_cre) {
+           fprintf (fp,"%-13s",fmtnum("ZZZZZZZZ",cuenta.arr,r_t));
+           fprintf (fp,"%-34s",nombre_cta.arr);
+           if (!strcmp(db_cr.arr,"DB")) {
+              valor_deb-=valor_cre;
+              valor_cre=0;
+              if (valor_deb < 0) {
+                  valor_cre=valor_deb * -1;
+                  valor_deb=0;
+              }
+           }
+           else {
+                 valor_cre-=valor_deb;
+                 valor_deb=0;
+                 if (valor_cre < 0) {
+                     valor_deb=valor_cre * -1;
+                     valor_cre=0;
+                 }
+           }
+           uso(r_t,"###,###,###,###.##",valor_deb);
+           fprintf (fp,"%18s",r_t);
+           uso(r_t,"###,###,###,###.##",valor_cre);
+           fprintf (fp,"%19s\n",r_t);
+           tot_deb += valor_deb;
+           tot_cre += valor_cre;
+           con_lin ++;
+        }
+ }
+}
+
+void totales()
+{
+  if (con_lin > 60)
+      titulos();
+  fprintf (fp,"%47s%18s%19s\n"," ","-----------------","-----------------");
+  fprintf (fp,"%s","              SUMAS IGUALES =================> ");
+  uso(r_t,"###,###,###,###.##",tot_deb);
+  fprintf (fp,"%18s",r_t);
+  uso(r_t,"###,###,###,###.##",tot_cre);
+  fprintf (fp,"%19s\n",r_t);
+  fprintf (fp,"%47s%18s%19s\n"," ","=================","=================");
+  if (abs((long)(tot_deb-tot_cre)) > 0) {
+      fprintf (fp,"\n%s","  ****  BALANCE DESCUADRADO ****  ============> ");
+      uso(r_t,"###,###,###,###.##",tot_deb-tot_cre);
+      fprintf (fp,"%18s\n",r_t);
+  }
+}

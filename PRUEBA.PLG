@@ -1,0 +1,16 @@
+--------------------Configuration: prueba - Win32 Debug--------------------
+Begining build with project "E:\Pc\prueba.dsp", with item "prueba.c"
+Active configuration is Win32 (x86) Console Application (based on Win32 (x86) Console Application)
+
+
+Creating temp file "C:\WINDOWS\TEMP\RSP9060.TMP" with contents </nologo /MLd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/prueba.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /c 
+"E:\Pc\prueba.c"
+>
+Creating command line "cl.exe @C:\WINDOWS\TEMP\RSP9060.TMP" 
+Compiling...
+prueba.c
+E:\Pc\prueba.c(6) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+
+
+
+prueba.obj - 0 error(s), 1 warning(s)

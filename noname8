@@ -1,0 +1,119 @@
+void reverso_asiento()
+{
+
+    EXEC SQL
+         select max(secuencia)
+         into   :secuenciab
+         from movto_d d, movto_c c
+         where c.codigo_emp  = to_number(:codigo_emp)    and
+               c.codigo_emp  = d.codigo_emp              and
+               c.ano_mes     = d.ano_mes                 and
+               c.consecutivo = d.consecutivo             and
+               c.comprobante = to_number(:comprobanteb)  and
+               c.clase       = 'CV'                      and
+               c.tipo        = 9                         and
+               c.ano_mes     = to_number(:ano_mesa)      and
+               c.estado      <>   '9';
+
+    secuenciab.len = strlen(secuenciab.arr);
+    secuencia = atof(secuenciab.arr);
+
+    if ( secuencia > 0 ) {
+
+       EXEC SQL DECLARE C9 CURSOR FOR
+            select d.consecutivo, cuenta, infa, infb, infc, infd, codigo_nit, sum(nvl(valor_deb,0)-nvl(valor_cre,0))
+            from movto_d d, movto_c c
+            where c.codigo_emp  = to_number(:codigo_emp)    and
+                  c.codigo_emp  = d.codigo_emp              and
+                  c.ano_mes     = d.ano_mes                 and
+                  c.consecutivo = d.consecutivo             and
+                  c.comprobante = to_number(:comprobanteb)  and
+                  c.clase       = 'CV'                      and
+                  c.tipo        = 9                         and
+                  c.ano_mes     = to_number(:ano_mesa)
+            group by d.consecutivo, cuenta, infa, infb, infc, infd, codigo_nit;
+
+      EXEC SQL OPEN C9;
+
+      EXEC SQL FETCH C9 INTO :consecutivo,  :cuentab,
+                             :infa, :infb,  :infc, :infd,
+                             :codigo_nit,   :valor;
+
+      oraest  = sqlca.sqlcode;
+
+      if (sqlca.sqlcode == -1405 )
+          oraest = 0;
+      else {
+            if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+                fprintf (stderr, "Error leyendo C9 (%d)\n", sqlca.sqlcode);
+      }
+
+      cuentab.arr             [cuentab.len]            = '\0';
+      infa.arr                [infa.len]               = '\0';
+      infb.arr                [infb.len]               = '\0';
+      infc.arr                [infc.len]               = '\0';
+      infd.arr                [infd.len]               = '\0';
+
+
+      while (oraest==0) {
+
+           sprintf(consecutivob.arr,"%5.0f",consecutivo);
+           consecutivob.len = strlen(consecutivob.arr);
+
+           secuencia++;
+           sprintf(secuenciab.arr,"%6.0f",secuencia);
+           secuenciab.len = strlen(secuenciab.arr);
+
+           if (codigo_nit==0)
+              strcpy(codigo_nitb.arr,"");
+           else sprintf(codigo_nitb.arr,"%5d",codigo_nit);
+           codigo_nitb.len = strlen(codigo_nitb.arr);
+
+           if ( valor > 0 ) {
+               strcpy (valor_debb.arr,"");
+               valor_debb.len = strlen(valor_debb.arr);
+               sprintf(valor_creb.arr,"%10.2f",valor);
+               valor_creb.len = strlen(valor_creb.arr);
+           }
+           else {
+              strcpy (valor_creb.arr,"");
+              valor_creb.len = strlen(valor_creb.arr);
+              sprintf(valor_debb.arr,"%10.2f",valor*-1);
+              valor_debb.len = strlen(valor_debb.arr);
+           }
+
+           EXEC SQL insert into movto_d
+                    values(:codigo_emp, :ano_mesa, :consecutivob, :secuenciab,
+                           :cuentab, :infa, :infb, :infc, :infd, //uu
+                           :codigo_nitb, :valor_debb, :valor_creb, '001', 1);
+
+           if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+               fprintf (stderr, "Error Grabando movto_d (%d)\n", sqlca.sqlcode);
+
+           EXEC SQL FETCH C9 INTO :consecutivo,  :cuentab,
+                                  :infa, :infb,  :infc, :infd,
+                                  :codigo_nit,   :valor;
+
+           cuentab.arr             [cuentab.len]            = '\0';
+           infa.arr                [infa.len]               = '\0';
+           infb.arr                [infb.len]               = '\0';
+           infc.arr                [infc.len]               = '\0';
+           infd.arr                [infd.len]               = '\0';
+
+           oraest  = sqlca.sqlcode;
+           if (sqlca.sqlcode == 1403) break;
+
+           if (sqlca.sqlcode == -1405 )
+               oraest = 0;
+           else {
+                 if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+                     fprintf (stderr, "Error leyendo C9 (%d)\n", sqlca.sqlcode);
+           }
+
+      }
+
+
+    }
+
+}
+

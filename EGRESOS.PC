@@ -1,0 +1,650 @@
+/*****************************************************************
+* EGRESOS.C Version 1.0 - Rev 1.2 - Sep. 23/94.
+*
+* egresos.c. Listado de Los Egresos preimpresos.
+*
+* Uso : egresos device userid/password
+*
+* Mario E. Santiago I. Creado Septiembre 23-1994.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <math.h>
+#include <stdlib.h>
+
+void main(int argc, char *argv[]);
+void lista_cuentas();
+void imprima_ctas();
+void imprime_valor();
+void leer_inf();
+void imprime_nit();
+void lista_cheques();
+void titulos();
+void leer_nit();
+void monletr();
+				     /* Parametros de comunicacion con ORACLE */
+
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+VARCHAR fecha[20];
+VARCHAR ano_mes[20];
+int     a2k;
+int     detalle;
+double  nit;
+VARCHAR nitb[18];
+double  codigo_nit;
+double  codigo_nit2;
+VARCHAR codigo_bco[10];
+double  valor_cheques;
+VARCHAR concepto[100];
+double  numero_factura;
+double  valor_factura;
+double  valor_efectivos;
+double  consecutivo;
+double  secuencia;
+VARCHAR nombre[100];
+VARCHAR nomb_nit[100];
+VARCHAR cuenta1[50];
+VARCHAR inf2a[20];
+VARCHAR inf2b[20];
+VARCHAR inf2c[20];
+VARCHAR inf2d[20];
+VARCHAR inf1a[20];
+VARCHAR inf1b[20];
+VARCHAR inf1c[20];
+VARCHAR inf1d[20];
+VARCHAR cuenta[20];
+VARCHAR infa[20];
+VARCHAR infb[20];
+VARCHAR infc[20];
+VARCHAR infd[20];
+VARCHAR vselinfa[20];
+VARCHAR vselinfb[20];
+VARCHAR vselinfc[20];
+VARCHAR vselinfd[20];
+VARCHAR codigo_emp[10];
+VARCHAR codigo_nitb[20];
+VARCHAR numero_egreso[20];
+VARCHAR ultimo[20];
+VARCHAR cuentab[20];
+VARCHAR nombre_emp[100];
+double  valor_deb;
+double  valor_cre;
+double  nvalor_deb;
+double  ult_listado;
+double  ult_grabado;
+VARCHAR libro[04];
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+
+char inf    [4][20];
+char inf1   [4][20];
+char inf2   [4][20];
+char vselinf[4][4];
+char vecinf [4][4];
+char cnombre_emp[100];
+                                            /* Variables globales del usuario */
+int  con_pag=0;                                   /* Contador de Paginas */
+int  con_lin=33;                                   /* Contador de Lineas  */
+int  cl;
+int  staora = 0;
+int  staorai= 0;
+
+        		                /* Variables de recepcion para datos */
+char *fmtnum(), r_t[100];
+char    wcadena[100];
+char    cadena [200];
+char    cadena2[200];
+int     imp_nit;
+char    ccuenta[20];
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int     i;
+double  j;
+int	status = 0;
+
+    if (argc < 5)
+       {
+	printf ("Incorrecta invocacion:\n");
+	printf ("Uso : egresos codigo_emp device libro(0= COLGAAP 1=IFRS) userid/password\n");
+	printf ("      device : t salida por terminal\n");
+	printf ("      device : s salida standar     \n");
+	printf ("               Px salida por impresora (x nro printer)\n");
+	printf ("               userid/password nombre usuario y password\n");
+        exit (1);
+       }
+
+       strcpy (codigo_emp.arr, argv[1]);
+       codigo_emp.len =        strlen(codigo_emp.arr);
+       strcpy (device,         argv[2]);
+       strlow (device);
+       strcpy (libro.arr, argv[3]);
+       libro.len =        strlen(libro.arr);
+
+    if (!strpos ("/", argv[4]))
+       {
+        printf ("user id/password incorrecto.\n");
+	      exit (1);
+       }
+
+    strcpy (uid.arr,    argv[4]);
+    uid.len  = strlen( uid.arr );
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password(%s) es Invalido. Re-intente.\n",uid.arr);
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora("1");
+
+    strcpy (ano_mes.arr,    "201512");
+    ano_mes.len    =        strlen(ano_mes.arr);
+    /* C4 */
+/*
+    EXEC SQL select 8572, 8571
+*/
+    EXEC SQL select consecutivo, ult_listado
+             into  :ult_grabado, :ult_listado
+	     from   control_egr
+             where  codigo_emp = to_number(:codigo_emp);
+
+    EXEC SQL DECLARE C2 CURSOR FOR
+             select cuenta, nvl(infa,' '), nvl(infb,' '), nvl(infc,' '), nvl(infd,' '),
+                    codigo_nit, nvl(valor_deb,0), nvl(valor_cre,0),
+                    d.consecutivo, d.secuencia
+             from   movto_d d, movto_c c
+             where  d.codigo_emp     = c.codigo_emp                  and
+                    d.ano_mes        = c.ano_mes                     and
+                    d.consecutivo    = c.consecutivo                 and
+                    d.libro          = to_number(:libro)             and
+                    c.codigo_emp     =  :codigo_emp                  and
+                    c.clase          = 'EG'                          and
+                    c.comprobante    = :numero_egreso                and
+                    c.ano_mes       >= :ano_mes
+             order by cuenta, secuencia;
+
+    EXEC SQL DECLARE C3 CURSOR FOR
+         select cuenta, nvl(infa,' '), nvl(infb,' '), nvl(infc,' '), nvl(infd,' '),
+                nvl(valor_deb,0), nvl(valor_cre,0)
+         from   movto_d d, movto_c c
+         where  d.codigo_emp     = c.codigo_emp                  and
+                d.ano_mes        = c.ano_mes                     and
+                d.consecutivo    = c.consecutivo                 and
+                d.libro          = to_number(:libro)             and
+                c.codigo_emp     = to_number(:codigo_emp)        and
+                c.clase          = 'EG'                          and
+                c.comprobante    = to_number(:numero_egreso)     and
+                substr(cuenta,1,4) in ('1110','1120')            and
+                valor_cre        is NOT NULL                     and
+                c.ano_mes       >= :ano_mes;
+
+    EXEC SQL DECLARE C6 CURSOR FOR
+             select decode(infa,inf,codigo_egr,''),
+                    decode(infb,inf,codigo_egr,''),
+                    decode(infc,inf,codigo_egr,''),
+                    decode(infd,inf,codigo_egr,''),
+                    infa,infb,infc,infd
+             from inf, plan
+             where inf.inf   in (infa, infb, infc, infd) and
+                   codigo_emp = :codigo_emp              and
+                   cuenta     = :cuentab;
+/*
+    printf ("ult_listado=<%f> ult_grabado=<%f>",ult_listado,ult_grabado); getchar();
+*/
+    ult_listado++;
+
+    for (j=ult_listado;j<=ult_grabado;j++) {
+
+         sprintf(numero_egreso.arr,"%8.0f",j);
+         strtri (numero_egreso.arr);
+         numero_egreso.len = strlen(numero_egreso.arr);
+         lista_cuentas();
+         for (i=1;i<=25-con_lin;i++) {
+              fprintf (fp,"\n");
+         }
+         con_lin+=i;
+
+         lista_cheques();
+
+         for (i=1;i<=34-con_lin;i++) {
+              fprintf (fp,"\n");
+         }
+         con_lin=33;
+
+    }
+    sprintf(ultimo.arr,"%8.0f",ult_grabado);
+    ultimo.len = strlen(ultimo.arr);
+
+    EXEC SQL update control_egr
+             set ult_listado     = to_number(:ultimo)
+             where codigo_emp    = to_number(:codigo_emp);
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo C5 (%d)\n", sqlca.sqlcode);
+
+/*****************************************
+** COMMIT LOS CAMBIOS A LA BASE DE DATOS *
+******************************************/
+
+//EXEC SQL COMMIT WORK RELEASE;
+  EXEC SQL ROLLBACK WORK RELEASE;
+
+    cierre_impresora();
+
+/************************************************
+ * Desconectarse de ORACLE. (ologof)            *
+ ************************************************/
+    exit   (0);
+}
+
+void lista_cuentas()
+{
+  int staora2;
+  int mover;
+
+  EXEC SQL select count(*)
+           into  :detalle
+           from   movto_d d, movto_c c
+           where  d.codigo_emp     = c.codigo_emp      and
+                  d.ano_mes        = c.ano_mes         and
+                  d.consecutivo    = c.consecutivo     and
+                  d.libro          = to_number(:libro) and
+                  c.codigo_emp     = :codigo_emp       and
+                  c.clase          = 'EG'              and
+                  c.comprobante    = :numero_egreso    and
+                  c.ano_mes       >= :ano_mes;
+
+  cuenta.arr  [cuenta.len] = '\0';
+
+  EXEC SQL OPEN C2;
+  staora2 = 0;
+  EXEC SQL FETCH C2 INTO :cuenta, :infa, :infb, :infc, :infd,
+                         :codigo_nit2, :valor_deb, :valor_cre,
+                         :consecutivo, :secuencia;
+/*
+  if ( codigo_nit2 > 0 ) {
+     EXEC SQL select n.nombre
+              into  :nombre_emp
+              from   nits n, nomemple p, empresas e
+              where  p.codigo_nit  = :codigo_nit2   and
+                     p.codigo_emp  = e.codigo_emp   and
+                     e.codigo_nit  = n.codigo_nit   and
+                     p.codigo_emp != 3;
+
+     nombre_emp.arr  [nombre_emp.len] = '\0';
+     strcpy(cnombre_emp,nombre_emp.arr);
+  }
+  else {
+*/
+        strcpy(nombre_emp.arr,"");
+        nombre_emp.arr  [nombre_emp.len] = '\0';
+        strcpy(cnombre_emp,nombre_emp.arr);
+/*
+  }
+*/
+
+  strcpy(cnombre_emp, nombre_emp.arr);
+  strcpy(ccuenta, cuenta.arr);
+
+  sqlca.sqlcode = 0;
+  while (staora2 == 0) {
+         staora2 = sqlca.sqlcode;
+         if (staora2 ==  1403) break;
+         if (staora2 == -1405)
+             staora2  = 0;
+         else if (staora2 != 1403 && staora2 != 0)
+                  fprintf (stderr, "Error leyendo C2 (%d)\n", staora2);
+
+         cuenta.arr  [cuenta.len] = '\0';
+         infa.arr    [infa.len]   = '\0';
+         infb.arr    [infb.len]   = '\0';
+         infc.arr    [infc.len]   = '\0';
+         infd.arr    [infd.len]   = '\0';
+         strcpy(inf[0],  infa.arr);
+         strcpy(inf[1],  infb.arr);
+         strcpy(inf[2],  infc.arr);
+         strcpy(inf[3],  infd.arr);
+
+         if (!memcmp(cuenta.arr,"1110",4) || !memcmp(cuenta.arr,"1120",4)) {
+             if (valor_deb > 0) {
+                 imprima_ctas();
+             }
+             else {
+                   mover = 1;
+             }
+         }
+         else {
+               imprima_ctas();
+         }
+         EXEC SQL FETCH C2 INTO :cuenta, :infa, :infb, :infc, :infd,
+                                :codigo_nit2, :valor_deb, :valor_cre;
+
+         if (mover == 1) {
+             strcpy(ccuenta, cuenta.arr);
+             strcpy(cnombre_emp,nombre_emp.arr);
+             mover = 0;
+         }
+  }
+
+  if (detalle >= 14) {
+/*
+      fprintf (fp,"%-12s%-44s",ccuenta,cnombre_emp);
+*/
+      fprintf (fp,"%-12s%-44s",ccuenta,"");
+      sprintf (cadena,"%9.2f",nvalor_deb);
+      fprintf (fp,"%15s\n",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+/*
+      printf("Termine, Valor=(%s)\n",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+      printf("cuenta.arr=(%s), ccuenta=(%s), valor_deb=(%10.2f), valor_cre=(%10.2f)",cuenta.arr, ccuenta, valor_deb, valor_cre);
+      printf("cnombre_emp=(%s), nombre_emp.arr=(%s), valor=(%10.2f)",cnombre_emp,nombre_emp.arr,nvalor_deb); getchar();
+*/
+      nvalor_deb = 0;
+      strcpy(ccuenta, cuenta.arr);
+      strcpy(cnombre_emp,nombre_emp.arr);
+      con_lin++;
+  }
+
+  EXEC SQL CLOSE C2;
+}
+
+void imprima_ctas()
+{
+  int i, imp;
+
+  if (con_lin > 25)
+      titulos();
+  strcpy  (cuentab.arr,cuenta.arr);
+  cuentab.len = strlen(cuentab.arr);
+
+  EXEC SQL OPEN C6;
+  for (i=0;i<4;i++) {
+      strcpy(vecinf[i],"");
+  }
+  leer_inf();
+  EXEC SQL CLOSE C6;
+
+  imp=0;
+  if (detalle <= 14) {
+     fprintf (fp,"%-12s",cuenta.arr);
+     for (i=0;i<4;i++) {
+         if (strcmp(vecinf[i],"*") && strcmp(vecinf[i],"=")) {
+             if (strcmp(inf[i],"")) {
+                 if (strlen(inf[i])<=9) {
+                    fprintf (fp,"%-2s%-9s",vecinf[i],inf[i]);
+                 }
+                 else {
+                    fprintf (fp,"%-11s",inf[i]);
+                 }
+                 imp=1;
+             }
+             else {
+                  fprintf (fp,"%-2s%-9s"," "," ");
+             }
+         }
+         else {
+               fprintf (fp,"%-2s%-9s"," "," ");
+         }
+     }
+
+     if (imp == 0) {
+        imprime_nit();
+        imprime_valor();
+        fprintf(fp,"\n");
+     }
+     else {
+           imprime_valor();
+           if ( imp != 1 )
+               imprime_nit();
+/*
+           if (imp_nit==1) {
+*/
+               fprintf(fp,"\n");
+/*
+           }
+*/
+     }
+     con_lin++;
+  }
+  else {
+        EXEC SQL select n.nombre
+                 into  :nombre_emp
+                 from   nits n, nomemple p, empresas e
+                 where  p.codigo_nit  = :codigo_nit2  and
+                        p.codigo_emp  = e.codigo_emp  and
+                        e.codigo_nit  = n.codigo_nit  and
+                        p.codigo_emp != 3;
+        nombre_emp.arr  [nombre_emp.len] = '\0';
+/*
+        printf("\n\nAntes de While\n");
+        printf("cuenta.arr=(%s), ccuenta=(%s), valor_deb=(%10.2f), valor_cre=(%10.2f)",cuenta.arr, ccuenta, valor_deb, valor_cre);
+        printf("cnombre_emp=(%s), nombre_emp.arr=(%s), valor=(%10.2f)",cnombre_emp,nombre_emp.arr,nvalor_deb); getchar();
+        if (strcmp(nombre_emp.arr, cnombre_emp) || strcmp(cuenta.arr, ccuenta)) {
+*/
+        if (strcmp(cuenta.arr, ccuenta)) {
+/*
+           fprintf (fp,"%-12s%-44s",ccuenta,cnombre_emp);
+*/
+           fprintf (fp,"%-12s%-44s",ccuenta,"");
+           sprintf (cadena,"%9.2f",nvalor_deb);
+           fprintf (fp,"%15s\n",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+/*
+           printf("Cambio, Valor=(%s)\n",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+           printf("cuenta.arr=(%s), ccuenta=(%s), valor_deb=(%10.2f), valor_cre=(%10.2f)",cuenta.arr, ccuenta, valor_deb, valor_cre);
+           printf("cnombre_emp=(%s), nombre_emp.arr=(%s), valor=(%10.2f)",cnombre_emp,nombre_emp.arr,nvalor_deb); getchar();
+*/
+           nvalor_deb = 0;
+           strcpy(ccuenta, cuenta.arr);
+           strcpy(cnombre_emp,nombre_emp.arr);
+           con_lin++;
+        }
+        nvalor_deb = nvalor_deb + valor_deb;
+  }
+}
+
+void imprime_valor()
+{
+
+  if (valor_deb != 0) {
+      sprintf (cadena,"%9.2f",valor_deb);
+      fprintf (fp,"%15s",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+  }
+  else {
+        sprintf (cadena,"%9.2f",valor_cre);
+        fprintf (fp,"%15s",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+  }
+/*
+  con_lin++;
+*/
+}
+
+void leer_inf()
+{
+  int i;
+  staorai = 0;
+
+  while (staorai==0) {
+         EXEC SQL FETCH C6 INTO :vselinfa, :vselinfb, :vselinfc,
+                                :vselinfd, :inf2a, :inf2b, :inf2c, :inf2d;
+
+         staorai  = sqlca.sqlcode;
+         if (staorai ==  1403) break;
+         if (staorai == -1405)
+             staorai  = 0;
+         else if (staorai != 1403 && staorai != 0)
+                  fprintf (stderr, "Error leyendo C6 (%d)\n", staorai);
+
+         vselinfa.arr[vselinfa.len] = '\0';
+         vselinfb.arr[vselinfb.len] = '\0';
+         vselinfc.arr[vselinfc.len] = '\0';
+         vselinfd.arr[vselinfd.len] = '\0';
+         inf2a.arr   [inf2a.len]    = '\0';
+         inf2b.arr   [inf2b.len]    = '\0';
+         inf2c.arr   [inf2c.len]    = '\0';
+         inf2d.arr   [inf2d.len]    = '\0';
+         strcpy(vselinf[0],vselinfa.arr);
+         strcpy(vselinf[1],vselinfb.arr);
+         strcpy(vselinf[2],vselinfc.arr);
+         strcpy(vselinf[3],vselinfd.arr);
+         strcpy(inf2   [0],inf2a.arr);
+         strcpy(inf2   [1],inf2b.arr);
+         strcpy(inf2   [2],inf2c.arr);
+         strcpy(inf2   [3],inf2d.arr);
+
+         for (i=0;i<4;i++) {
+              if (strcmp(vselinf[i],"")) {
+                  strcpy(vecinf[i],vselinf[i]);
+                  i=5;
+              }
+         }
+  }
+}
+
+void imprime_nit()
+{
+  int i;
+  imp_nit=0;
+  for (i=0;i<4;i++) {
+      if (!strcmp(vecinf[i],"=")) {
+          if (!strcmp(inf2[i],"NIT")) {
+              if (codigo_nit != codigo_nit2) {
+                  imp_nit=1;
+                  leer_nit();
+                  fprintf(fp,"\r            %-44s",nomb_nit.arr);
+              }
+          }
+      }
+  }
+}
+
+void leer_nit()
+{
+  sprintf(codigo_nitb.arr,"%5.0f",codigo_nit2);
+  codigo_nitb.len =    strlen(codigo_nitb.arr);
+
+  EXEC SQL select nombre
+           into :nomb_nit
+           from   nits
+           where  codigo_nit = to_number(:codigo_nitb);
+
+  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+      fprintf (stderr, "Error leyendo C2 (%d)\n", sqlca.sqlcode);
+
+  nomb_nit.arr  [nomb_nit.len] = '\0';
+}
+
+void lista_cheques()
+{
+  EXEC SQL OPEN C3;
+  staora = 0;
+  while (staora==0) {
+         EXEC SQL FETCH C3 INTO :cuenta1, :inf1a, :inf1b, :inf1c, :inf1d,
+                                :valor_deb, :valor_cre;
+
+         staora  = sqlca.sqlcode;
+         if (staora ==  1403) break;
+         if (staora == -1405)
+             staora  = 0;
+         else if (staora != 1403 && staora != 0)
+                  fprintf (stderr, "Error leyendo C3 (%d)\n", staora);
+
+         cuenta1.arr [cuenta1.len] = '\0';
+         inf1a.arr  [inf1a.len]    = '\0';
+         inf1b.arr  [inf1b.len]    = '\0';
+         inf1c.arr  [inf1c.len]    = '\0';
+         inf1d.arr  [inf1d.len]    = '\0';
+
+         strcpy (inf1[0], inf1a.arr);
+         strcpy (inf1[1], inf1b.arr);
+         strcpy (inf1[2], inf1c.arr);
+         strcpy (inf1[3], inf1d.arr);
+
+         fprintf (fp,"%-9s",cuenta1.arr);
+         fprintf (fp,"%8s ",inf1[2]);
+         strcpy  (cadena,cuenta1.arr);
+         strorg  (cadena,7,2);
+         fprintf (fp,"%2s ",cadena);
+         fprintf (fp,"%6s",inf1[0]);
+         if (!strcmp(inf1[1],"ANULADO")) {
+            fprintf (fp,"%14s\n",inf1[1]);
+         }
+         else {
+              sprintf (cadena,"%9.2f",valor_cre);
+              fprintf (fp,"%14s\n",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+         }
+         con_lin++;
+  }
+  EXEC SQL CLOSE C3;
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+    /* C1 */
+    EXEC SQL select fecha, codigo_nit, nitb, nombre, nvl(valorb,0), descripcion
+             into  :fecha, :codigo_nit, :nit, :nombre, :valor_cheques, :concepto
+	     from   movto_c c, nits n
+             where  c.comprobante    =  :numero_egreso       and
+                    c.clase          = 'EG'                  and
+                    c.codigo_emp     =  :codigo_emp          and
+                    c.codigo_nitb    = n.codigo_nit          and
+                    c.ano_mes       >= :ano_mes;
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo C1 (%d)\n", sqlca.sqlcode);
+
+    fecha.arr    [fecha.len]    = '\0';
+    nombre.arr   [nombre.len]   = '\0';
+    concepto.arr [concepto.len] = '\0';
+
+    strcpy  (cadena,fecha.arr);
+    strcpy  (wcadena, cadena);
+    fecha_numero3(wcadena);
+    strcpy  (cadena, wcadena);
+    fprintf (fp,"%s\n%28s\n%s%s%71s\n\n",ancho_on,numero_egreso.arr,ancho_off,diezcpi,cadena);
+    fprintf (fp,"%-56s",nombre.arr);
+    
+    sprintf (nitb.arr,"%12.0f",nit);
+    strtri  (nitb.arr);
+    nitb.len = strlen(nitb.arr);
+
+//  printf ("nit <%s> nombre <%s>",nitb.arr, nombre.arr); getchar();
+    fprintf (fp,"%15s\n\n",fmtnum("zzz,zzz,zzz,zzz",nitb.arr,r_t));
+    monletr (valor_cheques,cadena);
+    fprintf (fp,"%s%-96s%s",condensado_on,cadena,condensado_off);
+    sprintf (cadena,"%9.2f",valor_cheques);
+    fprintf (fp,"%15s\n\n\n\n",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+    fprintf (fp,"%12s%s\n"," ",concepto.arr);
+    con_lin = 11;
+}

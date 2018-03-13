@@ -1,0 +1,279 @@
+/*****************************************************************
+* (MTL). ORDCON.C Version 1.0 - Rev 1.2 - Feb. 17/98.
+*
+* ordcon.c. Listado de Ordenes de Produccion.
+*
+* uso : ordcon orden_ini orden_fin device userid/password
+*
+* Martin A. Toloza Lozano. Creado Febrero 17-1998.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+void titulos();
+void busca_conse();
+				     /* Parametros de comunicacion con ORACLE */
+        		             /* Variables de recepcion para datos */
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100]; 
+                                 /* Produclc (C1) */
+double  numero_orden;
+VARCHAR fecha_documento[20];
+float   ult_etiqueta;
+VARCHAR codigo_material[13];
+VARCHAR tipo_material  [3];
+float   diametro;
+VARCHAR curva_base     [5];
+float   poder;
+int     cantidad_producir;
+int     cantidad_hidratar;
+int     cantidad;
+VARCHAR nombre         [51];
+VARCHAR orden_ini      [6];
+VARCHAR orden_fin      [6];
+                                 /* Produclc (C2) */
+VARCHAR aconse         [9];      /* Consecutivo Incial en La Orden   */
+VARCHAR anumero_orden  [9];
+                                 /* Control_prl (C3) */
+VARCHAR cconse         [9];      /* Consecutivo Final en Control_prl */
+                                 /* Control_prl (C4) */
+double  consecutivo;
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+                                            /* Variables globales del usuario */
+#define TITULO_1 "TEODORO TARUD & CIA LTDA."
+#define TITULO_2 "LISTADO DE ORDENES DE PRODUCCION"
+#define TITULO_3 "     NRO DE CONTROL               MATERIAL            DIAMETRO             CURVA BASE          PODER           OBSERVACIONES"
+
+char tabla[10][30] = {
+               "VISTASOFT 50% MONO-ESFERICO ",
+               "VISTASOFT 50% MONO-ESFERICO ",
+               "CENTRISOFT 38% MONO-ESFERICO ",
+               "VISTASOFT 60% MONO-ESFERICO ",
+               "VISTASOFT 60% MONO-ESFERICO ",
+               "CENTRISOFT 38% MONO-ESFERICO ",
+               "VISTASOFT 55% MONO-ESFERICO ",
+               "VISTASOFT 55% MONO-ESFERICO "
+              };
+int     con_pag;                                   /* Contador de Paginas */
+int     con_lin;                                   /* Contador de Lineas  */
+int	staora = 0;
+int	oraest = 0;
+double  conse, conse1;
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int	status = 0;
+int	i, tipo;
+float   curva;
+
+    if (argc < 3)
+       {
+	printf ("Incorrecta invocacion:\n");
+	printf ("Uso : ordcon orden_ini orden_fin device userid/password\n");
+	printf ("      device : t salida por terminal\n");
+	printf ("               Px salida por impresora (x nro printer)\n");
+	printf ("               userid/password nombre usuario y password\n");
+        exit (1);
+       }
+
+       strcpy (orden_ini.arr, argv[1]);
+       orden_ini.len   =      strlen(orden_ini.arr);
+       strcpy (orden_fin.arr, argv[2]);
+       orden_fin.len   =      strlen(orden_fin.arr);
+       strcpy (device, argv[3]);
+       strlow (device);
+
+    if (!strpos ("/", argv[4]))
+       {
+        printf ("user id/password incorrecto.\n");
+	exit (1);
+       }
+
+    strcpy (uid.arr,   argv[4]);
+    uid.len   =        strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora("1");
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+
+    EXEC SQL DECLARE C1 CURSOR FOR
+	     select numero_orden, fecha_documento, nvl(ult_etiqueta,0),
+	            codigo_material, tipo_material, produclc.diametro,
+	            curva_base, poder, nvl(cantidad_producir,0),
+                    nvl(cantidad_hidratar,0), nvl(cantidad,0), nombre
+	     from produclc, almacen
+             where codigo_material = almacen.codigo_articulo and
+                  (numero_orden   >= :orden_ini              and
+                   numero_orden   <= :orden_fin)
+             order by numero_orden;
+
+    EXEC SQL OPEN C1;
+
+    staora  = 0;
+    while (staora == 0) {
+
+          EXEC SQL FETCH C1 INTO :numero_orden, :fecha_documento, :ult_etiqueta,
+                                 :codigo_material, :tipo_material, :diametro,
+                                 :curva_base, :poder, :cantidad_producir,
+                                 :cantidad_hidratar, :cantidad, :nombre;
+
+          staora  = sqlca.sqlcode;
+          if (staora ==  1403) break;
+          if (staora == -1405)
+              staora  = 0;
+          else if (staora)
+                   fprintf (stderr, "Error leyendo C1 (%d)\n", staora);
+
+          fecha_documento.arr [fecha_documento.len] = '\0';
+          codigo_material.arr [codigo_material.len] = '\0';
+          tipo_material.arr   [tipo_material.len]   = '\0';
+          curva_base.arr      [curva_base.len]      = '\0';
+          nombre.arr          [nombre.len]          = '\0';
+
+          if (cantidad == 0) goto sigue;
+
+          titulos();
+          tipo  = atoi(tipo_material.arr) - 1;
+          curva = (float) (atoi(curva_base.arr) * .1);
+          conse = ult_etiqueta;
+
+          if (ult_etiqueta == 0)
+             {
+              busca_conse();
+              sprintf(aconse.arr,"%08.0f",conse);
+              aconse.len        = strlen(aconse.arr);
+              sprintf(anumero_orden.arr,"%08.0f",numero_orden);
+              anumero_orden.len = strlen(anumero_orden.arr);
+
+              /* Actualiza la Orden C2 */
+              EXEC SQL update produclc
+	               set ult_etiqueta   = :aconse
+	               where numero_orden = :anumero_orden;
+              oraest = sqlca.sqlcode;
+              if (oraest != 1403 && oraest != 0) 
+                  fprintf (stderr, "Error Update Produclc(%d)\n", oraest);
+             }
+ 
+          /* Lista los consecutivos de la Orden. */
+          for (i=0; i<cantidad; i++)
+              {
+               if (con_lin > 58)
+                  {
+                   fprintf (fp,"%s",salte_pagina);
+                   titulos();
+                  }
+               fprintf (fp, "     %05.0f%s%08.0f", numero_orden,".",conse);
+               fprintf (fp, "       %-30s%5.2f%18s%4.2f%18.2f\n",tabla[tipo],
+                                     diametro," ",curva,poder);
+               con_lin++;
+               conse++;
+              }
+          fprintf (fp,"%s",salte_pagina);
+
+          /* Lee otra Orden */
+          sigue:;
+    }
+
+    cierre_impresora();
+
+    EXEC SQL CLOSE C1;
+
+    EXEC SQL COMMIT WORK RELEASE;
+
+    exit   (0);
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+    con_pag++;
+    fprintf (fp,"%s%s%s%33s\n\n",condensado_off,diezcpi,ancho_on,TITULO_1);
+    fprintf (fp,"%s%50s",condensado_on,TITULO_2);
+    fprintf (fp,"%s%s%14s%d\n\n",ancho_off,condensado_off,"Pagina ",con_pag);
+    fprintf (fp,"%s%s%7.0f",condensado_on,"NRO. ORDEN : ",numero_orden);
+    fprintf (fp,"%s%s%s"," FECHA : ",fecha_documento.arr,"  MATERIA PRIMA : ");
+    fprintf (fp,"%s%s%s\n",codigo_material.arr,"    DESCRIPCION : ",nombre.arr);
+    fprintf (fp,"%s%d%s", "CANTIDAD INICIAL : ",cantidad_producir,
+                          "     CANTIDAD HIDRATADOS : "); 
+    fprintf (fp,"%d%s%d",cantidad_hidratar,"      CANTIDAD FINAL : ",cantidad);
+    fprintf (fp,"%s%s\n\n", " TIPO DE LENTE : ",tipo_material.arr);
+    fprintf (fp,"%s\n", TITULO_3);
+    con_lin = 9;
+}
+
+/************************
+* BUSCA_CONSE()
+*    Busca el Primer Consecutivo para la orden en Proceso.
+*/
+
+void busca_conse()
+{
+    tipo_material.len = strlen(tipo_material.arr);
+
+    EXEC SQL select consecutivo into :consecutivo
+	     from  control_prl
+	     where tipo_material = decode(:tipo_material,'03','03','06','06','00');
+
+    oraest = sqlca.sqlcode;
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) 
+        fprintf (stderr,"Error Leyendo Control_prl C4(%d)\n",sqlca.sqlcode);
+
+    conse  = consecutivo;
+    conse1 = consecutivo + cantidad;
+/*
+    printf ("%s%8.0f%s%8.0f","Inicial", conse,"  Final", conse1);
+    getchar();
+*/
+    sprintf(cconse.arr,"%08.0f",conse1);
+    cconse.len     = strlen(cconse.arr);
+
+    /* Actualiza Consecutivo C3 */
+    EXEC SQL update control_prl
+	     set   consecutivo   = :cconse
+	     where tipo_material =
+             decode(:tipo_material,'03','03','06','06','00');
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) 
+        fprintf (stderr,"Error Update Control_prl(%d)\n",sqlca.sqlcode);
+}

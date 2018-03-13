@@ -1,0 +1,1484 @@
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\pse.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 09-NOV-12 11:00:28
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\pse.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 09-NOV-12 11:01:42
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\pse.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 09-NOV-12 11:02:48
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\pse.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 09-NOV-12 11:04:27
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\pse.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 09-NOV-12 11:14:41
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\perdygan.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 12-ABR-13 16:17:20
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudian2.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 16-MAY-13 15:05:27
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudian2.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 16-MAY-13 15:05:27
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\clienteslp.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 10-JUL-13 12:23:36
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\clienteslp.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 10-JUL-13 12:24:04
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\clienteslp.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 12-JUL-13 11:35:56
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 19-FEB-14 14:45:01
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 19-FEB-14 14:45:01
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 19-FEB-14 14:52:34
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 19-FEB-14 14:52:34
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 19-FEB-14 14:54:24
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 19-FEB-14 14:54:24
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12519, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(PORT=1521)(HOST=192.168.80.50)))(CONNECT_DATA=(SID=Loc)(CID=(PROGRAM=C:\Oracle\ora81\bin\PROC.EXE)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 28-MAR-14 09:02:36
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:connection refused
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12519, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(PORT=1521)(HOST=192.168.80.50)))(CONNECT_DATA=(SID=Loc)(CID=(PROGRAM=C:\Oracle\ora81\bin\PROC.EXE)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 28-MAR-14 09:02:50
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12564
+    TNS-12564: TNS:connection refused
+    ns secondary err code: 0
+    nt main err code: 0
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 30-JUL-14 08:49:50
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 30-JUL-14 08:49:51
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 30-JUL-14 08:55:40
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 30-JUL-14 08:55:40
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 30-JUL-14 09:05:24
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\factudians.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 30-JUL-14 09:05:24
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\cree.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 10-MAR-15 10:08:32
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\anexobal.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 23-ENE-16 11:18:32
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\anexobal.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 23-ENE-16 11:18:32
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\anexobal.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 23-ENE-16 11:18:32
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\anexobal.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 23-ENE-16 11:18:32
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\anexobal.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 23-ENE-16 11:18:32
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\anexobal.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 23-ENE-16 11:18:32
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\anexobal.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 23-ENE-16 11:20:56
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\anexobal.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 23-ENE-16 11:20:56
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\clienteslp.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 22-ABR-16 11:59:38
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\clienteslp.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 22-ABR-16 12:01:17
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:46
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:46
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:47
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:47
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:47
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:48
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:48
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:48
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:48
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:48
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:49
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:49
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:49
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:49
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:49
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:49
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:49
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:49
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:50
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:50
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:51
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:52
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:52
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:53
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:54
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:54
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:55
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:55
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:56
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:56
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:56
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:57
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\RESUFASM.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Windows NT TCP/IP NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 08-MAR-17 17:41:58
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\FACTUDIAN_IFRS.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 23-AGO-17 17:20:14
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0
+
+
+***********************************************************************
+Fatal NI connect error 12560, connecting to:
+ (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=BEQ)(PROGRAM=oracle)(ARGV0=oracleORCL)(ARGS='(DESCRIPTION=(LOCAL=YES)(ADDRESS=(PROTOCOL=beq)))')))(CONNECT_DATA=(SID=ORCL)(CID=(PROGRAM=c:\pc\Winrel\FACTUDIAN_IFRS.exe)(HOST=MARIO-HP)(USER=MARIO))))
+
+  VERSION INFORMATION:
+	TNS for 32-bit Windows: Version 8.1.5.0.0 - Production
+	Oracle Bequeath NT Protocol Adapter for 32-bit Windows: Version 8.1.5.0.0 - Production
+  Time: 23-AGO-17 17:20:16
+  Tracing not turned on.
+  Tns error struct:
+    nr err code: 0
+    ns main err code: 12560
+    TNS-12560: TNS:protocol adapter error
+    ns secondary err code: 0
+    nt main err code: 530
+    TNS-00530: Protocol adapter error
+    nt secondary err code: 0
+    nt OS err code: 0

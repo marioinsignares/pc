@@ -1,0 +1,247 @@
+/*****************************************************************
+* ORDENES.C Version 1.0 - Rev 1.2 - May. 29/90.
+*
+* marcaord.c. Listado de Ordenes de Produccion.
+*
+* Uso : marcaord numero_orden device userid/password
+*
+* Martin A. Toloza L. Creado Enero 30-1998.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <setjmp.h>
+#include <stdlib.h>
+
+
+				     /* Parametros de comunicacion con ORACLE */
+        		             /* Variables de recepcion para datos */
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+                                 /* Ordenes_r (C1) */
+double  numero_orden;
+VARCHAR codigo_cliente[7];
+VARCHAR nomb_clie     [50];
+VARCHAR fecha_control [50];
+double  consecutivo;
+float   numero_caja;
+VARCHAR color_caja    [2];
+double  valor_desctos;
+VARCHAR orden         [10];
+                                 /* Ordenes_o (C2) */
+double  valor_trat;
+double  valor_color;
+double  valor_bis_mont;
+double  valor_otros;
+double  valor_servicios;
+int     contado;
+VARCHAR consecutivo_a [6];
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+                                            /* Variables globales del usuario */
+#define A_F1     "###,###.##"
+int     con_pag;                                   /* Contador de Paginas */
+int     con_lin=22;                                /* Contador de Lineas  */
+char    fecha[20];
+char    hora[12];
+int     i;
+char    cadena2[20];
+char    cadena[20];
+char    codigo[6];
+char    r_t[20];
+
+void titulos();
+void titulos_c();
+void fecha_corta();
+void titulos_b();
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int	status = 0;
+
+    if (argc < 4)
+       {
+	printf ("Incorrecta invocacion:\n");
+	printf ("Uso : marcaord numero_orden device userid/password\n");
+	printf ("      device : t salida por terminal\n");
+	printf ("               Px salida por impresora (x nro printer)\n");
+	printf ("               userid/password nombre usuario y password\n");
+        exit (1);
+       }
+
+       strcpy (orden.arr, argv[1]);
+       orden.len   =      strlen(orden.arr);
+       strcpy (device,    argv[2]);
+       strlow (device);
+
+    if (!strpos ("/", argv[3]))
+       {
+        printf ("user id/password incorrecto.\n");
+	exit (1);
+       }
+
+    strcpy (uid.arr,   argv[3]);
+    uid.len   =        strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+
+    busco_impresora(device);
+    abre_impresora("1");
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+
+    EXEC SQL select numero_orden, codigo_cliente, n.nombre,
+                    to_char(fecha_control,'DD-MON-YYYY hh:mi:ss am'),
+                    o.consecutivo, o.numero_caja, o.color_caja,
+                    valor_desctos, o.contado
+             into  :numero_orden, :codigo_cliente, :nomb_clie, :fecha_control,
+                   :consecutivo, :numero_caja, :color_caja, :valor_desctos, :contado
+             from   nits n, ordenes_r o
+             where  n.codigo_nit in (select codigo_nit
+                                     from   clientes
+                                     where  clientes.codigo_cliente in
+                                     (select codigo_cliente
+                                      from ordenes_r
+                                      where numero_orden = :orden))   and
+                    numero_orden     = :orden;
+
+    if (sqlca.sqlcode != -1405 && sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo Ordenes_r (%d)\n", sqlca.sqlcode);
+
+    codigo_cliente.arr [codigo_cliente.len] = '\0';
+    nomb_clie.arr      [nomb_clie.len]      = '\0';
+    fecha_control.arr  [fecha_control.len]  = '\0';
+    color_caja.arr     [color_caja.len]     = '\0';
+    strcpy(codigo,codigo_cliente.arr);
+    strcpy(fecha,fecha_control.arr);
+    strorg(fecha,1,11);
+    strcpy(hora, fecha_control.arr);
+    strorg(hora,13,11);
+    fprintf (fp, "%s%s%c\r",line_feed6,set_vertical,52);
+    if (numero_orden>100000) {
+       if (numero_orden>1722000)
+          titulos_b();
+       else titulos();
+       fprintf (fp, "%s%s\r",diezcpi,line_feed8vo);
+       for (i=1;i<=24;i++) {
+           fprintf(fp,"\n");
+       }
+       fprintf(fp,"%s",salte_pagina);
+    }
+    else titulos_c();
+
+    cierre_impresora();
+
+    EXEC SQL COMMIT WORK RELEASE;
+
+    exit   (0);
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+  cadena[9]='\0';
+  cadena[8]=codigo[4];
+  cadena[7]=' ';
+  cadena[6]=codigo[3];
+  cadena[5]=' ';
+  cadena[4]=codigo[2];
+  cadena[3]=' ';
+  cadena[2]=codigo[1];
+  cadena[1]=' ';
+  cadena[0]=codigo[0];
+  strcpy(cadena2,"");
+  if (contado == 1)
+     strcpy(cadena2,"CONTADO");
+  fprintf (fp,"%s%s\n\n\n\n",condensado_off,diezcpi);
+  fprintf (fp,"%51s\n\n\n%34s%5.0f%s%s   %s\n\n",cadena," ",numero_caja,"-",color_caja.arr,cadena2);
+  fprintf (fp,"      %05.0f      ",consecutivo);
+  strcpy(cadena,fecha);
+  fecha_corta(cadena);
+  fprintf (fp,"  %s ",cadena);
+  fprintf (fp,"       %s ",hora);
+}
+
+void titulos_c()
+{
+  cadena[9]='\0';
+  cadena[8]=codigo[4];
+  cadena[7]=' ';
+  cadena[6]=codigo[3];
+  cadena[5]=' ';
+  cadena[4]=codigo[2];
+  cadena[3]=' ';
+  cadena[2]=codigo[1];
+  cadena[1]=' ';
+  cadena[0]=codigo[0];
+  strcpy(cadena2,"");
+  if (contado == 1)
+     strcpy(cadena2,"CONTADO");
+  fprintf (fp,"%s%s\n\n\n\n",condensado_off,diezcpi);
+  fprintf (fp,"%48s\n\n\n%21s%5.0f%s%s   %s\n\n",cadena," ",numero_caja,"-",color_caja.arr,cadena2);
+  fprintf (fp," %05.0f      ",consecutivo);
+  strcpy(cadena,fecha);
+  fecha_corta(cadena);
+  fprintf (fp,"     %s ",cadena);
+  fprintf (fp,"       %s%s\n ",hora,salte_pagina);
+}
+
+void titulos_b()
+{
+  cadena[9]='\0';
+  cadena[8]=codigo[4];
+  cadena[7]=' ';
+  cadena[6]=codigo[3];
+  cadena[5]=' ';
+  cadena[4]=codigo[2];
+  cadena[3]=' ';
+  cadena[2]=codigo[1];
+  cadena[1]=' ';
+  cadena[0]=codigo[0];
+  strcpy(cadena2,"");
+  if (contado == 1)
+     strcpy(cadena2,"CONTADO");
+  fprintf (fp,"%s%s\n\n\n",condensado_off,diezcpi);
+  fprintf (fp,"%44s\n\n%46s\n\n%36s%5.0f%s%s\n\n",cadena,cadena2," ",numero_caja,"-",color_caja.arr);
+  fprintf (fp,"      %05.0f      ",consecutivo);
+  strcpy(cadena,fecha);
+  fecha_corta(cadena);
+  fprintf (fp,"  %s ",cadena);
+  fprintf (fp,"   %s ",hora);
+}
+

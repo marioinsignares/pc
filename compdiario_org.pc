@@ -1,0 +1,402 @@
+ /*****************************************************************
+* COMPDIARIO.C Version 1.0 - Rev 1.2 - Dic. 20/93.
+*
+* compdiario.c. Listado del movimiento de cuentas auxiliares
+*
+* Uso : codigo_emp cuentai cuentaf ano_mesi ano_mesf codigoi codigof
+*       niti nitf device userid/password
+*
+* Mario E. Santiago I. Creado Diciembre 20-1993.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <setjmp.h>
+#include <stdlib.h>
+#include <math.h>
+
+void listado();
+void titulos();
+void totales();
+				     /* Parametros de comunicacion con ORACLE */
+
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+
+VARCHAR nomb_emp   [41];
+VARCHAR nivel      [2];
+double  nit;
+int     digito;
+VARCHAR codigo_emp [3];
+
+/* MOVTO */
+
+VARCHAR tipo       [20][04];
+VARCHAR cuenta     [20][14];
+VARCHAR nombre_cta [20][61];
+double  valor_deb  [20];
+double  valor_cre  [20];
+VARCHAR db_cr      [20][03];
+
+VARCHAR ano_mesi   [20];
+VARCHAR ano_mesf   [20];
+VARCHAR tipoi      [4];
+VARCHAR tipof      [4];
+
+VARCHAR nombre_tip [21];
+VARCHAR tipob[4];
+
+VARCHAR sucursal   [20][05];
+VARCHAR cen_cos    [20][3];
+VARCHAR sucursali  [10];
+VARCHAR sucursalf  [10];
+VARCHAR cen_cosi   [04];
+VARCHAR cen_cosf   [04];
+VARCHAR nomb_suci  [12];
+VARCHAR nomb_sucf  [12];
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+
+                                            /* Variables globales del usuario */
+char    pagina[4];                                   /* Contador de Paginas */
+int     con_pag=0;                                   /* Contador de Paginas */
+int     con_lin=66;                                   /* Contador de Lineas  */
+int     cl;
+int     anof;
+int     mesf;
+int     anof2;
+int     mesf2;
+        		                /* Variables de recepcion para datos */
+char *fmtnum(), r_t[100];
+int     diai;
+int     mesi;
+int     anoi;
+double  nitn;
+double  total_deb;
+double  total_cre;
+char    cadena[100];
+char    cadena2[240];
+char    copias[5];
+
+int     traidos    =0;
+int     staora     =0;
+int     num_ret    =0;
+int     loop_2     =0;
+char    timbrado   [2];
+
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int	status = 0;
+
+    if (argc < 15)
+       {
+	printf ("Incorrecta invocacion:\n");
+        printf ("Uso : compdiario codigo_emp sucursali sucursalf c.costoi c.costof ano_mesi ano_mesf tipoi tipof copias pagina\n");
+        printf ("               device timbrado (s/n) nivel userid/password nombre usuario y password\n");
+        printf ("      device : t salida por terminal\n");
+	printf ("               s salida standar     \n");
+	printf ("               Px salida por impresora (x nro printer)\n");
+        exit (1);
+       }
+       strcpy (codigo_emp.arr, argv[1]);
+       codigo_emp.len  =       strlen(codigo_emp.arr);
+
+       strcpy (sucursali.arr,  argv[2]);
+       sucursali.len  =        strlen(sucursali.arr);
+       strcpy (sucursalf.arr,  argv[3]);
+       sucursalf.len  =        strlen(sucursalf.arr);
+       strcpy (cen_cosi.arr,   argv[4]);
+       cen_cosi.len   =        strlen(cen_cosi.arr);
+       strcpy (cen_cosf.arr,   argv[5]);
+       cen_cosf.len   =        strlen(cen_cosf.arr);
+
+       strcpy (tipoi.arr,      argv[8]);
+       tipoi.len       =       strlen(tipoi.arr);
+       strcpy (tipof.arr,      argv[9]);
+       tipof.len       =       strlen(tipof.arr);
+       strcpy (copias,         argv[10]);
+       strcpy (pagina,         argv[11]);
+       strcpy (device,         argv[12]);
+       strlow (device);
+       strcpy (timbrado,       argv[13]);
+       strlow (timbrado);
+       strcpy (nivel.arr,      argv[14]);
+       nivel.len = strlen(nivel.arr);
+
+    if (!strpos ("/", argv[15]))
+       {
+        printf ("user id/password incorrecto.\n");
+	exit (1);
+       }
+
+     strcpy (uid.arr, argv[15]);
+     uid.len = strlen(uid.arr);
+
+         printf("paso-0"); getchar();
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora(copias);
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+
+    strcpy (ano_mesi.arr,   argv[6]);
+    ano_mesi.len =          strlen(ano_mesi.arr);
+
+    strcpy (ano_mesf.arr,   argv[7]);
+    ano_mesf.len =          strlen(ano_mesf.arr);
+
+    strcpy (cadena,ano_mesi.arr);
+    strorg (cadena,1,4);
+    anoi         =          atoi(cadena);
+    strcpy (cadena,ano_mesi.arr);
+    strorg (cadena,5,2);
+    mesi         =          atoi(cadena);
+
+    strcpy (cadena,ano_mesf.arr);
+    strorg (cadena,1,4);
+    anof         =          atoi(cadena);
+    anof2        =          atoi(cadena);
+
+    strcpy (cadena,ano_mesf.arr);
+    strorg (cadena,5,2);
+    mesf         =          atoi(cadena);
+    mesf2        =          atoi(cadena);
+    if (mesf==1) {
+        anof--;
+        mesf=12;
+    }
+    else {
+          mesf--;
+    }
+
+    /* C1 */
+
+    EXEC SQL select n.nombre, n.nit, n.digito
+                    into :nomb_emp, :nit, :digito
+             from   nits n, empresas e
+             where  n.codigo_nit = e.codigo_nit and
+                    e.codigo_emp = to_number(:codigo_emp);
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo Empresa C1 (%d)\n", sqlca.sqlcode);
+
+/* Cx */
+
+    EXEC SQL select nombre
+             into  :nomb_suci
+             from   sucursal
+             where  sucursal   = :sucursali   and
+                    codigo_emp = to_number(:codigo_emp);
+
+    if (sqlca.sqlcode == 0)
+        nomb_emp.arr [nomb_emp.len] = '\0';
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo Sucursali=%s (%d)\n",sucursali.arr, sqlca.sqlcode);
+
+/* Cx1 */
+
+    EXEC SQL select nombre
+             into  :nomb_sucf
+             from   sucursal
+             where  sucursal   = :sucursalf   and
+                    codigo_emp = to_number(:codigo_emp);
+
+    if (sqlca.sqlcode == 0)
+        nomb_emp.arr [nomb_emp.len] = '\0';
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo Sucursalf=%s (%d)\n",sucursalf.arr, sqlca.sqlcode);
+
+    EXEC SQL DECLARE C2 CURSOR FOR
+        select tipo, p.cuenta , nombre, sum(nvl(valor_deb,0)),
+               sum(nvl(valor_cre,0)), db_cr
+	from   movto_d d, movto_c c, plan p
+        where  d.codigo_emp(+)  = c.codigo_emp                  and
+               d.ano_mes(+)     = c.ano_mes                     and
+               d.consecutivo(+) = c.consecutivo                 and
+               c.codigo_emp     = to_number(:codigo_emp)        and
+               c.ano_mes       >= to_number(:ano_mesi)          and
+               c.ano_mes       <= to_number(:ano_mesf)          and
+               c.tipo          >= to_number(:tipoi)             and
+               c.tipo          <= to_number(:tipof)             and
+       	       d.sucursal      >= (:sucursali)                  and
+               d.sucursal      <= (:sucursalf)                  and
+               d.cen_cos       >= to_number(:cen_cosi)          and
+               d.cen_cos       <= to_number(:cen_cosf)          and
+               p.cuenta         = substr(d.cuenta,1,decode(to_number(p.nivel),0,1,to_number(p.nivel)*2)) and
+               p.codigo_emp     = d.codigo_emp                  and
+               p.nivel          = :nivel
+        group by tipo, p.cuenta, nombre, db_cr
+        order by to_number(tipo), p.cuenta, nombre, db_cr;
+
+    EXEC SQL OPEN C2;
+
+    strcpy(tipob.arr,"");
+    tipob.len = strlen(tipob.arr);
+    staora  = 0;
+    traidos = 0;
+    num_ret = 0;
+    printf("paso-1"); getchar();
+    while (staora == 0) {
+
+          EXEC SQL FETCH C2 INTO :tipo,      :cuenta,    :nombre_cta,
+                                 :valor_deb, :valor_cre, :db_cr;
+
+          if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+             fprintf (stderr, "Error leyendo C2 (%d)\n", sqlca.sqlcode);
+
+          staora  = sqlca.sqlcode;
+          traidos = sqlca.sqlerrd[2];
+
+          for (loop_2 = 0; loop_2 < (traidos - num_ret); loop_2++) {
+              tipo       [loop_2].arr  [tipo       [loop_2].len] = '\0';
+              cuenta     [loop_2].arr  [cuenta     [loop_2].len] = '\0';
+              nombre_cta [loop_2].arr  [nombre_cta [loop_2].len] = '\0';
+              db_cr      [loop_2].arr  [db_cr      [loop_2].len] = '\0';
+
+              listado();
+          }
+          num_ret = traidos;
+    }
+    EXEC SQL CLOSE C2;
+    totales();
+
+    cierre_impresora();
+/************************************************
+ * Desconectarse de ORACLE. (ologof)            *
+ ************************************************/
+    EXEC SQL COMMIT WORK RELEASE;
+    exit   (0);
+}
+
+void listado()
+{
+  if (con_lin > 60)
+      titulos();
+
+  if (strcmp(tipob.arr,tipo[loop_2].arr)) {
+      totales();
+      titulos();
+  }
+
+  if (atoi(pagina)<=con_pag) {
+      fprintf (fp,"%-10s",cuenta[loop_2].arr);
+      fprintf (fp,"%-71s",nombre_cta[loop_2].arr);
+  }
+  if (atoi(pagina)<=con_pag) {
+      sprintf (cadena,"%9.2f",valor_deb[loop_2]);
+      fprintf (fp,"%20s",fmtnum("zzzz,zzz,zzz.zz",cadena,r_t));
+      total_deb+=valor_deb[loop_2];
+      sprintf (cadena,"%9.2f",valor_cre[loop_2]);
+      fprintf (fp,"%20s\n",fmtnum("zzzz,zzz,zzz.zz",cadena,r_t));
+      total_cre+=valor_cre[loop_2];
+  }
+  con_lin ++;
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+ con_pag++;
+ con_lin = 10;
+ if (atoi(pagina)>con_pag)
+    return;
+ if (!strcmp(codigo_emp.arr,"3"))
+    strcpy(nomb_emp.arr," ");
+ fprintf(fp,"%s",salte_pagina);
+ if (strcmp(timbrado,"s")) {
+    strful(cadena,(int)(42-strlen(nomb_emp.arr))/2,' ');
+    fprintf(fp,"%s%s%s%s%s\n",diezcpi,ancho_on,cadena,nomb_emp.arr,ancho_off);
+    sprintf (cadena,"%12.0f",nit);
+    fprintf (fp,"%s%s%25s %18s",condensado_on,ancho_on,"NIT :",fmtnum("zzz,zzz,zzz,zzz",cadena,r_t));
+    if (digito > 0) {
+       sprintf (cadena,"%d",digito);
+       fprintf (fp,"-%s",fmtnum("z",cadena,r_t));
+    }
+    else if (digito == 0)
+            fprintf (fp,"-%s","0");
+    sprintf(cadena2,"SUCURSAL: %s %s A %s %s C.COSTO: %s A %s",sucursali.arr,nomb_suci.arr,sucursalf.arr,nomb_sucf.arr,cen_cosi.arr,cen_cosf.arr);
+    strful(cadena,(int)(80-strlen(cadena2))/2,' ');
+    fprintf(fp,"\n%s%s%s%s",condensado_on,ancho_on,cadena,cadena2);
+    fprintf(fp,"\n%15s%s%s\n\n"," ","COMPROBANTE DE DIARIO DE CONTABILIDAD",ancho_off);
+    fecha_system(cadena);
+    if (strcmp(timbrado,"s"))
+       fprintf(fp,"%s%-35s%s%10s / %d A %10s / %d","FECHA PROCESO : ",cadena,"PERIODO DE : ",mes[mesi-1],anoi,mes[mesf2-1],anof2);
+    else
+       fprintf(fp,"%s%-35s%s%10s / %d A %10s / %d"," "," ","PERIODO DE : ",mes[mesi-1],anoi,mes[mesf2-1],anof2);
+ }
+ else {
+    fecha_system(cadena);
+    fprintf(fp,"%s%-35s%s%10s / %d A %10s / %d","                "," ","PERIODO DE : ",mes[mesi-1],anoi,mes[mesf2-1],anof2);
+ }
+ fprintf(fp,"%45s %d\n\n","PAGINA ",con_pag);
+ strcpy(tipob.arr,tipo[loop_2].arr);
+ tipob.len = strlen(tipob.arr);
+
+/* C3 */
+ EXEC SQL select nombre
+          into  :nombre_tip
+  	  from   tipos_cpt
+          where  codigo_emp  = to_number(:codigo_emp)   and
+                 tipo        = to_number(:tipob);
+
+ nombre_tip.arr  [nombre_tip.len] = '\0';
+
+ fprintf(fp,"%s%s%02d %s%s%s\n",ancho_on,enfatizado_on,atoi(tipo[loop_2].arr),nombre_tip.arr,ancho_off,enfatizado_off);
+ fprintf(fp,"%s%121s%s\n\n",enfatizado_on,"CUENTA   NOMBRE  CUENTA                                                                       DEBITOS            CREDITOS",enfatizado_off);
+}
+
+void totales()
+{
+  if (con_lin>60)
+     titulos();
+  if (atoi(pagina)<=con_pag) {
+      fprintf (fp,"%121s\n","--------------      --------------");
+      sprintf (cadena,"%9.2f",total_deb);
+      fprintf (fp,"%82s %18s","SUMAS IGUALES ======> ",fmtnum("zz,zzz,zzz,zz9.99",cadena,r_t));
+      sprintf (cadena,"%9.2f",total_cre);
+      fprintf (fp,"%20s\n",fmtnum("zz,zzz,zzz,zz9.99",cadena,r_t));
+      total_deb=total_cre=0;
+  }
+  con_lin++;
+  fprintf(fp,"\n\n%36s%s\n%39s%10s / %d A %10s / %d\n","Resumen del movimiento de ",nombre_tip.arr,"comprendido en el periodo de ",mes[mesi-1],anoi,mes[mesf2-1],anof2);
+}

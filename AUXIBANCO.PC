@@ -1,0 +1,754 @@
+/*****************************************************************
+* AUXIBANCO.C Version 1.0 - Rev 1.2 - Dic. 20/93.
+*
+* auxibanco.pc. Listado del movimiento de cuentas auxiliares de banco
+*
+* Uso : auxibanco codigo_emp banco cta_cte fechai fechaf copias
+*       device userid/password
+*
+* Martin A. Toloza L. Creado Diciembre 20-1997.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <math.h>
+#include <stdlib.h>
+
+void main(int argc, char *argv[]);
+void listado();
+void listar();
+void leer_movto();
+void leer_c2();
+void leer_c5();
+void leer_c11();
+void imprime_movto();
+void imprime_chq();
+void imprime_post();
+void titulos();
+void imprime_acumulanit();
+void leer_bancos();
+void leer_nit();
+void totales();
+void totales_post();
+void actu_bancosm();
+
+				     /* Parametros de comunicacion con ORACLE */
+
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+                                 /* Empresa (C1) */
+VARCHAR nomb_emp      [41];
+double  nit;
+int     digito;
+int     a2k;
+VARCHAR codigo_emp    [3];
+                                 /* Movto (C2) */
+double  consecutivo;
+double  secuencia;
+VARCHAR cuenta        [14];
+VARCHAR veca          [14];
+VARCHAR vecb          [14];
+VARCHAR vecc          [14];
+VARCHAR vecd          [14];
+double  comprobante;
+VARCHAR clase         [3];
+VARCHAR descripcion   [41];
+VARCHAR fecha         [20];
+double  valor_deb;
+double  valor_cre;
+double  codigo_nitm;
+VARCHAR fechai2       [20];
+VARCHAR fechaf        [20];
+VARCHAR codigo_bco    [3];
+VARCHAR cta_cte       [6];
+char    vecmov        [5][14];
+                                 /* Movto (C5) */
+double  codigo_nit;
+VARCHAR cheque        [11];
+VARCHAR fecha_chq     [20];
+double  valor_chq;
+VARCHAR descripcionch [51];
+VARCHAR clasech       [3];
+double  comprobantech;
+                                 /* Plan (C7) */
+VARCHAR nombre_cta    [61];
+VARCHAR db_cr         [3];
+char    vecplan       [5][14];
+                                 /* Bancos (C8) */
+VARCHAR nombre_bco    [46];
+                                 /* BancosM (C9) */
+double  valor_saldo;
+VARCHAR ano_mesa      [20];
+                                 /* Nits (C10) */
+VARCHAR nombre_ben    [35];
+VARCHAR codigo_nitb   [6];
+                                 /* Movtos (C11) */
+VARCHAR chequep       [11];
+VARCHAR fecha_chqp    [20];
+VARCHAR descripcionchp[41];
+VARCHAR clasechp      [3];
+                                 /* BancosM (C12) */
+VARCHAR ano_mesf      [20];
+VARCHAR saldoa        [15];
+VARCHAR libro         [04];
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+                                            /* Variables globales del usuario */
+char    pagina[4];                                   /* Contador de Paginas */
+int     con_pag=0;                                   /* Contador de Paginas */
+int     con_lin=66;                                  /* Contador de Lineas  */
+int     cl;
+int     staora  = 0;
+int     traidos = 0;
+int     num_ret = 0;
+int     loop_6  = 0;
+int     anof;
+int     mesf;
+int     diaf;
+int     anof2;
+int     mesf2;
+int     diaf2;
+char    ano_mesi[20];
+        		                /* Variables de recepcion para datos */
+char *fmtnum(), r_t[100];
+int     diai;
+int     mesi;
+int     mest;
+int     diat;
+int     anoi;
+int     anot;
+char    nombreb[51];
+char    fechai[20];
+double  x, num, doble;
+double  total_deb;
+double  total_cre;
+double  total_pos;
+double  saldo_ant;
+double  valor_cns;
+char    cadena[100];
+char    cadena2[240];
+char    copias[5];
+int     i;
+int     j;
+int     k;
+int     oraest_chq;
+int     oraest_mov;
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int	status = 0;
+
+    if (argc < 8)
+       {
+       	printf ("Incorrecta invocacion:\n");
+        printf ("Uso : auxibanco codigo_emp banco cta_cte fechai fechaf \n");
+	      printf ("               libro(0= COLGAAP 1=IFRS)\n");
+        printf ("      device : t salida por terminal\n");
+      	printf ("               s salida standar     \n");
+	      printf ("               Px salida por impresora (x nro printer)\n");
+	      printf ("               userid/password nombre usuario y password\n");
+        exit (1);
+       }
+       strcpy (codigo_emp.arr, argv[1]);
+       codigo_emp.len =        strlen(codigo_emp.arr);
+       strcpy (codigo_bco.arr, argv[2]);
+       codigo_bco.len =        strlen(codigo_bco.arr);
+       strcpy (cta_cte.arr,    argv[3]);
+       cta_cte.len    =        strlen(cta_cte.arr);
+       strcpy (fechai,         argv[4]);
+       strcpy (fechaf.arr,     argv[5]);
+       fechaf.len     =        strlen(fechaf.arr);
+       if ( strlen(fechai) != 8 || strlen(fechaf.arr) != 8 ) {
+          printf("Error, la fecha debe ser de 8 digitos y formato AAAAMMDD");
+          exit (1);
+       }
+       strcpy (device,         argv[6]);
+       strlow (device);
+       strcpy (libro.arr,      argv[7]);
+       libro.len =             strlen(libro.arr);
+
+    if (!strpos ("/", argv[8]))
+       {
+        printf ("user id/password incorrecto.\n");
+	exit (1);
+       }
+
+    strcpy (uid.arr,  argv[8]);
+    uid.len   =       strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora("1");
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+
+    EXEC SQL select y2k
+             into   :a2k
+             from   ano2000;
+    if (sqlca.sqlcode != 0 ) {
+       fprintf (stderr, "Error, No existe registro alguno en tabla Y2K (%d)\n", sqlca.sqlcode);
+       exit (1);
+    }
+    strcpy (ano_mesi,       fechai);
+    strorg (ano_mesi,1,6);
+    sprintf(fechai2.arr,"%06s%02s",ano_mesi,"01");
+    fechai2.len  = strlen(fechai2.arr);
+    strcpy (ano_mesf.arr,   fechaf.arr);
+    strorg (ano_mesf.arr,1,6);
+    ano_mesf.len = strlen(ano_mesf.arr);
+//    periodoy2k(ano_mesf.arr,a2k);
+//    ano_mesf.len = strlen(ano_mesf.arr);
+    strcpy (cadena,ano_mesi);
+    strorg (cadena,1,4);
+    anoi         = atoi(cadena);
+    strcpy (cadena,ano_mesi);
+    strorg (cadena,5,2);
+    mesi         = atoi(cadena);
+    strcpy (cadena,fechai);
+    strorg (cadena,7,2);
+    diai         = atoi(cadena);
+    fecha_oracle4(fechai);
+
+    strcpy (cadena,fechaf.arr);
+    strorg (cadena,1,4);
+    anof         = atoi(cadena);
+    anof2=anof;
+    strcpy (cadena,fechaf.arr);
+    strorg (cadena,5,2);
+    mesf         = atoi(cadena);
+    mesf2=mesf;
+    strcpy (cadena,fechaf.arr);
+    strorg (cadena,7,2);
+    diaf         = atoi(cadena);
+    diaf2=diaf;
+    anot=anoi;
+    mest=mesi;
+    diat=diai;
+    if (mesi==1) {
+       anoi--;
+       mesi=12;
+    }
+    else {
+       mesi--;
+    }
+    sprintf(ano_mesa.arr,"%d%02d",anoi,mesi);
+    ano_mesa.len = strlen(ano_mesa.arr);
+//    periodoy2k(ano_mesa.arr,a2k);
+//    ano_mesa.len = strlen(ano_mesa.arr);
+
+    EXEC SQL select n.nombre, n.nit, n.digito
+                    into :nomb_emp, :nit, :digito
+             from   nits n, empresas e
+             where  n.codigo_nit = e.codigo_nit and
+                    e.codigo_emp = to_number(:codigo_emp);
+
+    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+        fprintf (stderr, "Error leyendo Empresa (%d)\n", sqlca.sqlcode);
+
+    EXEC SQL DECLARE C2 CURSOR FOR
+             select nvl(infa,'0'), decode(clase,'RC','0',nvl(infb,'0')),
+                    nvl(infc,'0'), nvl(infd,'0'),
+                    comprobante, clase, descripcion, fecha,
+                    nvl(valor_deb,0), nvl(valor_cre,0), d.codigo_nit
+             from   movto_d d, movto_c c, bancos b
+             where  d.codigo_emp     = c.codigo_emp                  and
+                    d.ano_mes        = c.ano_mes                     and
+                    d.consecutivo    = c.consecutivo                 and
+                    d.libro          = to_number(:libro)             and
+                    c.codigo_emp     =  :codigo_emp                  and
+                    to_date(to_char(c.fecha,'yyyymmdd'),'yyyymmdd') >= to_date(:fechai2,'yyyymmdd')  and
+                    to_date(to_char(c.fecha,'yyyymmdd'),'yyyymmdd') <= to_date(:fechaf ,'yyyymmdd')  and
+                    d.cuenta         = b.cuenta                      and
+                    c.codigo_emp     = b.codigo_emp                  and
+                    b.tipo          != 'E'                           and
+                    b.codigo         = :codigo_bco                   and
+                    d.infa           = :cta_cte
+             order by c.fecha;
+
+    EXEC SQL DECLARE C5 CURSOR FOR
+             select c.codigo_nitb, d.infc, c.fecha, valor_cre,
+                    decode(d.infb,'ANULADO','*** ANULADO ***',c.descripcion),
+                    c.clase, c.comprobante
+             from   movto_d d, movto_c c
+             where  d.infa        = :cta_cte                          and
+                    d.libro       = to_number(:libro)                 and
+                    cuenta        = (select cuenta
+                                     from   bancos
+                                     where  codigo     = :codigo_bco  and
+                                            tipo      != 'E'          and
+                                            codigo_emp = :codigo_emp) and
+                    to_date(to_char(c.fecha,'yyyymmdd'),'yyyymmdd') <= to_date(:fechaf ,'yyyymmdd')      and
+                    to_date(to_char(c.fecha,'yyyymmdd'),'yyyymmdd') >= to_date(:fechai2,'yyyymmdd')      and
+                    c.codigo_emp  =  :codigo_emp                      and
+                    c.codigo_emp  = d.codigo_emp                      and
+                    c.ano_mes     = d.ano_mes                         and
+                    c.consecutivo = d.consecutivo                     and
+                    d.valor_cre   is NOT NULL                         and
+                    clase         = 'EG'
+             order by c.fecha, d.infc;
+
+    EXEC SQL DECLARE C11 CURSOR FOR
+             select c.codigo_nitb, d.infc, d.infd, valor_cre,
+                    c.descripcion, c.clase, c.comprobante,
+                    d.cuenta, d.consecutivo, d.secuencia
+             from   movto_d d, movto_c c
+             where  d.infa        =  :cta_cte            and
+                    d.libro       = to_number(:libro)    and
+                    cuenta        = (select cuenta
+                                     from   bancos
+                                     where  codigo     = :codigo_bco  and
+                                            tipo      != 'E'          and
+                                            codigo_emp = :codigo_emp) and
+                    to_date(to_char(c.fecha,'yyyymmdd'),'yyyymmdd') >= to_date(20010101,'yyyymmdd')      and
+                    to_date(to_char(c.fecha,'yyyymmdd'),'yyyymmdd') <= to_date(:fechaf,'yyyymmdd')      and
+                    to_date(:fechaf,'yyyymmdd')   <  to_date(d.infd) and
+                    c.codigo_emp  = to_number(:codigo_emp)         and
+                    c.codigo_emp  = d.codigo_emp                   and
+                    c.ano_mes     = d.ano_mes                      and
+                    c.consecutivo = d.consecutivo                  and
+                    d.valor_cre   is NOT NULL                      and
+                    clase         = 'EG'
+             order by d.infd, d.infc;
+
+    EXEC SQL OPEN C2;
+    EXEC SQL OPEN C5;
+    EXEC SQL OPEN C11;
+    listado();
+
+    cierre_impresora();
+
+    EXEC SQL CLOSE C2;
+    EXEC SQL CLOSE C5;
+    EXEC SQL CLOSE C11;
+
+    EXEC SQL COMMIT WORK RELEASE;
+
+    exit   (0);
+}
+
+void listado()
+{
+ staora=0;
+ valor_saldo=0;
+ saldo_ant=0;
+ EXEC SQL select saldo into :valor_saldo
+          from   bancosm b
+          where  b.codigo_emp = :codigo_emp and
+                 b.codigo_bco = :codigo_bco and
+                 b.cta_cte    = :cta_cte    and
+                 b.ano_mes    = (select max(ano_mes)
+                                 from   bancosm
+                                 where  codigo_emp = :codigo_emp and
+                                        codigo_bco = :codigo_bco and
+                                        cta_cte    = :cta_cte    and
+                                        ano_mes   <= :ano_mesa);
+ if (sqlca.sqlcode) {
+     fprintf (stderr, "Error leyendo Bancosm C9 (%d)\n", sqlca.sqlcode);
+     valor_saldo=0;
+ }
+ imprime_acumulanit();
+ while (!oraest_mov || !oraest_chq) {
+        leer_c2();
+
+        leer_c5();
+        staora = oraest_chq;
+
+        listar();
+        totales();
+        actu_bancosm();
+        staora=0;
+        leer_c11();
+        staora = oraest_chq;
+        oraest_chq = staora;
+        if (!oraest_chq) {
+            fprintf (fp, "%s%45s%s%s\n\n",enfatizado_on," ","--- RELACION DE CHEQUES POST-FECHADOS ---",enfatizado_off);
+           imprime_post();
+           totales_post();
+        }
+ }
+}
+
+void listar()
+{
+   while (oraest_chq == 0 || oraest_mov == 0) {
+         if ((strcmp(fecha.arr,fecha_chq.arr)) > 0 && oraest_chq == 0) {
+                imprime_chq();
+         }
+         else {
+              if (oraest_mov==0)
+                  leer_movto();
+              else imprime_chq();
+         }
+  }
+}
+
+void leer_movto()
+{
+  if (!strcmp(clase.arr,"EG")) {
+      if (valor_deb > 0)
+          imprime_movto();
+  }
+  else {
+        if (strcmp(clase.arr,"CD")&&strcmp(clase.arr,"NB")) {
+            strcpy(descripcion.arr,"CONSIGNACION");
+        }
+        imprime_movto();
+  }
+  leer_c2();
+}
+
+void leer_c2()
+{
+  EXEC SQL FETCH C2  INTO :veca, :vecb, :vecc, :vecd, :comprobante, :clase,
+                          :descripcion, :fecha, :valor_deb, :valor_cre,
+                          :codigo_nitm;
+  oraest_mov  =     sqlca.sqlcode;
+
+  if (oraest_mov == -1405 ) {
+      oraest_mov  = 0;
+      if (!strlen(clase.arr)) {
+          strcpy (clase.arr, "");
+          clase.len = 0;
+      }
+  }
+  else if (oraest_mov)
+           fprintf (stderr, "Error leyendo C2 (%d)\n", oraest_mov);
+
+  veca.arr          [veca.len]        = '\0';
+  vecb.arr          [vecb.len]        = '\0';
+  vecc.arr          [vecc.len]        = '\0';
+  vecd.arr          [vecd.len]        = '\0';
+  clase.arr         [clase.len]       = '\0';
+  descripcion.arr   [descripcion.len] = '\0';
+  fecha.arr         [fecha.len]       = '\0';
+  strcpy (vecmov[1], veca.arr);
+  strcpy (vecmov[2], vecb.arr);
+  strcpy (vecmov[3], vecc.arr);
+  strcpy (vecmov[4], vecd.arr);
+}
+
+void leer_c5()
+{
+  EXEC SQL FETCH C5  INTO :codigo_nit, :cheque, :fecha_chq, :valor_chq,
+                          :descripcionch, :clasech, :comprobantech;
+  oraest_chq  =     sqlca.sqlcode;
+
+  if (oraest_chq == -1405 ) {
+      oraest_chq  = 0;
+      if (!strlen(cheque.arr)) {
+          strcpy (cheque.arr, "");
+          cheque.len = 0;
+      }
+  }
+  else if (oraest_chq)
+           fprintf (stderr, "Error leyendo C5 (%d)\n", oraest_chq);
+
+  cheque.arr        [cheque.len]        = '\0';
+  fecha_chq.arr     [fecha_chq.len]     = '\0';
+  descripcionch.arr [descripcionch.len] = '\0';
+  clasech.arr       [clasech.len]       = '\0';
+}
+
+void leer_c11()
+{
+  EXEC SQL FETCH C11 INTO :codigo_nit, :chequep, :fecha_chqp, :valor_chq,
+                          :descripcionchp, :clasechp, :comprobantech, :cuenta;
+  oraest_chq  =      sqlca.sqlcode;
+
+  if (oraest_chq == -1405 ) {
+      oraest_chq  = 0;
+      if (!strlen(chequep.arr)) {
+          strcpy (chequep.arr, "");
+          chequep.len = 0;
+      }
+  }
+  else if (oraest_chq)
+           fprintf (stderr, "Error leyendo C11 (%d)\n", oraest_chq);
+
+  chequep.arr        [chequep.len]        = '\0';
+  fecha_chqp.arr     [fecha_chqp.len]     = '\0';
+  descripcionchp.arr [descripcionchp.len] = '\0';
+  clasechp.arr       [clasechp.len]       = '\0';
+}
+
+void imprime_movto()
+{
+  if (strcmp(fecha.arr,fechai) >= 0) {
+     i=0;
+     if (con_lin > 60)
+         titulos();
+     strcpy  (cadena,fecha.arr);
+     numero_fechaf(cadena);
+     fprintf (fp," %s ",cadena);
+     strcpy(nombreb,"");
+     for (i=1;i<=4;i++) {
+          if (!strcmp(vecplan[i],"NIT-BENEF")) {
+              strcpy (vecmov[3],vecmov[i]);
+              sprintf(codigo_nitb.arr,"%5.0f",codigo_nitm);
+              leer_nit();
+          }
+     }
+     fprintf (fp,"%-34s %2s %6.0f ",nombreb,clase.arr,comprobante);
+     fprintf (fp,"%-40s",descripcion.arr);
+     sprintf (cadena,"%9.2f",valor_deb);
+     fprintf (fp,"%27s",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+     sprintf (cadena,"%9.2f",valor_cre);
+     fprintf (fp,"%15s\n",fmtnum("zzz,zzz,zzz.zz",cadena,r_t));
+     total_deb += valor_deb;
+     total_cre += valor_cre;
+     con_lin ++;
+  }
+  else {
+        saldo_ant += (valor_deb-valor_cre);
+  }
+}
+
+void imprime_chq()
+{
+  if (strcmp(fecha_chq.arr,fechai) >= 0) {
+     if (con_lin > 60)
+         titulos();
+     strcpy  (cadena,fecha_chq.arr);
+     numero_fechaf(cadena);
+     fprintf (fp," %s ",cadena);
+     sprintf (codigo_nitb.arr,"%5.0f",codigo_nit);
+     leer_nit();
+     fprintf (fp,"%-34s %2s %6.0f %-40s",nombre_ben.arr,clasech.arr,comprobantech,descripcionch.arr);
+     fprintf (fp,"%-12s",cheque.arr);
+     sprintf (cadena,"%9.2f",valor_chq);
+     fprintf (fp,"%30s\n",fmtnum("zzz,zzz,zz9.99",cadena,r_t));
+     total_cre += valor_chq;
+     con_lin++;
+  }
+  else {
+        saldo_ant -= valor_chq;
+  }
+  leer_c5();
+}
+
+void imprime_post()
+{
+  while (!oraest_chq) {
+     if (con_lin > 60) {
+         titulos();
+         fprintf (fp, "%s%45s%s%s\n\n",enfatizado_on," ","--- RELACION DE CHEQUES POST-FECHADOS ---",enfatizado_off);
+     }
+     strcpy  (cadena,fecha_chqp.arr);
+     numero_fechaf(cadena);
+     fprintf (fp," %s ",cadena);
+     sprintf (codigo_nitb.arr,"%5.0f",codigo_nit);
+     leer_nit();
+     fprintf (fp,"%-34s %2s %6.0f %-40s",nombre_ben.arr,clasechp.arr,comprobantech,descripcionchp.arr);
+     fprintf (fp,"%-12s",chequep.arr);
+     sprintf (cadena,"%9.2f",valor_chq);
+     fprintf (fp,"%30s\n",fmtnum("zzz,zzz,zz9.99",cadena,r_t));
+     total_pos += valor_chq;
+     con_lin++;
+     leer_c11();
+  }
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+ char fecha[30];
+ double decimal;
+
+ strcpy (fecha, "");
+ fecha_system(fecha);
+ doble=atof(codigo_emp.arr);
+ num=doble/2;
+ decimal=modf(num,&x);
+ if (doble==1)
+    decimal=0;
+ if (decimal==0)
+     fprintf(fp,"%s",salte_pagina);
+ else fprintf(fp,"%s.",salte_pagina);
+ con_pag++;
+ con_lin=10;
+ strful(cadena,(int)(42-strlen(nomb_emp.arr))/2,' ');
+ fprintf(fp,"%s%s%s%s%s\n",diezcpi,ancho_on,cadena,nomb_emp.arr,ancho_off);
+ sprintf (cadena,"%12.0f",nit);
+ fprintf (fp,"%s%s%25s %18s",condensado_on,ancho_on,"NIT :",fmtnum("zzz,zzz,zzz,zzz",cadena,r_t));
+ if (digito > 0) {
+    sprintf (cadena,"%d",digito);
+    fprintf (fp,"-%s",fmtnum("z",cadena,r_t));
+ }
+ else if (digito == 0)
+         fprintf (fp,"-%s","0");
+ fprintf(fp,"\n%20s%s%s\n\n"," ","LIBRO AUXILIAR DE BANCO",ancho_off);
+ fprintf(fp,"%s%-30s%s%10s %2d / %d A %10s %2d / %d","FECHA PROCESO : ",fecha,"PERIODO DE : ",mes[mest-1],diat,anot,mes[mesf2-1],diaf2,anof2);
+ fprintf(fp,"%30s %d\n\n","PAGINA ",con_pag);
+ fprintf(fp,"%137s\n","  FECHA   BENEFICIARIO                           COMPROBANTE D E S C R I P C I O N             CHEQUE              ----MOVTO DEL DIA---- ");
+ fprintf(fp,"%137s\n","                                                                                                                 DEBITOS       CREDITOS");
+  if (atoi(pagina)<=con_pag) {
+     fprintf (fp,"%s%s%2s %s%-10s ",enfatizado_on,"BANCO : ",codigo_bco.arr,"CUENTA : ",cta_cte.arr);
+     fprintf (fp,"%s%s\n\n",nombre_bco.arr,enfatizado_off);
+  }
+}
+
+void imprime_acumulanit()
+{
+  EXEC SQL select nombre, infa, infb, infc, infd, db_cr
+           into  :nombre_cta, :veca, :vecb, :vecc, :vecd, :db_cr
+           from   plan p, bancos b
+           where  p.codigo_emp =  :codigo_emp and
+                  p.cuenta     = b.cuenta     and
+                  p.codigo_emp = b.codigo_emp and
+                  b.tipo      != 'E'          and
+                  b.codigo     =  :codigo_bco;
+
+  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != -1405 && sqlca.sqlcode != 0) {
+      fprintf (stderr, "Error leyendo Plan C7 (%d)\n", sqlca.sqlcode);
+      exit(1);
+  }
+  nombre_cta.arr [nombre_cta.len] = '\0';
+  veca.arr       [veca.len]       = '\0';
+  vecb.arr       [vecb.len]       = '\0';
+  vecc.arr       [vecc.len]       = '\0';
+  vecd.arr       [vecd.len]       = '\0';
+  db_cr.arr      [db_cr.len]      = '\0';
+
+  strcpy (vecplan[1], veca.arr);
+  strcpy (vecplan[2], vecb.arr);
+  strcpy (vecplan[3], vecc.arr);
+  strcpy (vecplan[4], vecd.arr);
+
+  i=0;
+  for (i=1;i<=4;i++) {
+      if (!strcmp(vecplan[i],"CTA-CTE")) {
+          leer_bancos();
+          i=5;
+      }
+  }
+
+  if (con_lin > 60)
+      titulos();
+
+  if (!strcmp(db_cr.arr,"DB")) {
+     if (atoi(pagina)<=con_pag) {
+         saldo_ant=valor_saldo;
+     }
+  }
+  else {
+        if (atoi(pagina)<=con_pag) {
+            saldo_ant=valor_saldo;
+        }
+  }
+}
+
+void leer_bancos()
+{
+  EXEC SQL select c.nombre into :nombre_bco
+           from   bancos b, ctacte c
+           where  b.codigo     =  :codigo_bco      and
+                  c.cta_cte    =  :cta_cte         and
+                  b.cuenta     = c.cuenta          and
+                  b.codigo_emp =  :codigo_emp;
+  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+      fprintf (stderr, "Error leyendo Bancos C8 (%d)\n", sqlca.sqlcode);
+  nombre_bco.arr  [nombre_bco.len] = '\0';
+}
+
+void leer_nit()
+{
+  codigo_nitb.len = strlen(codigo_nitb.arr);
+  EXEC SQL select substr(nombre,1,33) into :nombre_ben
+           from   nits
+           where  codigo_nit = to_number(:codigo_nitb);
+  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+      fprintf (stderr, "Error leyendo Nits C10 (%d)\n", sqlca.sqlcode);
+  nombre_ben.arr  [nombre_ben.len] = '\0';
+  strcpy(nombreb,nombre_ben.arr);
+}
+
+void totales()
+{
+  if (atoi(pagina)<=con_pag) {
+      fprintf (fp,"%137s\n","------------- --------------");
+      sprintf (cadena,"%9.2f",saldo_ant);
+      if (!strcmp(db_cr.arr,"DB"))
+          fprintf (fp,"%46s %18s","Saldo Anterior DEBITO ==> ",fmtnum("zzzz,zzz,zz9.99",cadena,r_t));
+      else fprintf (fp,"%46s %18s","Saldo Anterior CREDITO ==> ",fmtnum("zzzz,zzz,zz9.99",cadena,r_t));
+      sprintf (cadena,"%9.2f",total_deb);
+      fprintf (fp,"%41s %15s","Totales movimiento ==>",fmtnum("zzzz,zzz,zz9.99",cadena,r_t));
+      sprintf (cadena,"%9.2f",total_cre);
+      fprintf (fp,"%15s\n",fmtnum("zzzz,zzz,zz9.99",cadena,r_t));
+      saldo_ant+=total_deb-total_cre;
+      sprintf (cadena,"%10.2f",saldo_ant);
+      fprintf (fp,"%46s %18s\n\n","Saldo actual ==> ",fmtnum("zzzz,zzz,zz9.99",cadena,r_t));
+  }
+  con_lin+=4;
+}
+
+void totales_post()
+{
+  if (atoi(pagina)<=con_pag) {
+      fprintf (fp,"%137s\n","              --------------");
+      sprintf (cadena,"%9.2f",total_pos);
+      fprintf (fp,"%122s%15s\n","Total Post-Fechados ===>     ",fmtnum("zzzz,zzz,zz9.99",cadena,r_t));
+      saldo_ant+=total_pos;
+      sprintf (cadena,"%10.2f",saldo_ant);
+      fprintf (fp,"%46s %18s\r","Saldo Del dia==> ",fmtnum("zzzz,zzz,zz9.99",cadena,r_t));
+      saldo_ant=total_deb=total_cre=total_pos=0;
+  }
+  con_lin+=2;
+}
+
+void actu_bancosm()
+{
+  sprintf (saldoa.arr,"%10.2f",saldo_ant);
+  saldoa.len   =       strlen(saldoa.arr);
+  EXEC SQL update bancosm
+           set    saldo  = :saldoa
+           where  codigo_emp                   = :codigo_emp and
+                  codigo_bco                   = :codigo_bco and
+                  cta_cte                      = :cta_cte    and
+                  ano_mes                      = :ano_mesf   and
+                 (:fechaf = (select to_char(max(fecha),'yyyymmdd')
+                             from   bancosm
+                             where  codigo_emp = :codigo_emp and
+                                    codigo_bco = :codigo_bco and
+                                    cta_cte    = :cta_cte)   or
+                  to_char(last_day(to_date(:fechaf,'yyyymmdd')),'yyyymmdd') = :fechaf);
+
+  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+      fprintf (stderr, "Error actualizando Bancos C12 (%d)\n", sqlca.sqlcode);
+}
+

@@ -1,0 +1,396 @@
+/*****************************************************************
+* RELCHQ.C Version 1.0 - Rev 1.2 - Oct. 9/92.
+*
+* clisting.c. Listado de La relacion de ingresos.
+*
+* Uso : relchq codigo_emp fecha_inicial fecha_final device userid/password
+*
+* Mario E. Santiago I. Creado Octubre-09-1992.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+void titulos();
+void leer_c1();
+void leer_c2();
+void listar();
+void listado();
+void imprime_sch();
+void imprime_chq();
+void fecha_oracle3();
+				     /* Parametros de comunicacion con ORACLE */
+
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100]; 
+VARCHAR codigo_emp[3];
+double  nit;
+VARCHAR nomb_emp [70];
+VARCHAR fecha_ini[20];
+VARCHAR nombemp[70];
+VARCHAR nomb[70];
+VARCHAR banco[10];
+double  fecha;
+double  posf;
+double  comp;
+double  chq;
+double  valor_cre;
+
+VARCHAR nombemp2[70];
+VARCHAR nomb2[70];
+VARCHAR banco2[10];
+double  fecha2;
+double  posf2;
+double  comp2;
+double  chq2;
+double  valor_cre2;
+VARCHAR comprob_ini[10];
+VARCHAR comprob_fin[10];
+VARCHAR libro         [04];
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+
+                                            /* Variables globales del usuario */
+int     con_pag=0;                                   /* Contador de Paginas */
+int     con_lin=66;                                   /* Contador de Lineas  */
+int     cl;
+int     staora  = 0;
+int     oraest;
+int     oraest_sch;
+int     oraest_chq;
+        		                /* Variables de recepcion para datos */
+char *fmtnum(), r_t[100];
+double  tot_retefte;
+double  tot_cartera;
+char    fechas [70];
+char    cadena [200];
+char    cadena2[200];
+char    wcadena[200];
+char    empcor [10];
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int	status = 0;
+
+    if (argc < 8)
+       {
+	      printf ("Incorrecta invocacion:\n");
+        printf ("Uso : relchq codigo_emp fecha_ini comprob_ini comprob_fin\n");
+        printf ("      device userid/password\n");
+      	printf ("      device : t salida por terminal\n");
+      	printf ("      device : s salida standar     \n");
+      	printf ("               Px salida por impresora (x nro printer)\n");
+	      printf ("      libro(0= COLGAAP 1=IFRS)\n");
+      	printf ("      userid/password nombre usuario y password\n");
+        exit (1);
+       }
+
+       strcpy (codigo_emp.arr, argv[1]);
+       codigo_emp.len =        strlen(codigo_emp.arr);
+       strcpy (fecha_ini.arr,  argv[2]);
+       fecha_ini.len =         strlen(fecha_ini.arr);
+       strcpy (comprob_ini.arr,  argv[3]);
+       comprob_ini.len =         strlen(comprob_ini.arr);
+       strcpy (comprob_fin.arr,  argv[4]);
+       comprob_fin.len =         strlen(comprob_fin.arr);
+       
+       if ( strlen(fecha_ini.arr) != 8 ) {
+          printf("Error, la fecha debe ser de 8 digitos y formato AAAAMMDD");
+          exit (1);
+       }
+       strcpy (device,         argv[5]);
+       strlow (device);
+       strcpy (libro.arr,      argv[6]);
+       libro.len =             strlen(libro.arr);
+
+    if (!strpos ("/", argv[7]))
+       {
+        printf ("user id/password incorrecto.\n");
+      	exit (1);
+       }
+
+    strcpy (uid.arr,    argv[7]);
+    uid.len   =         strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora("1");
+
+/*****************************************************
+ * Crea o Abre un cursor en area de datos. (oopen)   *
+ *****************************************************/
+    /* C1 */
+
+    EXEC SQL DECLARE C1 CURSOR FOR
+         select e.nombre_corto,
+         to_number(to_char(c.fecha,'yyyymmdd')) AS FECHA,
+                to_number(nvl(to_char(to_date(d.infd),'yyyymmdd'),0)) AS FVEN,
+                n.nombre, b.nombre_corto, c.comprobante, nvl(d.infc,0), valor_cre
+         from   movto_d d, movto_c c, nits n, empresas e, bancos b
+         where  c.fecha             = to_date(:fecha_ini,'yyyymmdd')   and
+                c.codigo_emp        = e.codigo_emp                     and
+                c.codigo_emp        = d.codigo_emp                     and
+                c.ano_mes           = d.ano_mes                        and
+                c.consecutivo       = d.consecutivo                    and
+                d.valor_cre         is NOT NULL                        and
+                d.libro             = to_number(:libro)                and
+                clase               = 'EG'                             and
+                c.codigo_nitb       = n.codigo_nit                     and
+                substr(d.cuenta,1,4) in ('1105','1110','1120','1310','2305','2355')  and
+                b.codigo_emp        = c.codigo_emp                     and
+                b.cuenta            = d.cuenta                         and
+                e.codigo_emp not in (22,24)                            and
+                b.codigo           != 'DV'                             and
+                c.codigo_emp        = :codigo_emp                      and
+                c.comprobante      >= :comprob_ini                     and
+                c.comprobante      <= :comprob_fin
+         order by e.codigo_emp, c.fecha, c.comprobante;
+
+    /* C2 */
+
+    EXEC SQL DECLARE C2 CURSOR FOR
+         select e.nombre_corto, to_number(to_char(c.fecha,'yyyymmdd')),
+                0, n.nombre, ' ', c.comprobante, 0, 0
+         from   movto_c c, nits n, empresas e
+         where  c.fecha             = to_date(:fecha_ini,'yyyymmdd')   and
+                c.codigo_emp        = e.codigo_emp                     and
+                clase               = 'EG'                             and
+                c.codigo_nitb       = n.codigo_nit                     and
+                e.codigo_emp not in (22,24)                            and
+                c.estado            = '2'
+         order by e.codigo_emp, c.fecha, c.comprobante;
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+    strcpy(cadena2,fecha_ini.arr);
+    strcpy(wcadena, cadena2);
+    fecha_oracle3(wcadena);
+    strcpy(cadena, wcadena);
+    strcpy(fechas,cadena);
+
+    /* C3 */
+    EXEC SQL select nombre
+             into  :nomb_emp
+      	     from   empresas, nits
+             where  nits.codigo_nit     = empresas.codigo_nit and
+                    empresas.codigo_emp = to_number(:codigo_emp);
+
+    nomb_emp.arr      [nomb_emp.len]     = '\0';
+    if (sqlca.sqlcode) 
+       fprintf(stderr,"Error C3 (%d) en empresa \n",sqlca.sqlcode);
+
+    EXEC SQL OPEN C1;
+    EXEC SQL OPEN C2;
+    oraest_sch=oraest_chq=staora=0;
+    con_lin=66;
+    listado();
+    EXEC SQL CLOSE C1;
+    EXEC SQL CLOSE C2;
+
+    cierre_impresora();
+
+/************************************************
+ * Desconectarse de ORACLE.                     *
+ ************************************************/
+
+    EXEC SQL COMMIT WORK RELEASE;
+    exit   (0);
+}
+
+void listado()
+{
+ staora=0;
+ while (!oraest_sch || !oraest_chq) {
+        leer_c1();
+        strcpy(empcor,nombemp.arr);
+        leer_c2();
+        staora = oraest_sch;
+        listar();
+ }
+}
+
+void listar()
+{
+   while (oraest_sch == 0 || oraest_chq == 0) {
+         if (!strcmp(nombemp.arr,nombemp2.arr)) {
+             if (comp < comp2 && oraest_chq == 0) {
+                imprime_chq();
+             }
+             else {
+                  if (oraest_sch==0) {
+                      imprime_sch();
+                  }
+                  else {
+                       if (oraest_chq == 0) {
+                          imprime_chq();
+                       }
+                  }
+             }
+         }
+         else {
+              if (oraest_chq == 0) {
+                 imprime_chq();
+              }
+              else {
+                   if (oraest_sch == 0) {
+                       imprime_sch();
+                   }
+              }
+         }
+   }
+}
+
+void imprime_sch()
+{
+ if (con_lin > 58)
+    titulos();
+ else {
+       if (strcmp(nombemp2.arr,empcor)) {
+          fprintf(fp,"\n\n");
+          con_lin+=2;
+          strcpy(empcor,nombemp2.arr);
+       }
+ }
+
+ fprintf(fp,"%-4s",nombemp2.arr);
+ sprintf(cadena,"%8.0f",fecha2);
+ fprintf(fp,"%-12s",fmtnum("9999-99-99",cadena,r_t));
+ if (posf != 0) {
+    fprintf(fp,"%-12s"," ");
+ }
+ else fprintf(fp,"%-12s"," ");
+ fprintf(fp,"%-45s",nomb2.arr);
+ fprintf(fp,"%5s",banco2.arr);
+ sprintf(cadena,"%10.0f",comp2);
+ fprintf(fp,"%10s",fmtnum("zzzzzzzz",cadena,r_t));
+ sprintf(cadena,"%8.0f",chq2);
+ fprintf(fp,"%8s",fmtnum("zzzzzzzz",cadena,r_t));
+ fprintf(fp,"%24s\n","Anulado");
+ con_lin+=1;
+ leer_c2();
+}
+
+void imprime_chq()
+{
+ if (con_lin > 58)
+    titulos();
+ else {
+       if (strcmp(nombemp.arr,empcor)) {
+          fprintf(fp,"\n\n");
+          con_lin+=2;
+          strcpy(empcor,nombemp.arr);
+       }
+ }
+
+ fprintf(fp,"%-4s",nombemp.arr);
+ sprintf(cadena,"%8.0f",fecha);
+ fprintf(fp,"%-12s",fmtnum("9999-99-99",cadena,r_t));
+ if (posf != 0) {
+    sprintf(cadena,"%8.0f",posf);
+    fprintf(fp,"%-12s",fmtnum("9999-99-99",cadena,r_t));
+ }
+ else fprintf(fp,"%-12s"," ");
+ fprintf(fp,"%-45s",nomb.arr);
+ fprintf(fp,"%5s",banco.arr);
+ sprintf(cadena,"%10.0f",comp);
+ fprintf(fp,"%10s",fmtnum("zzzzzzzz",cadena,r_t));
+ sprintf(cadena,"%8.0f",chq);
+ fprintf(fp,"%8s",fmtnum("zzzzzzzz",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_cre);
+ fprintf(fp,"%24s\n",fmtnum("zz,zzz,zz9.99",cadena,r_t));
+ con_lin+=1;
+ leer_c1();
+}
+
+void leer_c1()
+{
+  EXEC SQL FETCH C1  INTO :nombemp, :fecha, :posf, :nomb, :banco,
+                          :comp,    :chq,   :valor_cre;
+
+  oraest_chq  =     sqlca.sqlcode;
+
+  if (oraest_chq == -1405 ) {
+      oraest_chq  = 0;
+  }
+  else if (oraest_chq)
+           fprintf (stderr, "Error leyendo C1 (%d) (%s %8.0f %8.0f %s %7.0f %7.0f)\n", oraest_chq, nombemp.arr, fecha, posf, banco.arr, comp, chq);
+
+  nombemp.arr       [nombemp.len]     = '\0';
+  nomb.arr          [nomb.len]        = '\0';
+  banco.arr         [banco.len]       = '\0';
+}
+
+void leer_c2()
+{
+
+  EXEC SQL FETCH C2  INTO :nombemp2, :fecha2, :posf2, :nomb2, :banco2,
+                          :comp2,    :chq2,   :valor_cre2;
+
+  oraest_sch  =     sqlca.sqlcode;
+
+  if (oraest_sch == -1405 ) {
+      oraest_sch  = 0;
+  }
+  else if (oraest_sch)
+           fprintf (stderr, "Error leyendo C2 (%d)\n", oraest_sch);
+
+  nombemp2.arr       [nombemp2.len]     = '\0';
+  nomb2.arr          [nomb2.len]        = '\0';
+  banco2.arr         [banco2.len]       = '\0';
+
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+ con_pag++;
+ if (!strcmp(codigo_emp.arr,"3"))
+    strcpy(nomb_emp.arr," ");
+ fprintf(fp,"%s",salte_pagina);
+ strful(cadena,(int)(42-strlen(nomb_emp.arr))/2,' ');
+ fprintf(fp,"%s%s%s%s%s\n\n",diezcpi,ancho_on,cadena,nomb_emp.arr,ancho_off);
+ fprintf(fp,"%s%s%s%43s",diezcpi,condensado_on,ancho_on,"RELACION DE PAGOS");
+ fprintf(fp,"%s%s%17s %d\n\n",ancho_off,diezcpi,"PAGINA ",con_pag);
+ strorg(fechas,1,strlen(fechas));
+ fprintf(fp,"%s%52s%s\n\n",enfatizado_on,fechas,enfatizado_off);
+ fprintf(fp,"%s%-4s%-12s%-87s%16s\n",condensado_on,"   ","FECHA",     "FECHA","VALOR");
+ fprintf(fp,"%s%-4s%-12s%-12s%-47s%-4s%-11s%-14s%16s\n\n",condensado_on,"EMP","DE EMISION","DE PAGO","NOMBRE BENEFICIARIO","BAN","No.EGRESO","CHEQUE","CHEQUE");
+ con_lin = 9;
+}
+

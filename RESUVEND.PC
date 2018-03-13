@@ -1,0 +1,830 @@
+/****************************************************************************
+* ROTULODE.C Version 1.0 - Rev 1.2 - Feb. 20/98.
+*
+* resuvend.pc Programa de facturacion para listar las facturacion de la quincena
+*
+* Uso : resuvend fecha_ini fecha_fin device copias userid/password
+*
+* Martin A. Toloza L. Creado Febrero 20-1998.
+* Teodoro Tarud & Cia Ltda.
+*
+*/
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+void busco_oftalmicos();
+void totales();
+void titulos();
+				     /* Parametros de comunicacion con ORACLE */
+        		             /* Variables de recepcion para datos */
+EXEC SQL BEGIN DECLARE SECTION;
+
+VARCHAR uid[100];
+                                 /* Ordenes_c (C1) */
+int     a2k;
+double  cantidad_bis_mont0;
+double  cantidad_bis_mont1;
+double  cantidad_bis_mont2;
+double  cantidad_bis_mont3;
+double  cantidad_bis_mont4;
+double  cantidad_bis_mont5;
+double  cantidad_bis_mont6;
+double  valor_bis_mont0;
+double  valor_bis_mont1;
+double  valor_bis_mont2;
+double  valor_bis_mont3;
+double  valor_bis_mont4;
+double  valor_bis_mont5;
+double  valor_bis_mont6;
+double  cantidad_fil;
+double  valor_fil;
+double  cantidad_ar1;
+double  valor_ar1;
+double  cantidad_ar2;
+double  valor_ar2;
+double  cantidad_pr;
+double  valor_pr;
+double  cantidad2_pr;
+double  valor2_pr;
+
+double  cantidad_mr;
+double  valor_mr;
+double  cantidad2_mr;
+double  valor2_mr;
+
+double  cantidad_mr_t;
+double  valor_mr_t;
+double  cantidad2_mr_t;
+double  valor2_mr_t;
+
+double  cantidad_color;
+double  valor_color;
+double  cantidad_otros;
+double  valor_otros;
+double  valor_desctos;
+double  valor_total;
+VARCHAR clase_material[6];
+double  numero_orden;
+VARCHAR ano_mesi [20];
+VARCHAR ano_mesf [20];
+VARCHAR fecha_ini[20];
+VARCHAR fecha_fin[20];
+VARCHAR codigo_clii [20];
+VARCHAR codigo_clif [20];
+VARCHAR contado[3];
+                                 /* Ordenes_d (C2) */
+double  cantidad_s;
+double  valor_venta_s;
+double  cantidad_o;
+double  valor_venta_o;
+double  cantidad_t;
+double  valor_venta_t;
+double  cantidad_sm;
+double  valor_venta_sm;
+double  cantidad_ce;
+double  valor_venta_ce;
+double  cantidad_vi;
+double  valor_venta_vi;
+double  cantidad_op;
+double  valor_venta_op;
+double  cantidad_flex;
+double  valor_venta_flex;
+double  cantidad_ko;
+double  valor_venta_ko;
+double  cantidad_eo;
+double  valor_venta_eo;
+double  cantidad_ec;
+double  valor_venta_ec;
+                                 /* Facturas (C3) */
+double  valor_iva;
+double  valor_fletes;
+double  rete_fte;
+double  valor_fletes_c;
+                                 /* Ordenes_c (C4) */
+double  valor_desctos_c;
+double  valor_otros_c;
+                                 /* Basura (C5) */
+double  otras_fac;
+double  valor_desco;
+
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INCLUDE SQLCA;
+                                            /* Variables globales del usuario */
+#define A_F1 "###,###,###,###.##"
+char *fmtnum(), r_t[100];
+double  redondo();
+
+int     con_pag;                                   /* Contador de Paginas */
+int     con_lin=66;                                /* Contador de Lineas  */
+int     staora = 0;
+int     oraest = 0;
+char    copias[3];
+char    fecha[40];
+char    fechas[80];
+char    cadena[120];
+double  orden_ant;
+double  fe_ini;
+double  fe_fin;
+
+/*
+******************************************
+* Este es el arreglo para acumular
+* el bisel y montaje discriminado asi :
+*
+* [0]=Normal    Monofocal Bif. , Trif. y Prog.
+* [1]=Multifocal
+* [2]=Ranurado
+* [3]=Perforado
+* [4]=Bordes Pulidos
+******************************************/
+
+struct  bis2 {
+        double  cantidad_bis_mont_t;
+        double  valor_bis_mont_t;
+        };
+struct  bis2 vec[20];
+
+struct  val {
+        double  val_unid;
+        };
+struct  val vec2[20];
+
+double  cantidad_bis_mont_g;
+double  valor_bis_mont_g;
+double  cantidad_fil_t;
+double  valor_fil_t;
+double  cantidad_ar1_t;
+double  valor_ar1_t;
+double  cantidad_ar2_t;
+double  valor_ar2_t;
+double  cantidad_pr_t;
+double  valor_pr_t;
+double  cantidad2_pr_t;
+double  valor2_pr_t;
+double  cantidad_color_t;
+double  valor_color_t;
+double  valor_desctos_t;
+double  valor_otros_t;
+double  valor_total_t;
+
+void main(argc, argv)
+int     argc;
+char    *argv[];
+{
+
+char	device[6];
+int	status = 0;
+
+if (argc < 9)
+   {
+    printf ("Incorrecta invocacion:\n");
+    printf ("Uso : resuvend fecha_ini fecha_fin codigo_clii codigo_clif credito=CR/contado=CO/todas=TO \n");
+    printf ("device copias userid/password\n");
+    printf ("      device : t salida por terminal\n");
+    printf ("               Px salida por impresora (x nro printer)\n");
+    printf ("               userid/password nombre usuario y password\n");
+    exit (1);
+   }
+
+strcpy (fecha_ini.arr, argv[1]);
+fecha_ini.len   =      strlen(fecha_ini.arr);
+strcpy (fecha_fin.arr, argv[2]);
+fecha_fin.len   =      strlen(fecha_fin.arr);
+if ( strlen(fecha_ini.arr) != 8 || strlen(fecha_fin.arr) != 8 ) {
+   printf("Error, la fecha debe ser de 8 digitos y formato AAAAMMDD");
+   exit (1);
+}
+
+strcpy (codigo_clii.arr, argv[3]);
+codigo_clii.len   =    strlen(codigo_clii.arr);
+strcpy (codigo_clif.arr, argv[4]);
+codigo_clif.len   =    strlen(codigo_clif.arr);
+
+strcpy (contado.arr, argv[5]);
+contado.len   =    strlen(contado.arr);
+
+strcpy (device,        argv[6]);
+strlow (device);
+strcpy (copias,        argv[7]);
+
+strcpy(fecha,fecha_ini.arr);
+fecha_oracle3(fecha);
+strcpy(cadena,fecha);
+strcpy(fecha,fecha_fin.arr);
+strcat(cadena," hasta ");
+fecha_oracle3(fecha);
+strcat(cadena,fecha);
+strcpy(fechas,cadena);
+
+if (!strpos ("/", argv[8]))
+   {
+    printf ("user id/password incorrecto.\n");
+    exit (1);
+   }
+
+strcpy (uid.arr,   argv[8]);
+uid.len   =        strlen(uid.arr);
+
+/******************************************************
+ * Establecer conexion concurrente con ORACLE (orlon) *
+ ******************************************************/
+    EXEC SQL CONNECT :uid;
+
+    if (sqlca.sqlcode==-1915)
+       {
+	fprintf (stderr,"Oracle Base de Datos no esta activa. SGA (%d)\n",
+		 	sqlca.sqlcode);
+        exit (1);
+       }
+    else
+       if (sqlca.sqlcode==-1017)
+	  {
+	   fprintf (stderr,"User Name/Password es Invalido. Re-intente.\n");
+	   exit (1);
+	  }
+       else
+          if (sqlca.sqlcode)
+	     exit (1);
+
+    busco_impresora(device);
+    abre_impresora(copias);
+
+/**********************************************
+ * Procesar una sentencia SQL (oexec).        *
+ **********************************************/
+  EXEC SQL select y2k
+           into   :a2k
+           from   ano2000;
+  if (sqlca.sqlcode != 0 ) {
+     fprintf (stderr, "Error, No existe registro alguno en tabla Y2K (%d)\n", sqlca.sqlcode);
+     exit (1);
+  }
+
+  strcpy (ano_mesi.arr,fecha_ini.arr);
+  strorg (ano_mesi.arr,1,6);
+  ano_mesi.len = strlen(ano_mesi.arr);
+
+  strcpy (ano_mesf.arr,fecha_fin.arr);
+  strorg (ano_mesf.arr,1,6);
+  ano_mesf.len = strlen(ano_mesf.arr);
+
+  EXEC SQL DECLARE C1 CURSOR FOR
+       select decode(tipo_servicio,'BM',decode(tipo_trabajo,'N', cantidad,0),0) BMN,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'E', cantidad,0),0) BME,
+              decode(tipo_servicio,'BM',decode(substr(tipo_trabajo,1,1),'E', cantidad,0),0) BME,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'A', cantidad,0),0) BMA,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'P', cantidad,0),0) BMP,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'B', cantidad,0),0) BMB,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'S', cantidad,0),0) BMS,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'S2',cantidad,0),0) BMS2,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'N', round(cantidad*valor_unidad,0),0),0) VBMN,
+              decode(tipo_servicio,'BM',decode(substr(tipo_trabajo,1,1),'E', round(cantidad*valor_unidad,0),0),0) VBME,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'A', round(cantidad*valor_unidad,0),0),0) VBMA,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'P', round(cantidad*valor_unidad,0),0),0) VBMP,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'B', round(cantidad*valor_unidad,0),0),0) VBMB,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'S', round(cantidad*valor_unidad,0),0),0) VBMS,
+              decode(tipo_servicio,'BM',decode(tipo_trabajo,'S2',round(cantidad*valor_unidad,0),0),0) VBMS2,
+
+              decode(tipo_servicio,'TR',decode(substr(tipo_trabajo,1,2),'AR',0,'PR',0,'MR',0,'SA',0,cantidad),0) VALOR,
+              decode(tipo_servicio,'TR',decode(substr(tipo_trabajo,1,2),'AR',0,'PR',0,'MR',0,'SA',0,round(cantidad*valor_unidad,0)),0) VALOR2,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'AR1',cantidad,'SA1',cantidad,0),0) VALOR3,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'AR1',round(cantidad*valor_unidad,0),'SA1',round(cantidad*valor_unidad,0),0),0) VALOR4,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'AR2',cantidad,'SA2',cantidad,0),0) VALOR5,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'AR2',round(cantidad*valor_unidad,0),'SA2',round(cantidad*valor_unidad,0),0),0) VALOR6,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'PR' ,cantidad,0),0) VALOR7,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'PR' ,round(cantidad*valor_unidad,0),0),0) VALOR8,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'PR2',cantidad,0),0) VALOR9,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'PR2',round(cantidad*valor_unidad,0),0),0) VALOR10,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'MR1',cantidad,0),0) VALOR11,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'MR1',round(cantidad*valor_unidad,0),0),0) VALOR12,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'MR2',cantidad,0),0) VALOR13,
+              decode(tipo_servicio,'TR',decode(tipo_trabajo,'MR2',round(cantidad*valor_unidad,0),0),0) VALOR14,
+
+              decode(tipo_servicio,'CO',cantidad,0) VALOR15,
+              decode(tipo_servicio,'CO',round(cantidad*valor_unidad,0),0) VALOR16,
+
+              decode(tipo_servicio,'OT',cantidad,
+                                   'FE',decode(sign(c.ano_mes-200505),1,0,cantidad),
+                                   'RC',cantidad,
+                                   'RP',cantidad,0),
+              decode(tipo_servicio,'OT',round(cantidad*valor_unidad,0),
+                                   'FE',decode(sign(c.ano_mes-200505),1,0,cantidad*valor_unidad),
+                                   'RC',round(cantidad*valor_unidad,0),
+                                   'RP',round(cantidad*valor_unidad,0),0),
+              nvl(valor_desctos,0), nvl(c.valor_total,0),
+              c.clase_material, numero_orden
+        from  ordenes_c c, ordenes_o o
+        where c.fecha_documento >= to_date(:fecha_ini,'yyyymmdd')       and
+              c.fecha_documento <= to_date(:fecha_fin,'yyyymmdd')       and
+              c.codigo_cliente  >= :codigo_clii                         and
+              c.codigo_cliente  <= :codigo_clif                         and
+              c.clase_material  <> 'C'                                  and
+              c.ano_mes          = o.ano_mes(+)                         and
+              c.consecutivo      = o.consecutivo(+)                     and
+              decode(:contado,'TO','3',nvl(c.contado,0)) = decode(:contado,'CR',0,'CO',1,'3') and
+              not exists
+              (select 'x'
+               from basura
+               where tipo_documento = 'O' and
+                     numero_factura = c.numero_orden)
+        order by numero_orden;
+
+ EXEC SQL OPEN C1;
+
+ orden_ant=-1;
+ staora = 0;
+ while (staora == 0) {
+
+        EXEC SQL FETCH C1 INTO :cantidad_bis_mont0, :cantidad_bis_mont1,
+                               :cantidad_bis_mont2, :cantidad_bis_mont3,
+                               :cantidad_bis_mont4, :cantidad_bis_mont5,
+                               :cantidad_bis_mont6,
+                               :valor_bis_mont0,    :valor_bis_mont1,
+                               :valor_bis_mont2,    :valor_bis_mont3,
+                               :valor_bis_mont4,    :valor_bis_mont5,
+                               :valor_bis_mont6,
+
+                               :cantidad_fil,   :valor_fil,
+                               :cantidad_ar1,   :valor_ar1,
+                               :cantidad_ar2,   :valor_ar2,
+                               :cantidad_pr,    :valor_pr,
+                               :cantidad2_pr,   :valor2_pr,
+                               :cantidad_mr,    :valor_mr,
+                               :cantidad2_mr,   :valor2_mr,
+
+                               :cantidad_color, :valor_color,
+
+                               :cantidad_otros, :valor_otros,
+
+                               :valor_desctos,  :valor_total,
+                               :clase_material, :numero_orden;
+
+        staora  = sqlca.sqlcode;
+        if (staora ==  1403) break;
+        if (staora == -1405)
+            staora  = 0;
+        else if (staora)
+                 fprintf (stderr, "Error Leyendo C1 (%d)\n", staora);
+
+        clase_material.arr  [clase_material.len] = '\0';
+
+        if (numero_orden == 671571)
+            valor_total=valor_total*2;
+        cantidad_fil_t      +=cantidad_fil;
+        valor_fil_t         +=valor_fil;
+        cantidad_ar1_t      +=cantidad_ar1;
+        valor_ar1_t         +=valor_ar1;
+        cantidad_ar2_t      +=cantidad_ar2;
+        valor_ar2_t         +=valor_ar2;
+        cantidad_pr_t       +=cantidad_pr;
+        valor_pr_t          +=valor_pr;
+        cantidad2_pr_t      +=cantidad2_pr;
+        valor2_pr_t         +=valor2_pr;
+        cantidad_mr_t       +=cantidad_mr;
+        valor_mr_t          +=valor_mr;
+        cantidad2_mr_t      +=cantidad2_mr;
+        valor2_mr_t         +=valor2_mr;
+        cantidad_color_t    +=cantidad_color;
+        valor_color_t       +=valor_color;
+        valor_otros_t       +=valor_otros;
+        if (numero_orden != orden_ant) {
+            valor_desctos_t +=valor_desctos;
+            valor_total_t   +=valor_total;
+            orden_ant       =numero_orden;
+        }
+        vec[0].cantidad_bis_mont_t+= cantidad_bis_mont0;
+        vec[1].cantidad_bis_mont_t+= cantidad_bis_mont1;
+        vec[2].cantidad_bis_mont_t+= cantidad_bis_mont2;
+        vec[3].cantidad_bis_mont_t+= cantidad_bis_mont3;
+        vec[4].cantidad_bis_mont_t+= cantidad_bis_mont4;
+        vec[5].cantidad_bis_mont_t+= cantidad_bis_mont5;
+        vec[6].cantidad_bis_mont_t+= cantidad_bis_mont6;
+        vec[0].valor_bis_mont_t   += valor_bis_mont0;
+        vec[1].valor_bis_mont_t   += valor_bis_mont1;
+        vec[2].valor_bis_mont_t   += valor_bis_mont2;
+        vec[3].valor_bis_mont_t   += valor_bis_mont3;
+        vec[4].valor_bis_mont_t   += valor_bis_mont4;
+        vec[5].valor_bis_mont_t   += valor_bis_mont5;
+        vec[6].valor_bis_mont_t   += valor_bis_mont6;
+ }
+
+ EXEC SQL select sum(decode(d.lado_lente,'S',cantidad,0)),
+                 sum(decode(d.lado_lente,'S',cantidad*valor_venta,0)),
+                 sum(decode(d.lado_lente,'O',cantidad,0)),
+                 sum(decode(d.lado_lente,'O',cantidad*valor_venta,0)),
+                 sum(decode(o.clase_material,'C',0,decode(d.lado_lente,'S',0,'O',0,decode(d.terminado,'K',0,'T',cantidad,'F',cantidad,'C',decode(d.especial,'E',0,nvl(cantidad,0) ) ,0 ) ) ) ),
+                 sum(decode(o.clase_material,'C',0,decode(d.lado_lente,'S',0,'O',0,decode(d.terminado,'K',0,'T',cantidad*valor_venta,'F',cantidad*valor_venta,'C',decode(d.especial,'E',0,nvl(cantidad*valor_venta,0) ) ,0 ) ) ) ),
+                 sum(decode(o.clase_material,'C',0,decode(d.lado_lente,'S',0,'O',0,decode(d.terminado,'K',0,'T',0,'F',0,'C',0,decode(d.especial,'E',0,nvl(cantidad,0) ) ) ) ) ),
+                 sum(decode(o.clase_material,'C',0,decode(d.lado_lente,'S',0,'O',0,decode(d.terminado,'K',0,'T',0,'F',0,'C',0,decode(d.especial,'E',0,nvl(cantidad*valor_venta,0) ) ) ) ) ),
+                 sum(decode(o.clase_material,'C',decode(o.tipo_material,'C',nvl(cantidad,0),0),0)),
+                 sum(decode(o.clase_material,'C',decode(o.tipo_material,'C',round(nvl(cantidad*valor_venta,0),0),0),0)),
+                 sum(decode(o.clase_material,'C',decode(o.tipo_material,'V',nvl(cantidad,0),0),0)),
+                 sum(decode(o.clase_material,'C',decode(o.tipo_material,'V',round(nvl(cantidad*valor_venta,0),0),0),0)),
+                 sum(decode(o.clase_material,'C',decode(substr(d.codigo_articulo,1,1),'7',nvl(cantidad,0),'9',nvl(cantidad,0),0),0)),
+                 sum(decode(o.clase_material,'C',decode(substr(d.codigo_articulo,1,1),'7',round(nvl(cantidad*valor_venta,0),0),'9',round(nvl(cantidad*valor_venta,0),0),0),0)),
+                 sum(decode(o.clase_material,'C',decode(substr(d.codigo_articulo,1,1),'8',nvl(cantidad,0),0),0)),
+                 sum(decode(o.clase_material,'C',decode(substr(d.codigo_articulo,1,1),'8',round(nvl(cantidad*valor_venta,0),0),0),0)),
+                 sum(decode(o.clase_material,'C',0,decode(d.terminado,'K',nvl(cantidad,0),0))),
+                 sum(decode(o.clase_material,'C',0,decode(d.terminado,'K',round(nvl(cantidad*valor_venta,0),0)))),
+                 sum(decode(o.clase_material,'C',0,decode(d.especial,'E',nvl(cantidad,0),0))),
+                 sum(decode(o.clase_material,'C',0,decode(d.especial,'E',round(nvl(cantidad*valor_venta,0),0)))),
+                 sum(decode(o.clase_material,'C',decode(d.especial,'E',nvl(cantidad,0),0))),
+                 sum(decode(o.clase_material,'C',decode(d.especial,'E',round(nvl(cantidad*valor_venta,0),0))))
+          into :cantidad_s,  :valor_venta_s,  :cantidad_o,    :valor_venta_o,
+               :cantidad_t,  :valor_venta_t,  :cantidad_sm,   :valor_venta_sm,
+               :cantidad_ce, :valor_venta_ce, :cantidad_vi,   :valor_venta_vi,
+               :cantidad_op, :valor_venta_op, :cantidad_flex, :valor_venta_flex,
+               :cantidad_ko, :valor_venta_ko,
+               :cantidad_eo, :valor_venta_eo, :cantidad_ec, :valor_venta_ec
+	  from  ordenes_d d, ordenes_c o
+          where o.fecha_documento >= to_date(:fecha_ini,'yyyymmdd')        and
+                o.fecha_documento <= to_date(:fecha_fin,'yyyymmdd')        and
+                o.codigo_cliente  >= :codigo_clii                          and
+                o.codigo_cliente  <= :codigo_clif                          and
+                decode(:contado,'TO','3',nvl(o.contado,0)) = decode(:contado,'CR',0,'CO',1,'3') and
+                o.consecutivo      = d.consecutivo(+)                      and
+                o.ano_mes          = d.ano_mes(+);
+
+ oraest  = sqlca.sqlcode;
+ if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error Leyendo Ordenes_c(C2) (%d)\n", sqlca.sqlcode);
+
+/*
+ if (strcmp(fecha_ini.arr,"911021")<=0&&strcmp(fecha_fin.arr,"911021")>=0)
+     valor_venta_vi++;
+*/
+
+ EXEC SQL select sum(nvl(valor_fletes,0)), sum(nvl(valor_iva,0)), sum(nvl(rete_fte,0))
+          into :valor_fletes, :valor_iva, :rete_fte
+          from  facturas
+          where fecha_documento >= to_date(:fecha_ini,'yyyymmdd')       and
+                fecha_documento <= to_date(:fecha_fin,'yyyymmdd')       and
+                codigo_cliente  >= :codigo_clii                         and
+                codigo_cliente  <= :codigo_clif                         and
+                decode(:contado,'TO','3',nvl(contado,'F')) = decode(:contado,'CR','F','CO','C','3') and
+                not exists
+                (select *
+                 from basura
+                 where facturas.tipo_factura   = basura.tipo_factura    and
+                       facturas.tipo_documento = basura.tipo_documento  and
+                       facturas.numero_factura = basura.numero_factura);
+
+ oraest  = sqlca.sqlcode;
+ if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error Leyendo Facturas(C3) (%d)\n", sqlca.sqlcode);
+
+ EXEC SQL select sum(decode(tipo_servicio,'FE',decode(sign(c.ano_mes-200505),1,cantidad*valor_unidad,0),0))
+          into :valor_fletes_c
+          from  ordenes_c c, ordenes_o o
+          where c.fecha_documento >= to_date(:fecha_ini,'yyyymmdd')       and
+                c.fecha_documento <= to_date(:fecha_fin,'yyyymmdd')       and
+                c.codigo_cliente  >= :codigo_clii                         and
+                c.codigo_cliente  <= :codigo_clif                         and
+                decode(:contado,'TO','3',nvl(c.contado,0)) = decode(:contado,'CR',0,'CO',1,'3') and
+                c.ano_mes          = o.ano_mes                            and
+                c.consecutivo      = o.consecutivo;
+
+ oraest  = sqlca.sqlcode;
+ if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error Leyendo Fletes(C3) (%d)\n", sqlca.sqlcode);
+
+
+ EXEC SQL select sum(round(nvl(valor_desctos,0),0)),
+                 sum(round(nvl(valor_otros,0),0))
+          into :valor_desctos_c, :valor_otros_c
+          from  ordenes_c c
+          where c.fecha_documento >= to_date(:fecha_ini,'yyyymmdd') and
+                c.fecha_documento <= to_date(:fecha_fin,'yyyymmdd') and
+                c.codigo_cliente  >= :codigo_clii                   and
+                c.codigo_cliente  <= :codigo_clif                   and
+                decode(:contado,'TO','3',nvl(c.contado,0)) = decode(:contado,'CR',0,'CO',1,'3') and
+                c.estado          <> 'R'                            and
+                c.clase_material   = 'C'                            and
+                not exists
+                (select 'x'
+                 from basura
+                 where tipo_documento = 'O' and
+                       numero_factura = c.numero_orden);
+
+ oraest  = sqlca.sqlcode;
+ if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error Leyendo Ordenes_c(C4) (%d)\n", sqlca.sqlcode);
+
+ EXEC SQL select nvl(sum(nvl(valor_neto,0)),0) valor
+          into :otras_fac
+          from basura b, facturas f
+          where b.tipo_documento  in ('F','C')                         and
+                b.tipo_documento   = f.tipo_documento                  and
+                b.tipo_factura     = f.tipo_factura                    and
+                b.numero_factura   = f.numero_factura                  and
+                f.fecha_documento >= to_date(:fecha_ini,'yyyymmdd')    and
+                f.fecha_documento <= to_date(:fecha_fin,'yyyymmdd')    and
+                f.codigo_cliente  >= :codigo_clii                      and
+                f.codigo_cliente  <= :codigo_clif                      and
+                decode(:contado,'TO','3',nvl(f.contado,'F')) = decode(:contado,'CR','F','CO','C','3') and
+                b.ano_mes         >= :ano_mesi                         and
+                b.ano_mes         <= :ano_mesf;
+ oraest  = sqlca.sqlcode;
+ if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
+     fprintf (stderr, "Error Leyendo Basura(C5) (%d) (%s) (%s) (%s) (%s) (%s)\n", sqlca.sqlcode, fecha_ini.arr, fecha_fin.arr, ano_mesi.arr, ano_mesf.arr);
+
+ EXEC SQL select sum(nvl(valor_deb,0) - nvl(valor_cre,0))
+          into :valor_desco
+          from  movto_d
+          where codigo_emp in (1,2,3)   and
+                cuenta     = '53053501' and
+                ano_mes   >= :ano_mesi  and
+                ano_mes   <= :ano_mesf;
+
+
+ titulos();
+ totales();
+
+ cierre_impresora();
+
+ EXEC SQL CLOSE C1;
+
+ EXEC SQL COMMIT WORK RELEASE;
+
+ exit   (0);
+}
+/*
+
+void busco_oftalmicos()
+{
+ while (staora == 0 && (!strcmp(clase_material.arr,"C"))) {
+        EXEC SQL FETCH C1 INTO :cantidad_bis_mont0, :cantidad_bis_mont1,
+                               :cantidad_bis_mont2, :cantidad_bis_mont3,
+                               :cantidad_bis_mont4, :cantidad_bis_mont5,
+                               :cantidad_bis_mont6, :valor_bis_mont0,
+                               :valor_bis_mont1,    :valor_bis_mont2,
+                               :valor_bis_mont3,    :valor_bis_mont4,
+                               :valor_bis_mont5,    :valor_bis_mont6,
+                               :cantidad_fil,       :valor_fil,
+                               :cantidad_ar1,       :valor_ar1,
+                               :cantidad_ar2,       :valor_ar2,
+                               :cantidad_pr,        :valor_pr,
+                               :cantidad2_pr,       :valor2_pr,
+                               :cantidad_mr,        :valor_mr,
+                               :cantidad2_mr,       :valor2_mr,
+                               :cantidad_color,     :valor_color,
+                               :cantidad_otros,     :valor_otros,
+                               :valor_desctos,      :valor_total,
+                               :clase_material,     :numero_orden;
+        staora  = sqlca.sqlcode;
+        if (staora ==  1403) break;
+        if (staora == -1405)
+            staora  = 0;
+        else if (staora)
+                 fprintf (stderr, "Error Leyendo C1 (%d)\n", staora);
+
+        clase_material.arr  [clase_material.len] = '\0';
+ }
+}
+*/
+
+void totales()
+{
+ int i;
+
+ fprintf(fp,"%s%30s%s\n",enfatizado_on,"LENTES OFTALMICOS :",enfatizado_off);
+
+ sprintf(cadena,"%7.0f",cantidad_t);
+ fprintf(fp,"%30s%11s","TERMINADOS",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_venta_t);
+ fprintf(fp,"%20s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",cantidad_sm);
+ fprintf(fp,"%30s%11s","SEMITERMINADOS",fmtnum("z,zzz,zz9",cadena,r_t));
+ /* valor_venta_sm=valor_venta_sm+31775+17300; */
+ sprintf(cadena,"%9.2f",valor_venta_sm);
+ fprintf(fp,"%20s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",cantidad_ko);
+ fprintf(fp,"%30s%11s","RECUPERACION",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_venta_ko);
+ fprintf(fp,"%20s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+/* if (cantidad_eo!=0 || valor_venta_eo!=0) {*/
+    sprintf(cadena,"%7.0f",cantidad_eo);
+    fprintf(fp,"%30s%11s","MUESTRAS",fmtnum("z,zzz,zz9",cadena,r_t));
+    sprintf(cadena,"%9.2f",valor_venta_eo);
+    fprintf(fp,"%20s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+/* }*/
+
+ sprintf(cadena,"%7.0f",cantidad_t+cantidad_sm+cantidad_ko+cantidad_eo);
+ fprintf(fp,"%61s\n%30s%11s","-----  ------------------","SUBTOTAL LENTES OFTALMICOS",fmtnum("z,zzz,zzz",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_venta_t+valor_venta_sm+valor_venta_ko+valor_venta_eo);
+ fprintf(fp,"%20s\n\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+/*
+ sprintf(cadena,"%7.0f",cantidad_s);
+ fprintf(fp,"%30s%11s","SPRAYS",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_venta_s);
+ fprintf(fp,"%20s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+*/
+// fprintf(fp,"%s%30s\n",enfatizado_on,"SERVICIOS :");
+
+ fprintf(fp,"%30s\n","SERVICIOS DE BISEL Y MONTAJE : (Monofocales Bif.,trif. y Prog.)");
+// fprintf(fp,"%30s\n","Monofocales Bif.,trif. y Prog.");
+
+ sprintf(cadena,"%7.0f",vec[0].cantidad_bis_mont_t+vec[5].cantidad_bis_mont_t);
+ fprintf(fp," %s%29s%s%11s",enfatizado_on,"Standar 1 :",enfatizado_off,fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",vec[0].valor_bis_mont_t+vec[5].valor_bis_mont_t);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",vec[6].cantidad_bis_mont_t);
+ fprintf(fp," %s%29s%s%11s",enfatizado_on,"Standar 2 :",enfatizado_off,fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",vec[6].valor_bis_mont_t);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",vec[2].cantidad_bis_mont_t);
+ fprintf(fp," %s%31s%s%11s",enfatizado_on,"Recargo por Ranuracio\b'n :",enfatizado_off,fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",vec[2].valor_bis_mont_t);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",vec[3].cantidad_bis_mont_t);
+ fprintf(fp," %s%31s%s%11s",enfatizado_on,"Recargo por Perforacio\b'n :",enfatizado_off,fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",vec[3].valor_bis_mont_t);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%6.0f",vec[4].cantidad_bis_mont_t);
+ fprintf(fp,"%s%30s%s%11s",enfatizado_on,"Recargo por pulir bordes :",enfatizado_off,fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",vec[4].valor_bis_mont_t);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",vec[1].cantidad_bis_mont_t);
+ fprintf(fp," %s%29s%s%11s",enfatizado_on,"Recargo por dise|o especial :",enfatizado_off,fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",vec[1].valor_bis_mont_t);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ for (i=0;i<=6;i++) {
+      cantidad_bis_mont_g+= vec[i].cantidad_bis_mont_t;
+      valor_bis_mont_g   += vec[i].valor_bis_mont_t;
+     }
+ sprintf(cadena,"%7.0f",cantidad_bis_mont_g);
+ fprintf(fp,"%61s\n%30s%11s","-----  ------------------","SUBTOTAL BISEL MONTAJE...",fmtnum("z,zzz,zzz",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_bis_mont_g);
+ fprintf(fp,"%20s\n\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ fprintf(fp,"%s%30s%s\n",enfatizado_on,"TRATAMIENTOS - FILTROS Y COLOR:",enfatizado_off);
+
+// fprintf(fp,"%30s\n","TRATAMIENTO ANTIRREFLEJO :");
+ sprintf(cadena,"%7.0f",cantidad_ar1_t);
+ fprintf(fp,"%30s%11s","TRAT. ANTIRREFLEJO RF Rx-1 :",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_ar1_t);
+ fprintf(fp,"%20s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",cantidad_ar2_t);
+ fprintf(fp,"%30s%11s","TRAT. ANTIRREFLEJO RF Rx-2 :",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_ar2_t);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",cantidad_mr_t);
+ fprintf(fp,"%30s%11s","TRATAMIENTO MR-1 :",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_mr_t);
+ fprintf(fp,"%20s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",cantidad_pr_t);
+ fprintf(fp,"%30s%11s","TRATAMIENTO PR-1 :",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_pr_t);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",cantidad2_pr_t);
+ fprintf(fp,"%30s%11s","TRATAMIENTO PR-2 :",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor2_pr_t);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",cantidad_ar1_t+cantidad_ar2_t+cantidad_mr_t+cantidad_pr_t+cantidad2_pr_t);
+ fprintf(fp,"%61s\n%30s%11s","-----  ------------------","SUB. TRATAMIENTOS (RF.MR.PR)..",fmtnum("z,zzz,zzz",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_ar1_t+valor_ar2_t+valor_mr_t+valor_pr_t+valor2_pr_t);
+ fprintf(fp,"%20s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",cantidad_fil_t);
+ fprintf(fp,"%30s%11s","SUB. FILTROS TERAPEUTICOS :",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_fil_t);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",cantidad_color_t);
+ fprintf(fp,"%30s%11s","SUB. COLOR :",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_color_t);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+/*
+ sprintf(cadena,"%7.0f",cantidad_fil_t+cantidad_color_t);
+ fprintf(fp,"%61s\n%30s%11s","-----  ------------------","SUB. TRAT.-FILTROS Y COLOR...",fmtnum("z,zzz,zzz",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_fil_t+valor_color_t);
+ fprintf(fp,"%20s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+*/
+ sprintf(cadena,"%7.0f",cantidad_ar1_t+cantidad_ar2_t+cantidad_mr_t+cantidad_pr_t+cantidad2_pr_t+cantidad_fil_t+cantidad_color_t);
+ fprintf(fp,"%61s\n%30s%11s","-----  ------------------","SUB. TRAT.-FILTROS Y COLOR...",fmtnum("z,zzz,zzz",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_ar1_t+valor_ar2_t+valor_mr_t+valor_pr_t+valor2_pr_t+valor_fil_t+valor_color_t);
+ fprintf(fp,"%20s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%9.2f",valor_otros_t+valor_venta_o+valor_venta_s);
+ fprintf(fp,"%30s%31s\n","OTROS CARGOS :",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%9.2f",valor_desctos_t);
+ fprintf(fp,"%30s%31s\n","MENOS DESCUENTOS EN VENTAS:",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%9.2f",valor_total_t-valor_fletes_c);
+ fprintf(fp,"%61s\n%s%30s%s%31s\n\n","------------------",enfatizado_on,"TOTAL DIVISION OFTALMICA",enfatizado_off,fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+
+ fprintf(fp,"%s%30s%s\n",enfatizado_on,"LENTES DE CONTACTO :",enfatizado_off);
+
+ if (cantidad_ce!=0 || valor_venta_ce!=0) {
+     sprintf(cadena,"%7.0f",cantidad_ce);
+     fprintf(fp,"%30s%11s","BLANDOS CENTRISOFT",fmtnum("z,zzz,zz9",cadena,r_t));
+     sprintf(cadena,"%9.2f",valor_venta_ce);
+     fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+ }
+
+ if (cantidad_vi!=0 || valor_venta_vi!=0) {
+    sprintf(cadena,"%7.0f",cantidad_vi);
+    fprintf(fp,"%30s%11s","BLANDOS VISTASOFT",fmtnum("z,zzz,zz9",cadena,r_t));
+    sprintf(cadena,"%9.2f",valor_venta_vi);
+    fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+ }
+
+ sprintf(cadena,"%7.0f",cantidad_op-cantidad_vi);
+ fprintf(fp,"%30s%11s","BLANDOS",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_venta_op-valor_venta_vi);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%7.0f",cantidad_flex);
+ fprintf(fp,"%30s%11s","F L E X I B L E S",fmtnum("z,zzz,zz9",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_venta_flex);
+ fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+/* if (cantidad_ec!=0 || valor_venta_ec!=0) {*/
+    sprintf(cadena,"%7.0f",cantidad_ec);
+    fprintf(fp,"%30s%11s","OTROS",fmtnum("z,zzz,zz9",cadena,r_t));
+    sprintf(cadena,"%9.2f",valor_venta_ec);
+    fprintf(fp,"%20s\n",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+/* }*/
+
+ sprintf(cadena,"%7.0f",cantidad_ce+cantidad_op+cantidad_flex+cantidad_ec);
+ fprintf(fp,"%61s\n%s%30s%s%11s","-----  ------------------",enfatizado_on,"SUBTOTAL DIVISION DE CONTACTO",enfatizado_off,fmtnum("z,zzz,zzz",cadena,r_t));
+ sprintf(cadena,"%9.2f",valor_venta_ce+valor_venta_op+valor_venta_flex+valor_venta_ec);
+ fprintf(fp,"%20s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%9.2f",valor_otros_c);
+ fprintf(fp,"%30s%31s\n","MAS OTROS",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%9.2f",valor_desctos_c);
+ fprintf(fp,"%30s%31s\n","MENOS DESCUENTOS EN VENTAS",fmtnum("zzz,zzz,zz9.99",cadena,r_t));
+
+ fprintf(fp,"%61s\n%s%30s%s","-----  ------------------",enfatizado_on,"TOTAL DIVISION DE CONTACTO",enfatizado_off);
+ sprintf(cadena,"%9.2f",valor_venta_ce+valor_venta_op+valor_venta_flex+valor_otros_c-valor_desctos_c+valor_venta_ec);
+ fprintf(fp,"%31s\n",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+
+ sprintf(cadena,"%8.2f",valor_total_t-valor_fletes_c+valor_venta_ce+valor_venta_op+valor_venta_flex+valor_otros_c-valor_desctos_c+valor_venta_ec);
+ fprintf(fp,"%61s\n%30s%31s\n","------------------","TOTAL VENTA BRUTA",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%9.2f",valor_fletes);
+ fprintf(fp,"%30s%31s\n","VALOR DESPACHOS",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+
+ fe_ini=atof(fecha_ini.arr);
+ fe_fin=atof(fecha_fin.arr);
+ /* if (fe_ini <= 920423 && fe_fin >= 920423)
+     valor_iva=valor_iva-120036;  */
+ sprintf(cadena,"%12.2f",otras_fac);
+ fprintf(fp,"%30s%31s\n","OTRAS FACTURAS",fmtnum("z,zzz,zzz,zz9.99",cadena,r_t));
+
+ sprintf(cadena,"%12.2f",valor_total_t-valor_fletes_c+valor_venta_ce+valor_venta_op+valor_venta_flex+valor_otros_c+valor_venta_ec-valor_desctos_c+valor_fletes+otras_fac);
+ fprintf(fp,"%61s\n%s%30s%31s%s\n","=====================",enfatizado_on,"TOTAL VENTA NETA",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t),enfatizado_off);
+ fprintf(fp,"\r");
+
+ sprintf(cadena,"%9.2f",valor_iva);
+ fprintf(fp,"%30s%31s\n","TOTAL IVA",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+ sprintf(cadena,"%9.2f",rete_fte);
+ fprintf(fp,"%30s%31s\n","MENOS RETENCION EN LA FUENTE",fmtnum("zzz,zzz,zzz,zz9.99",cadena,r_t));
+ sprintf(cadena,"%12.2f",otras_fac+valor_total_t-valor_fletes_c+valor_venta_ce+valor_venta_op+valor_venta_flex+valor_otros_c+valor_venta_ec-valor_desctos_c+valor_fletes+valor_iva-rete_fte);
+ fprintf(fp,"%61s\n%s%30s%31s%s\n","=====================",enfatizado_on,"TOTAL CARTERA",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t),enfatizado_off);
+ fprintf(fp,"\r");
+
+ sprintf(cadena,"%12.2f",valor_desco);
+ fprintf(fp,"%30s%31s\n","DESCUENTOS CONDICIONADOS",fmtnum("z,zzz,zzz,zz9.99",cadena,r_t));
+ sprintf(cadena,"%12.2f",otras_fac+valor_total_t-valor_fletes_c+valor_venta_ce+valor_venta_op+valor_venta_flex+valor_otros_c+valor_venta_ec-valor_desctos_c+valor_fletes+valor_iva-valor_desco-rete_fte);
+ fprintf(fp,"%61s\n%s%30s%31s%s\n","=====================",enfatizado_on,"TOTAL NETO",fmtnum("$zzz,zzz,zzz,zz9.99",cadena,r_t),enfatizado_off);
+ fprintf(fp,"\r");
+}
+
+/************************
+* TITULOS()
+*    Imprime titulos en el archivo de spool.
+*/
+
+void titulos()
+{
+ fprintf(fp,"%s%s%s%s%49s\n\n", salte_pagina, diezcpi, condensado_on, ancho_on, "DISCRIMINACION DE LA VENTA NETA");
+ strorg(fechas,1,strlen(fechas));
+ fprintf(fp,"%s%s%s%62s%s\n\n",diezcpi,ancho_off,enfatizado_on,fechas,enfatizado_off);
+ fprintf(fp,"%41s%16s\n","CANTIDAD","VALOR");
+ fprintf(fp,"%41s%20s\n","--------","------------------");
+ con_lin = 6;
+}

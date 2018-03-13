@@ -1,0 +1,237 @@
+  LABORATORIO OFTALMICO DE LA COSTA S.A.
+
+                   RESUMEN DE VENTAS CONTADO          PAGINA  1
+
+              1 de Julio  de 2.008 hasta 31 de Julio  de 2.008
+
+CODIGO          C L I E N T E / O P T I C A    DIVISION OFTALMICA    DIVISION DE CONTACTO
+                                                   VALOR ORDENES  NUMERO VALOR ORDENES     NUMERO   VALOR DESPACHOS    IMPOVENTAS    RETE  VALOR FACTURACION
+NUMERO                                         ORDENES  VENTA NETA   ORDENES VENTA NETA     DESPACHOS FLETES Y EMPAQUES      0   FUENTE  TOTAL VENTA
+
+
+                CIUDAD BOGOTA
+
+ BG268 OPTITECNICA LTDA.                          7        990,000        0             0        0               0               0         0         990,000
+ BG375 OPTICA VISION CENTRAL                      4        645,390        0             0        0               0               0         0         645,390
+ BG410 PE\ARETE ORTIZ MYRIAM ROCIO                1         39,600        0             0        0               0               0         0          39,600
+ BG436 SUAREZ ROA GERMAN GIOVANNY-O.SANTA ISAB    1         66,420        0             0        0               0               0         0          66,420
+
+       TOTAL CIUDAD           13      1,741,410        0             0        0               0               0         0       1,741,410
+
+                CIUDAD BUCARAMANGA
+
+ BM056 ANA MILENA OLAVE ZAMBRANO - OPTICA PRIS    1         70,000        0             0        0           6,000               0         0          76,000
+ BM058 ESTUPI\AN TRIANA WILSON-C.MD.SJ DE GIRO    1         93,600        0             0        0               0               0         0          93,600
+
+       TOTAL CIUDAD            2        163,600        0             0        0           6,000               0         0         169,600
+
+                CIUDAD BARRANQUILLA
+
+ BQ011 RAMON GARAVITO MARTINEZ & CIA LTDA.        1         64,800        0             0        0               0               0         0          64,800
+ BQ012 OPTICA INTERNACIONAL LTDA.                 1        351,000        0             0        0               0               0         0         351,000
+ BQ065 AURELIA MARENCO DE LA ROSA                 2        272,700        0             0        0               0               0         0         272,700
+ BQ070 FERNANDO RUIZ                              7        910,170        0             0        0               0               0         0         910,170
+ BQ100 MONICA INSIGNARES                          8        797,310        0             0        0               0               0         0         797,310
+ BQ104 FABIOLA GUZMAN - LENSOPTICA                1        171,000        0             0        0               0               0         0         171,000
+ BQ119 OPTIMED LTDA-CENTRO VISUAL MILAN           5        774,250        0             0        0               0               0         0         774,250
+ BQ122 JULY CONDE                                 1         90,000        0             0        0               0               0         0          90,000
+ BQ123 INSTITUTO DE LA VISION DEL NORTE           1         64,800        0             0        0               0               0         0          64,800
+ BQ124 DR. OSCAR MASSARD                          2        337,500        0             0        0               0               0         0         337,500
+ BQ147 DR. JOSE CARLOS LORA                      12        860,240        0             0        0               0               0         0         860,240
+ BQ157 ADAN GOMEZ DURAN-OPTICA AMERICANA SUC.     1         40,320        0             0        0               0               0         0          40,320
+ BQ175 DRA. AZUCENA SANCHEZ                      13      1,393,650        0             0        0               0               0         0       1,393,650
+ BQ177 MARVIN VI\AS SARMIENTO                     1        331,200        0             0        0               0               0         0         331,200
+ BQ183 VIA\A VISION Y CIA S EN C                  2        522,000        0             0        0               0               0         0         522,000
+ BQ188 MARTHA IBA\EZ                              1          8,820        0             0        0               0               0         0           8,820
+ BQ189 CORONADO PALLARES LEVINTON ARMANDO-O CO    1        279,900        0             0        0               0               0         0         279,900
+ BQ191 DANIEL CHAVEZ DEL CASTILLO                 1        279,540        0             0        0               0               0         0         279,540
+ BQ206 VISION CENTER LTDA.                        1        173,250        0             0        0               0               0         0         173,250
+ BQ207 OPTICA VISION 44 LTDA.                     3        374,940        0             0        0               0               0         0         374,940
+ BQ217 DR. RAMIRO ARTETA                          1         59,000        0             0        0               0               0         0          59,000
+ BQ224 PENAGOS SANCHEZ & CIA S. EN C.S. C.O.E     2        266,040        0             0        0               0               0         0         266,040
+ BQ225 CRESPO DURANGO RICARDO DE JESUS            8        726,300        0             0        0               0               0         0         726,300
+ BQ234 UPARELA POLANCO LUIS RAFAEL-O.OLIMPICA     4        657,180        0             0        0               0               0         0         657,180
+ BQ243 ISIS IRIARTE IRIARTE                       8      1,080,900        0             0        0               0               0         0       1,080,900
+ BQ251 LA OPTICA CONSULTORIO VISUAL E.U.          6      2,286,630        0             0        0               0               0         0       2,286,630
+ BQ254 ACOSTA RODRIGUEZ KATHERINE LISETH          1        169,740        0             0        0               0               0         0         169,740
+ BQ258 VAZQUEZ ALTAFULLA SANDRA MILENA            1         12,420        0             0        0               0               0         0          12,420
+ BQ260 TORRES ESQUIVEL MABEL-OPTICA TORRES        3        183,600        0             0        0               0               0         0         183,600
+ BQ266 AGUIRRE LONDO/O LEONARD DE JESUS-OPTIKA    1         81,000        0             0        0               0               0         0          81,000
+ BQ271 NIETO MENDOZA HELENA PATRICIA              1        164,700        0             0        0               0               0         0         164,700
+ BQ272 SOLUCIONES VISUALES DE COLOMBIA LTDA-C.   32      4,626,180        0             0        0               0               0         0       4,626,180
+  LABORATORIO OFTALMICO DE LA COSTA S.A.
+
+                   RESUMEN DE VENTAS CONTADO          PAGINA  2
+
+              1 de Julio  de 2.008 hasta 31 de Julio  de 2.008
+
+CODIGO          C L I E N T E / O P T I C A    DIVISION OFTALMICA    DIVISION DE CONTACTO
+                                                   VALOR ORDENES  NUMERO VALOR ORDENES     NUMERO   VALOR DESPACHOS    IMPOVENTAS    RETE  VALOR FACTURACION
+NUMERO                                         ORDENES  VENTA NETA   ORDENES VENTA NETA     DESPACHOS FLETES Y EMPAQUES      0   FUENTE  TOTAL VENTA
+
+
+                CIUDAD BARRANQUILLA
+
+ BQ274 ALVAREZ MALDONADO JULIO EDUARDO           10      1,489,590        0             0        0               0               0         0       1,489,590
+
+       TOTAL CIUDAD          143     19,900,670        0             0        0               0               0         0      19,900,670
+
+                CIUDAD CARTAGENA
+
+ CG005 OPTICA PANORAMICA LTDA                     5      1,064,880        0             0        0           7,000               0         0       1,071,880
+ CG030 JUDITH HERNANDEZ R.-O.DEL NORTE(ARJONA)    5      1,074,960        0             0        0          13,000               0         0       1,087,960
+ CG078 CENTRO OPTICO BUENAVISTA LTDA.             1         32,000        0             0        0               0               0         0          32,000
+ CG085 JIMENEZ QUINTERO WILMAR RUBEN-O. LA ISL   30      2,775,150        0             0        0          34,000               0         0       2,809,150
+
+       TOTAL CIUDAD           41      4,946,990        0             0        0          54,000               0         0       5,000,990
+
+                CIUDAD CALI
+
+ CL135 GIRALDO RUIZ CLARA NATALIA-O.NG            4        525,780        0             0        0               0               0         0         525,780
+ CL159 MORENO RODRIGUEZ ANGELA-O EYES AND GLAS    7      1,137,510        0             0        0          12,000               0         0       1,149,510
+ CL194 SP OPTOMETRAS ASOCIADOS & CIA. LTDA.      30      4,408,550        0             0        0               0               0         0       4,408,550
+ CL262 MENENDEZ GUZMAN ANGELA MARIA-O. OBYRNE     9      1,677,400        0             0        0          24,000               0         0       1,701,400
+
+       TOTAL CIUDAD           50      7,749,240        0             0        0          36,000               0         0       7,785,240
+
+                CIUDAD MEDELLIN
+
+ MD154 VALENZUELA CHINCHILLA LUIS FERNANDO-O.B    1        261,000        0             0        0           6,000               0         0         267,000
+
+       TOTAL CIUDAD            1        261,000        0             0        0           6,000               0         0         267,000
+
+                CIUDAD MONTERIA
+
+ MO011 EUGENIA ISABEL MIRANDA - O. ECONOMICA      1        290,000        0             0        0               0               0         0         290,000
+
+       TOTAL CIUDAD            1        290,000        0             0        0               0               0         0         290,000
+
+                CIUDAD NEIVA
+
+ NV016 DISTRILENT - INVERSIONES DAZA              1         70,000        0             0        0           6,000               0         0          76,000
+
+       TOTAL CIUDAD            1         70,000        0             0        0           6,000               0         0          76,000
+
+                CIUDAD SINCELEJO
+
+ SI013 OPTICA UNIVERSAL                           1        184,140        0             0        0           6,000               0         0         190,140
+ SI020 CARO RODRIGUEZ LEIDY ELIANA-O.NOV.VISIO   21      1,935,900        0             0        0          54,000               0         0       1,989,900
+
+       TOTAL CIUDAD           22      2,120,040        0             0        0          60,000               0         0       2,180,040
+  LABORATORIO OFTALMICO DE LA COSTA S.A.
+
+                   RESUMEN DE VENTAS CONTADO          PAGINA  3
+
+              1 de Julio  de 2.008 hasta 31 de Julio  de 2.008
+
+CODIGO          C L I E N T E / O P T I C A    DIVISION OFTALMICA    DIVISION DE CONTACTO
+                                                   VALOR ORDENES  NUMERO VALOR ORDENES     NUMERO   VALOR DESPACHOS    IMPOVENTAS    RETE  VALOR FACTURACION
+NUMERO                                         ORDENES  VENTA NETA   ORDENES VENTA NETA     DESPACHOS FLETES Y EMPAQUES      0   FUENTE  TOTAL VENTA
+
+
+                CIUDAD SANTA MARTA
+
+ SM022 CENTRO OPTICO PEDIATRICO                   1         89,640        0             0        0           3,500               0         0          93,140
+ SM029 DUQUE RAMIREZ MARIA LUCELLY-O.VILMAN       1         92,700        0             0        0               0               0         0          92,700
+ SM031 CADENA HERNANDEZ KARINE-BARTIMEOS VISIO    2        559,980        0             0        0           3,500               0         0         563,480
+ SM033 BARBOSA CARVAJALINO WILLIAM-O.VISTA REA    2        222,300        0             0        0           3,500               0         0         225,800
+
+       TOTAL CIUDAD            6        964,620        0             0        0          10,500               0         0         975,120
+
+                CIUDAD VALLEDUPAR
+
+ VA007 DR. FLAVIO PI\ERES                         6        395,280        0             0        0          12,000               0         0         407,280
+ VA021 UNIDAD OCULAR DEL CESAR E.U.               7        835,110        0             0        0          12,000               0         0         847,110
+ VA027 SOLUCIONES VISUALES DE COLOMBIA LTDA-C.    1        147,600        0             0        0               0               0         0         147,600
+
+       TOTAL CIUDAD           14      1,377,990        0             0        0          24,000               0         0       1,401,990
+
+       TOTALES GENERALES     294     39,585,560        0             0        0         202,500               0         0      39,788,060
+
+TOTAL FLETES COBRADOS                           0      202,500.00
+
+TOTAL FLETES PAGADOS          _________________
+                     
+
+                   RESUMEN DE VENTAS CONTADO          PAGINA  4
+
+              1 de Julio  de 2.008 hasta 31 de Julio  de 2.008
+
+CODIGO          C L I E N T E / O P T I C A    DIVISION OFTALMICA    DIVISION DE CONTACTO
+                                                   VALOR ORDENES  NUMERO VALOR ORDENES     NUMERO   VALOR DESPACHOS    IMPOVENTAS    RETE  VALOR FACTURACION
+NUMERO                                         ORDENES  VENTA NETA   ORDENES VENTA NETA     DESPACHOS FLETES Y EMPAQUES      0   FUENTE  TOTAL VENTA
+
+
+                CIUDAD VALLEDUPAR
+
+
+       TOTAL CIUDAD            0              0        0             0        0               0               0         0               0
+
+       TOTALES GENERALES       0              0        0             0        0               0               0         0               0
+
+TOTAL FLETES COBRADOS                           0            0.00
+
+TOTAL FLETES PAGADOS          _________________
+ LABORATORIO OFTALMICO DE LA COSTA LTDA.
+
+                   RESUMEN DE VENTAS CONTADO          PAGINA  1
+
+              1 de Julio  de 2.008 hasta 31 de Julio  de 2.008
+
+CODIGO          C L I E N T E / O P T I C A    DIVISION OFTALMICA    DIVISION DE CONTACTO
+                                                   VALOR ORDENES  NUMERO VALOR ORDENES     NUMERO   VALOR DESPACHOS    IMPOVENTAS    RETE  VALOR FACTURACION
+NUMERO                                         ORDENES  VENTA NETA   ORDENES VENTA NETA     DESPACHOS FLETES Y EMPAQUES      0   FUENTE  TOTAL VENTA
+
+
+                CIUDAD VALLEDUPAR
+
+
+       TOTAL CIUDAD            0              0        0             0        0               0               0         0               0
+
+       TOTALES GENERALES       0              0        0             0        0               0               0         0               0
+
+TOTAL FLETES COBRADOS                           0            0.00
+
+TOTAL FLETES PAGADOS          _________________
+  LABORATORIO OFTALMICO DE LA COSTA S.A.
+
+            SERVICIOS DE ADMINISTRACION          PAGINA  1
+
+              1 de Julio  de 2.008 hasta 31 de Julio  de 2.008
+
+CODIGO          C L I E N T E / O P T I C A    DIVISION OFTALMICA    DIVISION DE CONTACTO
+                                                   VALOR ORDENES  NUMERO VALOR ORDENES     NUMERO   VALOR DESPACHOS    IMPOVENTAS    RETE  VALOR FACTURACION
+NUMERO                                         ORDENES  VENTA NETA   ORDENES VENTA NETA     DESPACHOS FLETES Y EMPAQUES      0   FUENTE  TOTAL VENTA
+
+
+                CIUDAD VALLEDUPAR
+
+
+       TOTAL CIUDAD            0              0        0             0        0               0               0         0               0
+
+       TOTALES GENERALES       0              0        0             0        0               0               0         0               0
+
+TOTAL FLETES COBRADOS                           0            0.00
+
+TOTAL FLETES PAGADOS          _________________
+ LABORATORIO OFTALMICO DE LA COSTA LTDA.
+
+                                 MATERIA PRIMA          PAGINA  2
+
+              1 de Julio  de 2.008 hasta 31 de Julio  de 2.008
+
+CODIGO          C L I E N T E / O P T I C A    DIVISION OFTALMICA    DIVISION DE CONTACTO
+                                                   VALOR ORDENES  NUMERO VALOR ORDENES     NUMERO   VALOR DESPACHOS    IMPOVENTAS    RETE  VALOR FACTURACION
+NUMERO                                         ORDENES  VENTA NETA   ORDENES VENTA NETA     DESPACHOS FLETES Y EMPAQUES      0   FUENTE  TOTAL VENTA
+
+
+                CIUDAD VALLEDUPAR
+
+
+       TOTAL CIUDAD            0              0        0             0        0               0               0         0               0
+
+       TOTALES GENERALES       0              0        0             0        0               0               0         0               0
+
+TOTAL FLETES COBRADOS                           0            0.00
+
+TOTAL FLETES PAGADOS          _________________

@@ -1,0 +1,15 @@
+--------------------Configuration: impresora - Win32 Release--------------------
+Begining build with project "C:\Rutinas\impresora.dsp", with item "impresora.c"
+Active configuration is Win32 (x86) Console Application (based on Win32 (x86) Console Application)
+
+
+Creating temp file "C:\WINDOWS\TEMP\RSP30F2.TMP" with contents </nologo /ML /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Release/impresora.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Rutinas\impresora.c"
+>
+Creating command line "cl.exe @C:\WINDOWS\TEMP\RSP30F2.TMP" 
+Compiling...
+impresora.c
+
+
+
+impresora.obj - 0 error(s), 0 warning(s)
