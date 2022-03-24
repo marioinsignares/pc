@@ -146,7 +146,7 @@ static const short sqlcud0[] =
 2,4,0,0,2,4,0,0,2,4,0,0,2,4,0,0,2,4,0,0,
 254,0,0,2,0,0,15,427,0,0,0,0,0,1,0,
 269,0,0,5,0,0,30,429,0,0,0,0,0,1,0,
-284,0,0,6,351,0,4,662,0,0,4,3,0,1,0,2,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+284,0,0,6,351,0,4,663,0,0,4,3,0,1,0,2,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
 };
 
 
@@ -412,7 +412,7 @@ struct tit2 {
              char   clases[50];
              char   vidrio[50];
             };
-struct tit2 vector2[3000];
+struct tit2 vector2[9000];
 
 int     categoria_r;
 int     imprimio_clase = 0;
@@ -1224,7 +1224,8 @@ void acumula_totales()
           categoria == 699  || categoria == 799  || categoria == 899  ||
           categoria == 999  || categoria == 1099 || categoria == 1199 ||
           categoria == 1599 || categoria == 1699 || categoria == 2099 || 
-          categoria == 2299 || categoria == 2499)
+          categoria == 2199 || categoria == 2299 || categoria == 2499 ||
+          categoria == 2899 || categoria == 1999)
           suma_maximo = 1;
       else
           suma_maximo = 2;

@@ -145,7 +145,7 @@ static const short sqlcud0[] =
 2,4,0,0,2,4,0,0,2,4,0,0,2,4,0,0,2,4,0,0,
 227,0,0,2,0,0,15,415,0,0,0,0,0,1,0,
 242,0,0,4,0,0,30,417,0,0,0,0,0,1,0,
-257,0,0,5,353,0,4,646,0,0,4,3,0,1,0,2,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+257,0,0,5,353,0,4,649,0,0,4,3,0,1,0,2,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
 };
 
 
@@ -406,7 +406,7 @@ struct tit2 {
              char   clases[50];
              char   vidrio[50];
             };
-struct tit2 vector2[3000];
+struct tit2 vector2[9000];
 
 int     categoria_r;
 int     imprimio_clase = 0;
@@ -1149,10 +1149,13 @@ void acumula_totales()
   int i;
   if (!strcmp(clase.arr,"A"))
      {
-      if (categoria == 99  || categoria == 199  || categoria == 299 ||
-          categoria == 399 || categoria == 499  || categoria == 599 ||
-          categoria == 699 || categoria == 799  || categoria == 899 ||
-          categoria == 999 || categoria == 1099 || categoria == 1199)
+      if (categoria ==  99  || categoria == 199  || categoria == 299  ||
+          categoria == 399  || categoria == 499  || categoria == 599  ||
+          categoria == 699  || categoria == 799  || categoria == 899  ||
+          categoria == 999  || categoria == 1099 || categoria == 1199 ||
+          categoria == 1599 || categoria == 1699 || categoria == 2099 || 
+          categoria == 2199 || categoria == 2299 || categoria == 2499 ||
+          categoria == 2899)
           suma_maximo = 1;
       else
           suma_maximo = 2;

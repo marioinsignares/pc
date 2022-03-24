@@ -291,7 +291,7 @@ void lista_empresa()
  sprintf(cadena,"%10.0f",totbasico);
  fprintf(fp," %28s",fmtnum("zz,zzz,zz9",cadena,r_t));
  sprintf(cadena,"%7.0f",tottransp);
- fprintf(fp," %7s",fmtnum("zzz,zz9",cadena,r_t));
+ fprintf(fp," %7s",fmtnum("zzzz,zz9",cadena,r_t));
  sprintf(cadena,"%10.0f",tototrosp);
  fprintf(fp," %10s",fmtnum("zz,zzz,zz9",cadena,r_t));
  sprintf(cadena,"%10.0f",tottotalp);
@@ -421,7 +421,7 @@ void totalnov()
  sprintf(cadena,"%10.0f",basico);
  fprintf(fp," %10s",fmtnum("zz,zzz,zz9",cadena,r_t));
  sprintf(cadena,"%7.0f",transp);
- fprintf(fp," %7s",fmtnum("zz,zz9",cadena,r_t));
+ fprintf(fp," %7s",fmtnum("zzz,zz9",cadena,r_t));
  sprintf(cadena,"%10.0f",otrosp);
  fprintf(fp," %10s",fmtnum("zz,zzz,zz9",cadena,r_t));
  sprintf(cadena,"%10.0f",totalp);

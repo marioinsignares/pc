@@ -23,8 +23,8 @@ void hacer_asiento();
 void ver_inf();
 void graba_deb();
 void graba_cre();
-void inserta_deb();
-void inserta_cre();
+void inserta_deb(int li);
+void inserta_cre(int li);
 
 
 EXEC SQL BEGIN DECLARE SECTION;
@@ -99,6 +99,7 @@ float   minimo;
 int     verbasico;
 VARCHAR gasto_comun [10];
 VARCHAR gasto_cc    [10];
+VARCHAR li_c        [5];
 
 char    vecplan     [05][14];
 
@@ -242,6 +243,7 @@ int	status = 0;
     staora  = 0;
     traidos = 0;
     num_ret = 0;
+
     while (staora == 0) {
 
           EXEC SQL FETCH C2 INTO :vecinf;
@@ -257,6 +259,7 @@ int	status = 0;
           }
           num_ret = traidos;
     }
+
     k = traidos;
     EXEC SQL CLOSE C2;
 
@@ -729,18 +732,18 @@ void hacer_asiento()
   EXEC SQL DECLARE C7 CURSOR FOR
            select codigo_emp, ano_mes, consecutivo,
                   cuenta, infa, infb, infc, infd,
-                  codigo_nit, sum(nvl(valor_deb,0)), sum(nvl(valor_cre,0)), sucursal, cen_cos
+                  codigo_nit, sum(nvl(valor_deb,0)), sum(nvl(valor_cre,0)), sucursal, cen_cos, libro
            from  movto_dt
            group by codigo_emp, ano_mes, consecutivo,
                     cuenta, infa, infb, infc, infd,
-                    codigo_nit, sucursal, cen_cos;
+                    codigo_nit, sucursal, cen_cos, libro;
 
   EXEC SQL OPEN C7;
 
   EXEC SQL FETCH C7 INTO :codigo_emp, :ano_mes, :consecutivob,
                          :cuentab, :infa, :infb, :infc, :infd,
                          :codigo_nitb, :valor_debb, :valor_creb,
-                         :sucursalb, :cen_cosb;
+                         :sucursalb, :cen_cosb, :li_c;
 
   staora = 0;
   if (sqlca.sqlcode == -1405 )
@@ -761,6 +764,7 @@ void hacer_asiento()
         valor_creb.arr   [valor_creb.len]   = '\0';
         sucursalb.arr    [sucursalb.len]    = '\0';
         cen_cosb.arr     [cen_cosb.len]     = '\0';
+        li_c.arr         [li_c.len]         = '\0';
 
         secuencia++;
         sprintf(secuenciab.arr,"%6.0f",secuencia);
@@ -780,7 +784,8 @@ void hacer_asiento()
             	       		 VALOR_DEB,
             	       		 VALOR_CRE,
             	       		 SUCURSAL,
-            	       		 CEN_COS)
+            	       		 CEN_COS,
+                         LIBRO)
                   values(to_number(:codigo_emp), 
                          to_number(:ano_mes), 
                          to_number(:consecutivob), 
@@ -789,12 +794,12 @@ void hacer_asiento()
                          to_number(:codigo_nitb), 
                          to_number(:valor_debb, '999999999.99'), 
                          to_number(:valor_creb, '999999999.99'), 
-                         :sucursalb, :cen_cosb);
+                         :sucursalb, :cen_cosb, :li_c);
 
         EXEC SQL FETCH C7 INTO :codigo_emp, :ano_mes, :consecutivob,
                                :cuentab, :infa, :infb, :infc, :infd,
                                :codigo_nitb, :valor_debb, :valor_creb,
-                               :sucursalb, :cen_cosb;
+                               :sucursalb, :cen_cosb, :li_c;
 
 
         staora = sqlca.sqlcode;
@@ -907,7 +912,8 @@ void graba_deb()
                                   }
                                   else valor_s = valor_d;
 //                                printf("gasto_comun<%s> codigo<%d> sucursalb.arr<%s> nitn<%14.0f> valor_r<%12.2f> valor_d<%12.2f> valor_s<%12.2f> ",gasto_comun.arr, codigo, sucursalb.arr, nitn, valor_r, valor_d, valor_s); getchar();
-                                  inserta_deb();
+                                  inserta_deb(0);
+                                  inserta_deb(1);
                                   EXEC SQL FETCH C8 INTO :sucursalb, :ptajesuc, :ultimo;
                                   staorag = sqlca.sqlcode;
                            }
@@ -925,20 +931,27 @@ void graba_deb()
                                   }
                                   else valor_s = valor_d;
 //                                printf("gasto_comun<%s> codigo<%d> sucursalb.arr<%s> nitn<%14.0f> valor_r<%12.2f> valor_d<%12.2f> valor_s<%12.2f> ",gasto_comun.arr, codigo, sucursalb.arr, nitn, valor_r, valor_d, valor_s); getchar();
-                                  inserta_deb();
+                                  inserta_deb(0);
+                                  inserta_deb(1);
                                   EXEC SQL FETCH C9 INTO :sucursalb, :ptajesuc, :ultimo;
                                   staorag = sqlca.sqlcode;
                            }
                            EXEC SQL CLOSE C9;
                        }
                     }
-                    else inserta_deb();
+                    else {
+                         inserta_deb(0);
+                         inserta_deb(1);
+                    }
                  }
 
 }
 
-void inserta_deb()
+void inserta_deb(li)
 {
+
+    sprintf(li_c.arr,"%d",li);
+    li_c.len = strlen(li_c.arr);
 
     sprintf(valor_debb.arr,"%10.2f",valor_s);
     valor_debb.len = strlen(valor_debb.arr);
@@ -960,7 +973,8 @@ void inserta_deb()
         	       		 VALOR_DEB,
         	       		 VALOR_CRE,
         	       		 SUCURSAL,
-        	       		 CEN_COS)
+        	       		 CEN_COS,
+                     LIBRO)
               values(to_number(:codigo_emp), 
                      to_number(:ano_mes), 
                      to_number(:consecutivob), 
@@ -969,7 +983,7 @@ void inserta_deb()
                      to_number(:codigo_nitb), 
                      to_number(:valor_debb, '999999999.99'), 
                      to_number(:valor_creb, '999999999.99'), 
-                     :sucursalb, :cen_cosb);
+                     :sucursalb, :cen_cosb, :li_c);
 
                  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
                      fprintf (stderr, "Error Grabando Debito (%d)\n", sqlca.sqlcode);
@@ -1050,19 +1064,26 @@ void graba_cre()
                            }
                            else valor_s = valor_d;
 //                         printf("gasto_comun<%s> codigo<%d> sucursalb.arr<%s> nitn<%14.0f> valor_r<%12.2f> valor_d<%12.2f> valor_s<%12.2f> ",gasto_comun.arr, codigo, sucursalb.arr, nitn, valor_r, valor_d, valor_s); getchar();
-                           inserta_cre();
+                           inserta_cre(0);
+                           inserta_cre(1);
                            EXEC SQL FETCH C8 INTO :sucursalb, :ptajesuc, :ultimo;
                            staorag = sqlca.sqlcode;
                     }
                     EXEC SQL CLOSE C8;
                  }
-                 else inserta_cre();
+                 else {
+                       inserta_cre(0);
+                       inserta_cre(1);
+                 }
               }
 
 }
 
-void inserta_cre()
+void inserta_cre(li)
 {
+
+     sprintf(li_c.arr,"%d",li);
+     li_c.len = strlen(li_c.arr);
 
      strcpy(valor_debb.arr,"");
      valor_debb.len = strlen(valor_debb.arr);
@@ -1084,7 +1105,8 @@ void inserta_cre()
         	       		 VALOR_DEB,
         	       		 VALOR_CRE,
         	       		 SUCURSAL,
-        	       		 CEN_COS)
+        	       		 CEN_COS,
+                     LIBRO)
               values(to_number(:codigo_emp), 
                      to_number(:ano_mes), 
                      to_number(:consecutivob), 
@@ -1093,7 +1115,7 @@ void inserta_cre()
                      to_number(:codigo_nitb), 
                      to_number(:valor_debb, '999999999.99'), 
                      to_number(:valor_creb, '999999999.99'), 
-                     :sucursalb, :cen_cosb);
+                     :sucursalb, :cen_cosb, :li_c);
 
      if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
          fprintf (stderr, "Error Grabando Credito (%d)\n", sqlca.sqlcode);

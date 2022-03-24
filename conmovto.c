@@ -7,7 +7,7 @@
     unsigned int curocn;
     void *ptr1;
     void *ptr2;
-    unsigned long magic;
+    unsigned int magic;
   };
   typedef struct sql_cursor sql_cursor;
   typedef struct sql_cursor SQL_CURSOR;
@@ -69,7 +69,7 @@ static const struct sqlcxp sqlfpn =
 };
 
 
-static unsigned long sqlctx = 525907;
+static unsigned int sqlctx = 525907;
 
 
 static struct sqlexd {
@@ -94,6 +94,14 @@ static struct sqlexd {
    unsigned int   **sqparc;
    unsigned short  *sqpadto;
    unsigned short  *sqptdso;
+   unsigned int   sqlcmax;
+   unsigned int   sqlcmin;
+   unsigned int   sqlcincr;
+   unsigned int   sqlctimeout;
+   unsigned int   sqlcnowait;
+              int   sqfoff;
+   unsigned int   sqcmod;
+   unsigned int   sqfmod;
             void  *sqhstv[18];
    unsigned int   sqhstl[18];
             int   sqhsts[18];
@@ -103,16 +111,16 @@ static struct sqlexd {
    unsigned int   *sqharc[18];
    unsigned short  sqadto[18];
    unsigned short  sqtdso[18];
-} sqlstm = {10,18};
+} sqlstm = {12,18};
 
 /* SQLLIB Prototypes */
-extern void sqlcxt (void **, unsigned long *,
+extern void sqlcxt (void **, unsigned int *,
                     struct sqlexd *, const struct sqlcxp *);
-extern void sqlcx2t(void **, unsigned long *,
+extern void sqlcx2t(void **, unsigned int *,
                     struct sqlexd *, const struct sqlcxp *);
 extern void sqlbuft(void **, char *);
 extern void sqlgs2t(void **, char *);
-extern void sqlorat(void **, unsigned long *, void *);
+extern void sqlorat(void **, unsigned int *, void *);
 
 /* Forms Interface */
 static const int IAPSUCC = 0;
@@ -127,12 +135,12 @@ extern void sqliem(char *, int *);
 "select nvl(infa,'0') ,decode(clase,'XX','0',nvl(infb,'0')) ,nvl(infc,'0') ,n\
 vl(infd,'0') ,comprobante ,c.consecutivo ,clase ,descripcion ,fecha ,tipo ,cue\
 nta ,nvl(codigo_nit,970) ,nvl(valor_deb,0) ,nvl(valor_cre,0) ,estado ,sucursal\
- ,cen_cos ,d.libro  from movto_d d ,movto_c c where ((((((((((d.codigo_emp(+)=\
-c.codigo_emp and d.ano_mes(+)=c.ano_mes) and d.consecutivo(+)=c.consecutivo) a\
-nd c.codigo_emp=to_number(:b0)) and c.ano_mes=to_number(:b1)) and c.tipo>=to_n\
-umber(:b2)) and c.tipo<=to_number(:b3)) and c.comprobante>=to_number(:b4)) and\
- c.comprobante<=to_number(:b5)) and d.libro=to_number(:b6)) and c.estado<>'9')\
- order by tipo,comprobante            ";
+ ,cen_cos ,d.libro  from movto_d d ,movto_c c where (((((((((d.codigo_emp(+)=c\
+.codigo_emp and d.ano_mes(+)=c.ano_mes) and d.consecutivo(+)=c.consecutivo) an\
+d c.codigo_emp=to_number(:b0)) and c.ano_mes=to_number(:b1)) and c.tipo>=to_nu\
+mber(:b2)) and c.tipo<=to_number(:b3)) and c.comprobante>=to_number(:b4)) and \
+c.comprobante<=to_number(:b5)) and d.libro=to_number(:b6)) order by tipo,compr\
+obante            ";
 
  static const char *sq0003 = 
 "select nvl(infa,'0') ,decode(clase,'XX','0',nvl(infb,'0')) ,nvl(infc,'0') ,n\
@@ -161,52 +169,52 @@ typedef struct { unsigned short len; unsigned char arr[1]; } varchar;
 
 /* cud (compilation unit data) array */
 static const short sqlcud0[] =
-{10,4114,0,0,0,
-5,0,0,1,0,0,27,177,0,0,4,4,0,1,0,1,9,0,0,1,10,0,0,1,10,0,0,1,10,0,0,
-36,0,0,5,35,0,9,271,0,0,0,0,0,1,0,
-51,0,0,5,0,0,13,278,0,0,1,0,0,1,0,2,9,0,0,
-70,0,0,5,0,0,15,292,0,0,0,0,0,1,0,
-85,0,0,6,140,0,4,294,0,0,4,1,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,1,9,0,0,
-116,0,0,2,660,0,9,304,0,0,7,7,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
+{12,4114,178,0,0,
+5,0,0,1,0,0,27,176,0,0,4,4,0,1,0,1,9,0,0,1,10,0,0,1,10,0,0,1,10,0,0,
+36,0,0,5,35,0,9,270,0,0,0,0,0,1,0,
+51,0,0,5,0,0,13,277,0,0,1,0,0,1,0,2,9,0,0,
+70,0,0,5,0,0,15,291,0,0,0,0,0,1,0,
+85,0,0,6,140,0,4,293,0,0,4,1,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,1,9,0,0,
+116,0,0,2,640,0,9,303,0,0,7,7,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
 9,0,0,1,9,0,0,
-159,0,0,3,667,0,9,308,0,0,7,7,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
+159,0,0,3,667,0,9,307,0,0,7,7,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
 9,0,0,1,9,0,0,
-202,0,0,4,651,0,9,312,0,0,7,7,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
+202,0,0,4,651,0,9,311,0,0,7,7,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
 9,0,0,1,9,0,0,
-245,0,0,2,0,0,13,321,0,0,18,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,4,0,0,2,
+245,0,0,2,0,0,13,320,0,0,18,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,4,0,0,2,
 4,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,2,9,0,0,2,4,0,0,2,4,0,0,2,4,0,0,2,9,0,0,
 2,9,0,0,2,9,0,0,2,9,0,0,
-332,0,0,3,0,0,13,328,0,0,18,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,4,0,0,2,
+332,0,0,3,0,0,13,327,0,0,18,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,4,0,0,2,
 4,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,2,9,0,0,2,4,0,0,2,4,0,0,2,4,0,0,2,9,0,0,
 2,9,0,0,2,9,0,0,2,9,0,0,
-419,0,0,4,0,0,13,335,0,0,18,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,4,0,0,2,
+419,0,0,4,0,0,13,334,0,0,18,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,4,0,0,2,
 4,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,2,9,0,0,2,4,0,0,2,4,0,0,2,4,0,0,2,9,0,0,
 2,9,0,0,2,9,0,0,2,9,0,0,
-506,0,0,7,0,0,29,380,0,0,0,0,0,1,0,
-521,0,0,2,0,0,15,388,0,0,0,0,0,1,0,
-536,0,0,3,0,0,15,392,0,0,0,0,0,1,0,
-551,0,0,4,0,0,15,396,0,0,0,0,0,1,0,
-566,0,0,8,0,0,30,406,0,0,0,0,0,1,0,
-581,0,0,9,99,0,4,479,0,0,6,2,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,1,9,0,0,1,9,
+506,0,0,7,0,0,29,385,0,0,0,0,0,1,0,
+521,0,0,2,0,0,15,394,0,0,0,0,0,1,0,
+536,0,0,3,0,0,15,398,0,0,0,0,0,1,0,
+551,0,0,4,0,0,15,402,0,0,0,0,0,1,0,
+566,0,0,8,0,0,30,412,0,0,0,0,0,1,0,
+581,0,0,9,99,0,4,485,0,0,6,2,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,1,9,0,0,1,9,
 0,0,
-620,0,0,10,54,0,4,490,0,0,2,1,0,1,0,2,9,0,0,1,4,0,0,
-643,0,0,11,189,0,4,673,0,0,7,6,0,1,0,2,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
+620,0,0,10,54,0,4,496,0,0,2,1,0,1,0,2,9,0,0,1,4,0,0,
+643,0,0,11,189,0,4,679,0,0,7,6,0,1,0,2,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
 9,0,0,1,9,0,0,
-686,0,0,12,59,0,3,692,0,0,6,6,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
+686,0,0,12,60,0,3,698,0,0,6,6,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
 9,0,0,
-725,0,0,13,238,0,5,705,0,0,8,8,0,1,0,1,4,0,0,1,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
+725,0,0,13,238,0,5,711,0,0,8,8,0,1,0,1,4,0,0,1,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
 9,0,0,1,9,0,0,1,9,0,0,
-772,0,0,14,209,0,5,723,0,0,6,6,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
-9,0,0,
-811,0,0,15,241,0,4,740,0,0,9,8,0,1,0,2,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
+772,0,0,14,231,0,5,729,0,0,7,7,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
+9,0,0,1,4,0,0,
+815,0,0,15,241,0,4,747,0,0,9,8,0,1,0,2,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
 4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-862,0,0,16,67,0,3,760,0,0,8,8,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,4,0,0,1,
+866,0,0,16,68,0,3,767,0,0,8,8,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,4,0,0,1,
 9,0,0,1,9,0,0,1,9,0,0,
-909,0,0,17,276,0,5,770,0,0,10,10,0,1,0,1,4,0,0,1,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+913,0,0,17,276,0,5,777,0,0,10,10,0,1,0,1,4,0,0,1,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
 1,9,0,0,1,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-964,0,0,18,122,0,4,793,0,0,3,2,0,1,0,2,4,0,0,1,9,0,0,1,9,0,0,
-991,0,0,19,68,0,3,806,0,0,2,2,0,1,0,1,9,0,0,1,9,0,0,
-1014,0,0,20,120,0,5,816,0,0,3,3,0,1,0,1,4,0,0,1,9,0,0,1,9,0,0,
+968,0,0,18,122,0,4,800,0,0,3,2,0,1,0,2,4,0,0,1,9,0,0,1,9,0,0,
+995,0,0,19,69,0,3,813,0,0,2,2,0,1,0,1,9,0,0,1,9,0,0,
+1018,0,0,20,120,0,5,823,0,0,3,3,0,1,0,1,4,0,0,1,9,0,0,1,9,0,0,
 };
 
 
@@ -253,11 +261,11 @@ struct { unsigned short len; unsigned char arr[10]; } tipo_ini;
 /* VARCHAR tipo_fin   [10]; */ 
 struct { unsigned short len; unsigned char arr[10]; } tipo_fin;
 
-/* VARCHAR cmp_ini    [7]; */ 
-struct { unsigned short len; unsigned char arr[7]; } cmp_ini;
+/* VARCHAR cmp_ini    [20]; */ 
+struct { unsigned short len; unsigned char arr[20]; } cmp_ini;
 
-/* VARCHAR cmp_fin    [8]; */ 
-struct { unsigned short len; unsigned char arr[8]; } cmp_fin;
+/* VARCHAR cmp_fin    [20]; */ 
+struct { unsigned short len; unsigned char arr[20]; } cmp_fin;
 
 /* VARCHAR veca       [14]; */ 
 struct { unsigned short len; unsigned char arr[14]; } veca;
@@ -346,18 +354,17 @@ struct { unsigned short len; unsigned char arr[3]; } sucursalb;
 /* VARCHAR librob     [02]; */ 
 struct { unsigned short len; unsigned char arr[2]; } librob;
 
-
-
+double  consecutivo_an;
 
 /* EXEC SQL END DECLARE SECTION; */ 
 
 /* EXEC SQL INCLUDE SQLCA;
  */ 
 /*
- * $Header: sqlca.h,v 1.3 1994/12/12 19:27:27 jbasu Exp $ sqlca.h 
+ * $Header: sqlca.h 24-apr-2003.12:50:58 mkandarp Exp $ sqlca.h 
  */
 
-/* Copyright (c) 1985,1986, 1998 by Oracle Corporation. */
+/* Copyright (c) 1985, 2003, Oracle Corporation.  All rights reserved.  */
  
 /*
 NAME
@@ -557,8 +564,7 @@ int     nrec   = 0;
 
 {
     struct sqlexd sqlstm;
-
-    sqlstm.sqlvsn = 10;
+    sqlstm.sqlvsn = 12;
     sqlstm.arrsiz = 4;
     sqlstm.sqladtp = &sqladt;
     sqlstm.sqltdsp = &sqltds;
@@ -585,6 +591,11 @@ int     nrec   = 0;
     sqlstm.sqparc = sqlstm.sqharc;
     sqlstm.sqpadto = sqlstm.sqadto;
     sqlstm.sqptdso = sqlstm.sqtdso;
+    sqlstm.sqlcmax = (unsigned int )100;
+    sqlstm.sqlcmin = (unsigned int )2;
+    sqlstm.sqlcincr = (unsigned int )1;
+    sqlstm.sqlctimeout = (unsigned int )0;
+    sqlstm.sqlcnowait = (unsigned int )0;
     sqlcxt((void **)0, &sqlctx, &sqlstm, &sqlfpn);
 }
 
@@ -634,8 +645,8 @@ int     nrec   = 0;
                  c.tipo          <= to_number(:tipo_fin)          and
                  c.comprobante   >= to_number(:cmp_ini)           and
                  c.comprobante   <= to_number(:cmp_fin)           and
-                 d.libro          = to_number(:librob)            and
-                 c.estado        <>   '9'
+                 d.libro          = to_number(:librob)           /o and
+                 c.estado        <>   '9'                        o/
           order by tipo, comprobante; */ 
 
 
@@ -690,8 +701,7 @@ int     nrec   = 0;
 
 {
     struct sqlexd sqlstm;
-
-    sqlstm.sqlvsn = 10;
+    sqlstm.sqlvsn = 12;
     sqlstm.arrsiz = 4;
     sqlstm.sqladtp = &sqladt;
     sqlstm.sqltdsp = &sqltds;
@@ -703,6 +713,7 @@ int     nrec   = 0;
     sqlstm.sqlest = (unsigned char  *)&sqlca;
     sqlstm.sqlety = (unsigned short)256;
     sqlstm.occurs = (unsigned int  )0;
+    sqlstm.sqcmod = (unsigned int )0;
     sqlcxt((void **)0, &sqlctx, &sqlstm, &sqlfpn);
 }
 
@@ -717,17 +728,19 @@ int     nrec   = 0;
 
 {
           struct sqlexd sqlstm;
-
-          sqlstm.sqlvsn = 10;
+          sqlstm.sqlvsn = 12;
           sqlstm.arrsiz = 4;
           sqlstm.sqladtp = &sqladt;
           sqlstm.sqltdsp = &sqltds;
           sqlstm.iters = (unsigned int  )20;
           sqlstm.offset = (unsigned int  )51;
+          sqlstm.selerr = (unsigned short)1;
           sqlstm.cud = sqlcud0;
           sqlstm.sqlest = (unsigned char  *)&sqlca;
           sqlstm.sqlety = (unsigned short)256;
           sqlstm.occurs = (unsigned int  )0;
+          sqlstm.sqfoff = (           int )0;
+          sqlstm.sqfmod = (unsigned int )2;
           sqlstm.sqhstv[0] = (         void  *)vecinf;
           sqlstm.sqhstl[0] = (unsigned int  )16;
           sqlstm.sqhsts[0] = (         int  )16;
@@ -767,8 +780,7 @@ int     nrec   = 0;
 
 {
     struct sqlexd sqlstm;
-
-    sqlstm.sqlvsn = 10;
+    sqlstm.sqlvsn = 12;
     sqlstm.arrsiz = 4;
     sqlstm.sqladtp = &sqladt;
     sqlstm.sqltdsp = &sqltds;
@@ -791,8 +803,7 @@ int     nrec   = 0;
 
 {
     struct sqlexd sqlstm;
-
-    sqlstm.sqlvsn = 10;
+    sqlstm.sqlvsn = 12;
     sqlstm.arrsiz = 4;
     sqlstm.sqladtp = &sqladt;
     sqlstm.sqltdsp = &sqltds;
@@ -815,7 +826,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
     sqlstm.sqadto[0] = (unsigned short )0;
     sqlstm.sqtdso[0] = (unsigned short )0;
     sqlstm.sqhstv[1] = (         void  *)&nit;
-    sqlstm.sqhstl[1] = (unsigned int  )8;
+    sqlstm.sqhstl[1] = (unsigned int  )sizeof(double);
     sqlstm.sqhsts[1] = (         int  )0;
     sqlstm.sqindv[1] = (         void  *)0;
     sqlstm.sqinds[1] = (         int  )0;
@@ -823,7 +834,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
     sqlstm.sqadto[1] = (unsigned short )0;
     sqlstm.sqtdso[1] = (unsigned short )0;
     sqlstm.sqhstv[2] = (         void  *)&digito;
-    sqlstm.sqhstl[2] = (unsigned int  )4;
+    sqlstm.sqhstl[2] = (unsigned int  )sizeof(int);
     sqlstm.sqhsts[2] = (         int  )0;
     sqlstm.sqindv[2] = (         void  *)0;
     sqlstm.sqinds[2] = (         int  )0;
@@ -860,8 +871,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
 
 {
        struct sqlexd sqlstm;
-
-       sqlstm.sqlvsn = 10;
+       sqlstm.sqlvsn = 12;
        sqlstm.arrsiz = 7;
        sqlstm.sqladtp = &sqladt;
        sqlstm.sqltdsp = &sqltds;
@@ -873,6 +883,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
        sqlstm.sqlest = (unsigned char  *)&sqlca;
        sqlstm.sqlety = (unsigned short)256;
        sqlstm.occurs = (unsigned int  )0;
+       sqlstm.sqcmod = (unsigned int )0;
        sqlstm.sqhstv[0] = (         void  *)&codigo_emp;
        sqlstm.sqhstl[0] = (unsigned int  )5;
        sqlstm.sqhsts[0] = (         int  )0;
@@ -906,7 +917,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
        sqlstm.sqadto[3] = (unsigned short )0;
        sqlstm.sqtdso[3] = (unsigned short )0;
        sqlstm.sqhstv[4] = (         void  *)&cmp_ini;
-       sqlstm.sqhstl[4] = (unsigned int  )9;
+       sqlstm.sqhstl[4] = (unsigned int  )22;
        sqlstm.sqhsts[4] = (         int  )0;
        sqlstm.sqindv[4] = (         void  *)0;
        sqlstm.sqinds[4] = (         int  )0;
@@ -914,7 +925,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
        sqlstm.sqadto[4] = (unsigned short )0;
        sqlstm.sqtdso[4] = (unsigned short )0;
        sqlstm.sqhstv[5] = (         void  *)&cmp_fin;
-       sqlstm.sqhstl[5] = (unsigned int  )10;
+       sqlstm.sqhstl[5] = (unsigned int  )22;
        sqlstm.sqhsts[5] = (         int  )0;
        sqlstm.sqindv[5] = (         void  *)0;
        sqlstm.sqinds[5] = (         int  )0;
@@ -949,8 +960,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
 
 {
           struct sqlexd sqlstm;
-
-          sqlstm.sqlvsn = 10;
+          sqlstm.sqlvsn = 12;
           sqlstm.arrsiz = 7;
           sqlstm.sqladtp = &sqladt;
           sqlstm.sqltdsp = &sqltds;
@@ -962,6 +972,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqlest = (unsigned char  *)&sqlca;
           sqlstm.sqlety = (unsigned short)256;
           sqlstm.occurs = (unsigned int  )0;
+          sqlstm.sqcmod = (unsigned int )0;
           sqlstm.sqhstv[0] = (         void  *)&codigo_emp;
           sqlstm.sqhstl[0] = (unsigned int  )5;
           sqlstm.sqhsts[0] = (         int  )0;
@@ -995,7 +1006,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[3] = (unsigned short )0;
           sqlstm.sqtdso[3] = (unsigned short )0;
           sqlstm.sqhstv[4] = (         void  *)&cmp_ini;
-          sqlstm.sqhstl[4] = (unsigned int  )9;
+          sqlstm.sqhstl[4] = (unsigned int  )22;
           sqlstm.sqhsts[4] = (         int  )0;
           sqlstm.sqindv[4] = (         void  *)0;
           sqlstm.sqinds[4] = (         int  )0;
@@ -1003,7 +1014,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[4] = (unsigned short )0;
           sqlstm.sqtdso[4] = (unsigned short )0;
           sqlstm.sqhstv[5] = (         void  *)&cmp_fin;
-          sqlstm.sqhstl[5] = (unsigned int  )10;
+          sqlstm.sqhstl[5] = (unsigned int  )22;
           sqlstm.sqhsts[5] = (         int  )0;
           sqlstm.sqindv[5] = (         void  *)0;
           sqlstm.sqinds[5] = (         int  )0;
@@ -1038,8 +1049,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
 
 {
              struct sqlexd sqlstm;
-
-             sqlstm.sqlvsn = 10;
+             sqlstm.sqlvsn = 12;
              sqlstm.arrsiz = 7;
              sqlstm.sqladtp = &sqladt;
              sqlstm.sqltdsp = &sqltds;
@@ -1051,6 +1061,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
              sqlstm.sqlest = (unsigned char  *)&sqlca;
              sqlstm.sqlety = (unsigned short)256;
              sqlstm.occurs = (unsigned int  )0;
+             sqlstm.sqcmod = (unsigned int )0;
              sqlstm.sqhstv[0] = (         void  *)&codigo_emp;
              sqlstm.sqhstl[0] = (unsigned int  )5;
              sqlstm.sqhsts[0] = (         int  )0;
@@ -1084,7 +1095,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
              sqlstm.sqadto[3] = (unsigned short )0;
              sqlstm.sqtdso[3] = (unsigned short )0;
              sqlstm.sqhstv[4] = (         void  *)&cmp_ini;
-             sqlstm.sqhstl[4] = (unsigned int  )9;
+             sqlstm.sqhstl[4] = (unsigned int  )22;
              sqlstm.sqhsts[4] = (         int  )0;
              sqlstm.sqindv[4] = (         void  *)0;
              sqlstm.sqinds[4] = (         int  )0;
@@ -1092,7 +1103,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
              sqlstm.sqadto[4] = (unsigned short )0;
              sqlstm.sqtdso[4] = (unsigned short )0;
              sqlstm.sqhstv[5] = (         void  *)&cmp_fin;
-             sqlstm.sqhstl[5] = (unsigned int  )10;
+             sqlstm.sqhstl[5] = (unsigned int  )22;
              sqlstm.sqhsts[5] = (         int  )0;
              sqlstm.sqindv[5] = (         void  *)0;
              sqlstm.sqinds[5] = (         int  )0;
@@ -1135,17 +1146,19 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
 
 {
           struct sqlexd sqlstm;
-
-          sqlstm.sqlvsn = 10;
+          sqlstm.sqlvsn = 12;
           sqlstm.arrsiz = 18;
           sqlstm.sqladtp = &sqladt;
           sqlstm.sqltdsp = &sqltds;
           sqlstm.iters = (unsigned int  )20;
           sqlstm.offset = (unsigned int  )245;
+          sqlstm.selerr = (unsigned short)1;
           sqlstm.cud = sqlcud0;
           sqlstm.sqlest = (unsigned char  *)&sqlca;
           sqlstm.sqlety = (unsigned short)256;
           sqlstm.occurs = (unsigned int  )0;
+          sqlstm.sqfoff = (           int )0;
+          sqlstm.sqfmod = (unsigned int )2;
           sqlstm.sqhstv[0] = (         void  *)infa;
           sqlstm.sqhstl[0] = (unsigned int  )16;
           sqlstm.sqhsts[0] = (         int  )16;
@@ -1183,8 +1196,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[3] = (unsigned short )0;
           sqlstm.sqtdso[3] = (unsigned short )0;
           sqlstm.sqhstv[4] = (         void  *)comprobante;
-          sqlstm.sqhstl[4] = (unsigned int  )8;
-          sqlstm.sqhsts[4] = (         int  )8;
+          sqlstm.sqhstl[4] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[4] = (         int  )sizeof(double);
           sqlstm.sqindv[4] = (         void  *)0;
           sqlstm.sqinds[4] = (         int  )0;
           sqlstm.sqharm[4] = (unsigned int  )0;
@@ -1192,8 +1205,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[4] = (unsigned short )0;
           sqlstm.sqtdso[4] = (unsigned short )0;
           sqlstm.sqhstv[5] = (         void  *)consecutivo;
-          sqlstm.sqhstl[5] = (unsigned int  )8;
-          sqlstm.sqhsts[5] = (         int  )8;
+          sqlstm.sqhstl[5] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[5] = (         int  )sizeof(double);
           sqlstm.sqindv[5] = (         void  *)0;
           sqlstm.sqinds[5] = (         int  )0;
           sqlstm.sqharm[5] = (unsigned int  )0;
@@ -1228,8 +1241,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[8] = (unsigned short )0;
           sqlstm.sqtdso[8] = (unsigned short )0;
           sqlstm.sqhstv[9] = (         void  *)tipo;
-          sqlstm.sqhstl[9] = (unsigned int  )4;
-          sqlstm.sqhsts[9] = (         int  )4;
+          sqlstm.sqhstl[9] = (unsigned int  )sizeof(int);
+          sqlstm.sqhsts[9] = (         int  )sizeof(int);
           sqlstm.sqindv[9] = (         void  *)0;
           sqlstm.sqinds[9] = (         int  )0;
           sqlstm.sqharm[9] = (unsigned int  )0;
@@ -1246,8 +1259,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[10] = (unsigned short )0;
           sqlstm.sqtdso[10] = (unsigned short )0;
           sqlstm.sqhstv[11] = (         void  *)codigo_nit;
-          sqlstm.sqhstl[11] = (unsigned int  )8;
-          sqlstm.sqhsts[11] = (         int  )8;
+          sqlstm.sqhstl[11] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[11] = (         int  )sizeof(double);
           sqlstm.sqindv[11] = (         void  *)0;
           sqlstm.sqinds[11] = (         int  )0;
           sqlstm.sqharm[11] = (unsigned int  )0;
@@ -1255,8 +1268,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[11] = (unsigned short )0;
           sqlstm.sqtdso[11] = (unsigned short )0;
           sqlstm.sqhstv[12] = (         void  *)valor_deb;
-          sqlstm.sqhstl[12] = (unsigned int  )8;
-          sqlstm.sqhsts[12] = (         int  )8;
+          sqlstm.sqhstl[12] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[12] = (         int  )sizeof(double);
           sqlstm.sqindv[12] = (         void  *)0;
           sqlstm.sqinds[12] = (         int  )0;
           sqlstm.sqharm[12] = (unsigned int  )0;
@@ -1264,8 +1277,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[12] = (unsigned short )0;
           sqlstm.sqtdso[12] = (unsigned short )0;
           sqlstm.sqhstv[13] = (         void  *)valor_cre;
-          sqlstm.sqhstl[13] = (unsigned int  )8;
-          sqlstm.sqhsts[13] = (         int  )8;
+          sqlstm.sqhstl[13] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[13] = (         int  )sizeof(double);
           sqlstm.sqindv[13] = (         void  *)0;
           sqlstm.sqinds[13] = (         int  )0;
           sqlstm.sqharm[13] = (unsigned int  )0;
@@ -1331,17 +1344,19 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
 
 {
           struct sqlexd sqlstm;
-
-          sqlstm.sqlvsn = 10;
+          sqlstm.sqlvsn = 12;
           sqlstm.arrsiz = 18;
           sqlstm.sqladtp = &sqladt;
           sqlstm.sqltdsp = &sqltds;
           sqlstm.iters = (unsigned int  )20;
           sqlstm.offset = (unsigned int  )332;
+          sqlstm.selerr = (unsigned short)1;
           sqlstm.cud = sqlcud0;
           sqlstm.sqlest = (unsigned char  *)&sqlca;
           sqlstm.sqlety = (unsigned short)256;
           sqlstm.occurs = (unsigned int  )0;
+          sqlstm.sqfoff = (           int )0;
+          sqlstm.sqfmod = (unsigned int )2;
           sqlstm.sqhstv[0] = (         void  *)infa;
           sqlstm.sqhstl[0] = (unsigned int  )16;
           sqlstm.sqhsts[0] = (         int  )16;
@@ -1379,8 +1394,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[3] = (unsigned short )0;
           sqlstm.sqtdso[3] = (unsigned short )0;
           sqlstm.sqhstv[4] = (         void  *)comprobante;
-          sqlstm.sqhstl[4] = (unsigned int  )8;
-          sqlstm.sqhsts[4] = (         int  )8;
+          sqlstm.sqhstl[4] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[4] = (         int  )sizeof(double);
           sqlstm.sqindv[4] = (         void  *)0;
           sqlstm.sqinds[4] = (         int  )0;
           sqlstm.sqharm[4] = (unsigned int  )0;
@@ -1388,8 +1403,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[4] = (unsigned short )0;
           sqlstm.sqtdso[4] = (unsigned short )0;
           sqlstm.sqhstv[5] = (         void  *)consecutivo;
-          sqlstm.sqhstl[5] = (unsigned int  )8;
-          sqlstm.sqhsts[5] = (         int  )8;
+          sqlstm.sqhstl[5] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[5] = (         int  )sizeof(double);
           sqlstm.sqindv[5] = (         void  *)0;
           sqlstm.sqinds[5] = (         int  )0;
           sqlstm.sqharm[5] = (unsigned int  )0;
@@ -1424,8 +1439,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[8] = (unsigned short )0;
           sqlstm.sqtdso[8] = (unsigned short )0;
           sqlstm.sqhstv[9] = (         void  *)tipo;
-          sqlstm.sqhstl[9] = (unsigned int  )4;
-          sqlstm.sqhsts[9] = (         int  )4;
+          sqlstm.sqhstl[9] = (unsigned int  )sizeof(int);
+          sqlstm.sqhsts[9] = (         int  )sizeof(int);
           sqlstm.sqindv[9] = (         void  *)0;
           sqlstm.sqinds[9] = (         int  )0;
           sqlstm.sqharm[9] = (unsigned int  )0;
@@ -1442,8 +1457,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[10] = (unsigned short )0;
           sqlstm.sqtdso[10] = (unsigned short )0;
           sqlstm.sqhstv[11] = (         void  *)codigo_nit;
-          sqlstm.sqhstl[11] = (unsigned int  )8;
-          sqlstm.sqhsts[11] = (         int  )8;
+          sqlstm.sqhstl[11] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[11] = (         int  )sizeof(double);
           sqlstm.sqindv[11] = (         void  *)0;
           sqlstm.sqinds[11] = (         int  )0;
           sqlstm.sqharm[11] = (unsigned int  )0;
@@ -1451,8 +1466,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[11] = (unsigned short )0;
           sqlstm.sqtdso[11] = (unsigned short )0;
           sqlstm.sqhstv[12] = (         void  *)valor_deb;
-          sqlstm.sqhstl[12] = (unsigned int  )8;
-          sqlstm.sqhsts[12] = (         int  )8;
+          sqlstm.sqhstl[12] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[12] = (         int  )sizeof(double);
           sqlstm.sqindv[12] = (         void  *)0;
           sqlstm.sqinds[12] = (         int  )0;
           sqlstm.sqharm[12] = (unsigned int  )0;
@@ -1460,8 +1475,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[12] = (unsigned short )0;
           sqlstm.sqtdso[12] = (unsigned short )0;
           sqlstm.sqhstv[13] = (         void  *)valor_cre;
-          sqlstm.sqhstl[13] = (unsigned int  )8;
-          sqlstm.sqhsts[13] = (         int  )8;
+          sqlstm.sqhstl[13] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[13] = (         int  )sizeof(double);
           sqlstm.sqindv[13] = (         void  *)0;
           sqlstm.sqinds[13] = (         int  )0;
           sqlstm.sqharm[13] = (unsigned int  )0;
@@ -1527,17 +1542,19 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
 
 {
           struct sqlexd sqlstm;
-
-          sqlstm.sqlvsn = 10;
+          sqlstm.sqlvsn = 12;
           sqlstm.arrsiz = 18;
           sqlstm.sqladtp = &sqladt;
           sqlstm.sqltdsp = &sqltds;
           sqlstm.iters = (unsigned int  )20;
           sqlstm.offset = (unsigned int  )419;
+          sqlstm.selerr = (unsigned short)1;
           sqlstm.cud = sqlcud0;
           sqlstm.sqlest = (unsigned char  *)&sqlca;
           sqlstm.sqlety = (unsigned short)256;
           sqlstm.occurs = (unsigned int  )0;
+          sqlstm.sqfoff = (           int )0;
+          sqlstm.sqfmod = (unsigned int )2;
           sqlstm.sqhstv[0] = (         void  *)infa;
           sqlstm.sqhstl[0] = (unsigned int  )16;
           sqlstm.sqhsts[0] = (         int  )16;
@@ -1575,8 +1592,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[3] = (unsigned short )0;
           sqlstm.sqtdso[3] = (unsigned short )0;
           sqlstm.sqhstv[4] = (         void  *)comprobante;
-          sqlstm.sqhstl[4] = (unsigned int  )8;
-          sqlstm.sqhsts[4] = (         int  )8;
+          sqlstm.sqhstl[4] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[4] = (         int  )sizeof(double);
           sqlstm.sqindv[4] = (         void  *)0;
           sqlstm.sqinds[4] = (         int  )0;
           sqlstm.sqharm[4] = (unsigned int  )0;
@@ -1584,8 +1601,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[4] = (unsigned short )0;
           sqlstm.sqtdso[4] = (unsigned short )0;
           sqlstm.sqhstv[5] = (         void  *)consecutivo;
-          sqlstm.sqhstl[5] = (unsigned int  )8;
-          sqlstm.sqhsts[5] = (         int  )8;
+          sqlstm.sqhstl[5] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[5] = (         int  )sizeof(double);
           sqlstm.sqindv[5] = (         void  *)0;
           sqlstm.sqinds[5] = (         int  )0;
           sqlstm.sqharm[5] = (unsigned int  )0;
@@ -1620,8 +1637,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[8] = (unsigned short )0;
           sqlstm.sqtdso[8] = (unsigned short )0;
           sqlstm.sqhstv[9] = (         void  *)tipo;
-          sqlstm.sqhstl[9] = (unsigned int  )4;
-          sqlstm.sqhsts[9] = (         int  )4;
+          sqlstm.sqhstl[9] = (unsigned int  )sizeof(int);
+          sqlstm.sqhsts[9] = (         int  )sizeof(int);
           sqlstm.sqindv[9] = (         void  *)0;
           sqlstm.sqinds[9] = (         int  )0;
           sqlstm.sqharm[9] = (unsigned int  )0;
@@ -1638,8 +1655,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[10] = (unsigned short )0;
           sqlstm.sqtdso[10] = (unsigned short )0;
           sqlstm.sqhstv[11] = (         void  *)codigo_nit;
-          sqlstm.sqhstl[11] = (unsigned int  )8;
-          sqlstm.sqhsts[11] = (         int  )8;
+          sqlstm.sqhstl[11] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[11] = (         int  )sizeof(double);
           sqlstm.sqindv[11] = (         void  *)0;
           sqlstm.sqinds[11] = (         int  )0;
           sqlstm.sqharm[11] = (unsigned int  )0;
@@ -1647,8 +1664,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[11] = (unsigned short )0;
           sqlstm.sqtdso[11] = (unsigned short )0;
           sqlstm.sqhstv[12] = (         void  *)valor_deb;
-          sqlstm.sqhstl[12] = (unsigned int  )8;
-          sqlstm.sqhsts[12] = (         int  )8;
+          sqlstm.sqhstl[12] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[12] = (         int  )sizeof(double);
           sqlstm.sqindv[12] = (         void  *)0;
           sqlstm.sqinds[12] = (         int  )0;
           sqlstm.sqharm[12] = (unsigned int  )0;
@@ -1656,8 +1673,8 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           sqlstm.sqadto[12] = (unsigned short )0;
           sqlstm.sqtdso[12] = (unsigned short )0;
           sqlstm.sqhstv[13] = (         void  *)valor_cre;
-          sqlstm.sqhstl[13] = (unsigned int  )8;
-          sqlstm.sqhsts[13] = (         int  )8;
+          sqlstm.sqhstl[13] = (unsigned int  )sizeof(double);
+          sqlstm.sqhsts[13] = (         int  )sizeof(double);
           sqlstm.sqindv[13] = (         void  *)0;
           sqlstm.sqinds[13] = (         int  )0;
           sqlstm.sqharm[13] = (unsigned int  )0;
@@ -1725,7 +1742,10 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           printf("inicio <%d>, codigo_emp<%s>, ano_mes<%s>, tipo_ini<%s>, tipo_fin<%s>, cmp_ini<%s>, cmp_fin<%s>, librob<%s>,  comprobante=<%10.0f> consecutivo=<%10.0f>\n",staora, codigo_emp.arr, ano_mes.arr, tipo_ini.arr, tipo_fin.arr, cmp_ini.arr, cmp_fin.arr, librob.arr, comprobante, consecutivo); getchar();
 */
 
-          if (traidos == 0) tipo_an=tipo[0];
+          if (traidos == 0) {
+              tipo_an        = tipo[0];
+              consecutivo_an = consecutivo[0];
+          }
 
           traidos = sqlca.sqlerrd[2];
 
@@ -1751,15 +1771,17 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
               lista_movto();
               if (!strcmp(asiento,"s"))
                   if (strcmp(estado[loop_2].arr, "2")) {
-                      voy_marco_movto();
+                      if (consecutivo_an != consecutivo[loop_2]) {
+                          voy_marco_movto();
+                          consecutivo_an = consecutivo[loop_2];
+                      }
                       nrec++;
                       if (nrec >= 100) {
                           /* EXEC SQL COMMIT; */ 
 
 {
                           struct sqlexd sqlstm;
-
-                          sqlstm.sqlvsn = 10;
+                          sqlstm.sqlvsn = 12;
                           sqlstm.arrsiz = 18;
                           sqlstm.sqladtp = &sqladt;
                           sqlstm.sqltdsp = &sqltds;
@@ -1779,13 +1801,13 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           }
           num_ret = traidos;
     }
+    voy_marco_movto();
     if (!strcmp (orden,"T")) {
        /* EXEC SQL CLOSE C2A; */ 
 
 {
        struct sqlexd sqlstm;
-
-       sqlstm.sqlvsn = 10;
+       sqlstm.sqlvsn = 12;
        sqlstm.arrsiz = 18;
        sqlstm.sqladtp = &sqladt;
        sqlstm.sqltdsp = &sqltds;
@@ -1806,8 +1828,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
 
 {
           struct sqlexd sqlstm;
-
-          sqlstm.sqlvsn = 10;
+          sqlstm.sqlvsn = 12;
           sqlstm.arrsiz = 18;
           sqlstm.sqladtp = &sqladt;
           sqlstm.sqltdsp = &sqltds;
@@ -1828,8 +1849,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
 
 {
              struct sqlexd sqlstm;
-
-             sqlstm.sqlvsn = 10;
+             sqlstm.sqlvsn = 12;
              sqlstm.arrsiz = 18;
              sqlstm.sqladtp = &sqladt;
              sqlstm.sqltdsp = &sqltds;
@@ -1856,8 +1876,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
 
 {
     struct sqlexd sqlstm;
-
-    sqlstm.sqlvsn = 10;
+    sqlstm.sqlvsn = 12;
     sqlstm.arrsiz = 18;
     sqlstm.sqladtp = &sqladt;
     sqlstm.sqltdsp = &sqltds;
@@ -1951,8 +1970,7 @@ char	wcadena[80];
 
 {
             struct sqlexd sqlstm;
-
-            sqlstm.sqlvsn = 10;
+            sqlstm.sqlvsn = 12;
             sqlstm.arrsiz = 18;
             sqlstm.sqladtp = &sqladt;
             sqlstm.sqltdsp = &sqltds;
@@ -2039,8 +2057,7 @@ char	wcadena[80];
 
 {
                struct sqlexd sqlstm;
-
-               sqlstm.sqlvsn = 10;
+               sqlstm.sqlvsn = 12;
                sqlstm.arrsiz = 18;
                sqlstm.sqladtp = &sqladt;
                sqlstm.sqltdsp = &sqltds;
@@ -2062,7 +2079,7 @@ _nit=:b1";
                sqlstm.sqadto[0] = (unsigned short )0;
                sqlstm.sqtdso[0] = (unsigned short )0;
                sqlstm.sqhstv[1] = (         void  *)&codigo_nit[loop_2];
-               sqlstm.sqhstl[1] = (unsigned int  )8;
+               sqlstm.sqhstl[1] = (unsigned int  )sizeof(double);
                sqlstm.sqhsts[1] = (         int  )0;
                sqlstm.sqindv[1] = (         void  *)0;
                sqlstm.sqinds[1] = (         int  )0;
@@ -2272,8 +2289,7 @@ void actualizo()
 
 {
      struct sqlexd sqlstm;
-
-     sqlstm.sqlvsn = 10;
+     sqlstm.sqlvsn = 12;
      sqlstm.arrsiz = 18;
      sqlstm.sqladtp = &sqladt;
      sqlstm.sqltdsp = &sqltds;
@@ -2372,12 +2388,11 @@ void voy_ins_acumulados()
 
 {
  struct sqlexd sqlstm;
-
- sqlstm.sqlvsn = 10;
+ sqlstm.sqlvsn = 12;
  sqlstm.arrsiz = 18;
  sqlstm.sqladtp = &sqladt;
  sqlstm.sqltdsp = &sqltds;
- sqlstm.stmt = "insert into acumulados values (:b0,:b1,:b2,0,0,:b3,:b4,:b5)";
+ sqlstm.stmt = "insert into acumulados  values (:b0,:b1,:b2,0,0,:b3,:b4,:b5)";
  sqlstm.iters = (unsigned int  )1;
  sqlstm.offset = (unsigned int  )686;
  sqlstm.cud = sqlcud0;
@@ -2468,8 +2483,7 @@ void voy_actu_acumulados()
 
 {
   struct sqlexd sqlstm;
-
-  sqlstm.sqlvsn = 10;
+  sqlstm.sqlvsn = 12;
   sqlstm.arrsiz = 18;
   sqlstm.sqladtp = &sqladt;
   sqlstm.sqltdsp = &sqltds;
@@ -2484,7 +2498,7 @@ d libro=to_number(:b7))";
   sqlstm.sqlety = (unsigned short)256;
   sqlstm.occurs = (unsigned int  )0;
   sqlstm.sqhstv[0] = (         void  *)&wval_deb;
-  sqlstm.sqhstl[0] = (unsigned int  )8;
+  sqlstm.sqhstl[0] = (unsigned int  )sizeof(double);
   sqlstm.sqhsts[0] = (         int  )0;
   sqlstm.sqindv[0] = (         void  *)0;
   sqlstm.sqinds[0] = (         int  )0;
@@ -2492,7 +2506,7 @@ d libro=to_number(:b7))";
   sqlstm.sqadto[0] = (unsigned short )0;
   sqlstm.sqtdso[0] = (unsigned short )0;
   sqlstm.sqhstv[1] = (         void  *)&wval_cre;
-  sqlstm.sqhstl[1] = (unsigned int  )8;
+  sqlstm.sqhstl[1] = (unsigned int  )sizeof(double);
   sqlstm.sqhsts[1] = (         int  )0;
   sqlstm.sqindv[1] = (         void  *)0;
   sqlstm.sqinds[1] = (         int  )0;
@@ -2571,23 +2585,24 @@ void voy_marco_movto()
 {
   /* EXEC SQL update movto_c set    estado = '9'
            where  codigo_emp   = to_number(:codigo_emp) and
-                  tipo        >=          (:tipo_ini) and
-                  tipo        <=          (:tipo_fin) and
-                  comprobante >= to_number(:cmp_ini) and
-                  comprobante <= to_number(:cmp_fin) and
-                  ano_mes      = to_number(:ano_mes) and
+                  tipo        >=          (:tipo_ini)   and
+                  tipo        <=          (:tipo_fin)   and
+                  comprobante >= to_number(:cmp_ini)    and
+                  comprobante <= to_number(:cmp_fin)    and
+                  ano_mes      = to_number(:ano_mes)    and
+                  consecutivo  = :consecutivo_an        and
                   estado      <> '2'; */ 
 
 {
   struct sqlexd sqlstm;
-
-  sqlstm.sqlvsn = 10;
+  sqlstm.sqlvsn = 12;
   sqlstm.arrsiz = 18;
   sqlstm.sqladtp = &sqladt;
   sqlstm.sqltdsp = &sqltds;
-  sqlstm.stmt = "update movto_c  set estado='9' where ((((((codigo_emp=to_nu\
-mber(:b0) and tipo>=:b1) and tipo<=:b2) and comprobante>=to_number(:b3)) and c\
-omprobante<=to_number(:b4)) and ano_mes=to_number(:b5)) and estado<>'2')";
+  sqlstm.stmt = "update movto_c  set estado='9' where (((((((codigo_emp=to_n\
+umber(:b0) and tipo>=:b1) and tipo<=:b2) and comprobante>=to_number(:b3)) and \
+comprobante<=to_number(:b4)) and ano_mes=to_number(:b5)) and consecutivo=:b6) \
+and estado<>'2')";
   sqlstm.iters = (unsigned int  )1;
   sqlstm.offset = (unsigned int  )772;
   sqlstm.cud = sqlcud0;
@@ -2619,7 +2634,7 @@ omprobante<=to_number(:b4)) and ano_mes=to_number(:b5)) and estado<>'2')";
   sqlstm.sqadto[2] = (unsigned short )0;
   sqlstm.sqtdso[2] = (unsigned short )0;
   sqlstm.sqhstv[3] = (         void  *)&cmp_ini;
-  sqlstm.sqhstl[3] = (unsigned int  )9;
+  sqlstm.sqhstl[3] = (unsigned int  )22;
   sqlstm.sqhsts[3] = (         int  )0;
   sqlstm.sqindv[3] = (         void  *)0;
   sqlstm.sqinds[3] = (         int  )0;
@@ -2627,7 +2642,7 @@ omprobante<=to_number(:b4)) and ano_mes=to_number(:b5)) and estado<>'2')";
   sqlstm.sqadto[3] = (unsigned short )0;
   sqlstm.sqtdso[3] = (unsigned short )0;
   sqlstm.sqhstv[4] = (         void  *)&cmp_fin;
-  sqlstm.sqhstl[4] = (unsigned int  )10;
+  sqlstm.sqhstl[4] = (unsigned int  )22;
   sqlstm.sqhsts[4] = (         int  )0;
   sqlstm.sqindv[4] = (         void  *)0;
   sqlstm.sqinds[4] = (         int  )0;
@@ -2642,6 +2657,14 @@ omprobante<=to_number(:b4)) and ano_mes=to_number(:b5)) and estado<>'2')";
   sqlstm.sqharm[5] = (unsigned int  )0;
   sqlstm.sqadto[5] = (unsigned short )0;
   sqlstm.sqtdso[5] = (unsigned short )0;
+  sqlstm.sqhstv[6] = (         void  *)&consecutivo_an;
+  sqlstm.sqhstl[6] = (unsigned int  )sizeof(double);
+  sqlstm.sqhsts[6] = (         int  )0;
+  sqlstm.sqindv[6] = (         void  *)0;
+  sqlstm.sqinds[6] = (         int  )0;
+  sqlstm.sqharm[6] = (unsigned int  )0;
+  sqlstm.sqadto[6] = (unsigned short )0;
+  sqlstm.sqtdso[6] = (unsigned short )0;
   sqlstm.sqphsv = sqlstm.sqhstv;
   sqlstm.sqphsl = sqlstm.sqhstl;
   sqlstm.sqphss = sqlstm.sqhsts;
@@ -2677,8 +2700,7 @@ void actualizo_nit()
 
 {
      struct sqlexd sqlstm;
-
-     sqlstm.sqlvsn = 10;
+     sqlstm.sqlvsn = 12;
      sqlstm.arrsiz = 18;
      sqlstm.sqladtp = &sqladt;
      sqlstm.sqltdsp = &sqltds;
@@ -2687,7 +2709,7 @@ igo_emp=to_number(:b1) and ano_mes=to_number(:b2)) and cuenta=to_number(:b3)) \
 and codigo=:b4) and codigo_nit=:b5) and sucursal=:b6) and cen_cos=to_number(:b\
 7)) and libro=to_number(:b8))";
      sqlstm.iters = (unsigned int  )1;
-     sqlstm.offset = (unsigned int  )811;
+     sqlstm.offset = (unsigned int  )815;
      sqlstm.selerr = (unsigned short)1;
      sqlstm.cud = sqlcud0;
      sqlstm.sqlest = (unsigned char  *)&sqlca;
@@ -2734,7 +2756,7 @@ and codigo=:b4) and codigo_nit=:b5) and sucursal=:b6) and cen_cos=to_number(:b\
      sqlstm.sqadto[4] = (unsigned short )0;
      sqlstm.sqtdso[4] = (unsigned short )0;
      sqlstm.sqhstv[5] = (         void  *)&codigo_nitb;
-     sqlstm.sqhstl[5] = (unsigned int  )8;
+     sqlstm.sqhstl[5] = (unsigned int  )sizeof(double);
      sqlstm.sqhsts[5] = (         int  )0;
      sqlstm.sqindv[5] = (         void  *)0;
      sqlstm.sqinds[5] = (         int  )0;
@@ -2793,15 +2815,14 @@ void voy_ins_acumulanit()
 
 {
   struct sqlexd sqlstm;
-
-  sqlstm.sqlvsn = 10;
+  sqlstm.sqlvsn = 12;
   sqlstm.arrsiz = 18;
   sqlstm.sqladtp = &sqladt;
   sqlstm.sqltdsp = &sqltds;
-  sqlstm.stmt = "insert into acumulanit values (:b0,:b1,:b2,:b3,:b4,0,0,:b5,\
-:b6,:b7)";
+  sqlstm.stmt = "insert into acumulanit  values (:b0,:b1,:b2,:b3,:b4,0,0,:b5\
+,:b6,:b7)";
   sqlstm.iters = (unsigned int  )1;
-  sqlstm.offset = (unsigned int  )862;
+  sqlstm.offset = (unsigned int  )866;
   sqlstm.cud = sqlcud0;
   sqlstm.sqlest = (unsigned char  *)&sqlca;
   sqlstm.sqlety = (unsigned short)256;
@@ -2839,7 +2860,7 @@ void voy_ins_acumulanit()
   sqlstm.sqadto[3] = (unsigned short )0;
   sqlstm.sqtdso[3] = (unsigned short )0;
   sqlstm.sqhstv[4] = (         void  *)&codigo_nitb;
-  sqlstm.sqhstl[4] = (unsigned int  )8;
+  sqlstm.sqhstl[4] = (unsigned int  )sizeof(double);
   sqlstm.sqhsts[4] = (         int  )0;
   sqlstm.sqindv[4] = (         void  *)0;
   sqlstm.sqinds[4] = (         int  )0;
@@ -2905,8 +2926,7 @@ void voy_actu_acumulanit()
 
 {
   struct sqlexd sqlstm;
-
-  sqlstm.sqlvsn = 10;
+  sqlstm.sqlvsn = 12;
   sqlstm.arrsiz = 18;
   sqlstm.sqladtp = &sqladt;
   sqlstm.sqltdsp = &sqltds;
@@ -2915,13 +2935,13 @@ void voy_actu_acumulanit()
 b3)) and cuenta=to_number(:b4)) and codigo=:b5) and codigo_nit=:b6) and sucurs\
 al=:b7) and cen_cos=to_number(:b8)) and libro=to_number(:b9))";
   sqlstm.iters = (unsigned int  )1;
-  sqlstm.offset = (unsigned int  )909;
+  sqlstm.offset = (unsigned int  )913;
   sqlstm.cud = sqlcud0;
   sqlstm.sqlest = (unsigned char  *)&sqlca;
   sqlstm.sqlety = (unsigned short)256;
   sqlstm.occurs = (unsigned int  )0;
   sqlstm.sqhstv[0] = (         void  *)&wval_deb;
-  sqlstm.sqhstl[0] = (unsigned int  )8;
+  sqlstm.sqhstl[0] = (unsigned int  )sizeof(double);
   sqlstm.sqhsts[0] = (         int  )0;
   sqlstm.sqindv[0] = (         void  *)0;
   sqlstm.sqinds[0] = (         int  )0;
@@ -2929,7 +2949,7 @@ al=:b7) and cen_cos=to_number(:b8)) and libro=to_number(:b9))";
   sqlstm.sqadto[0] = (unsigned short )0;
   sqlstm.sqtdso[0] = (unsigned short )0;
   sqlstm.sqhstv[1] = (         void  *)&wval_cre;
-  sqlstm.sqhstl[1] = (unsigned int  )8;
+  sqlstm.sqhstl[1] = (unsigned int  )sizeof(double);
   sqlstm.sqhsts[1] = (         int  )0;
   sqlstm.sqindv[1] = (         void  *)0;
   sqlstm.sqinds[1] = (         int  )0;
@@ -2969,7 +2989,7 @@ al=:b7) and cen_cos=to_number(:b8)) and libro=to_number(:b9))";
   sqlstm.sqadto[5] = (unsigned short )0;
   sqlstm.sqtdso[5] = (unsigned short )0;
   sqlstm.sqhstv[6] = (         void  *)&codigo_nitb;
-  sqlstm.sqhstl[6] = (unsigned int  )8;
+  sqlstm.sqhstl[6] = (unsigned int  )sizeof(double);
   sqlstm.sqhsts[6] = (         int  )0;
   sqlstm.sqindv[6] = (         void  *)0;
   sqlstm.sqinds[6] = (         int  )0;
@@ -3033,22 +3053,21 @@ void actualizo_cntrl()
 
 {
   struct sqlexd sqlstm;
-
-  sqlstm.sqlvsn = 10;
+  sqlstm.sqlvsn = 12;
   sqlstm.arrsiz = 18;
   sqlstm.sqladtp = &sqladt;
   sqlstm.sqltdsp = &sqltds;
   sqlstm.stmt = "select consecutivo into :b0  from control_mes where ((fuent\
 e=10 and ano_mes=to_number(:b1)) and codigo_emp=to_number(:b2))";
   sqlstm.iters = (unsigned int  )1;
-  sqlstm.offset = (unsigned int  )964;
+  sqlstm.offset = (unsigned int  )968;
   sqlstm.selerr = (unsigned short)1;
   sqlstm.cud = sqlcud0;
   sqlstm.sqlest = (unsigned char  *)&sqlca;
   sqlstm.sqlety = (unsigned short)256;
   sqlstm.occurs = (unsigned int  )0;
   sqlstm.sqhstv[0] = (         void  *)&cons;
-  sqlstm.sqhstl[0] = (unsigned int  )8;
+  sqlstm.sqhstl[0] = (unsigned int  )sizeof(double);
   sqlstm.sqhsts[0] = (         int  )0;
   sqlstm.sqindv[0] = (         void  *)0;
   sqlstm.sqinds[0] = (         int  )0;
@@ -3097,15 +3116,14 @@ void voy_ins_actualizocnt()
 
 {
   struct sqlexd sqlstm;
-
-  sqlstm.sqlvsn = 10;
+  sqlstm.sqlvsn = 12;
   sqlstm.arrsiz = 18;
   sqlstm.sqladtp = &sqladt;
   sqlstm.sqltdsp = &sqltds;
-  sqlstm.stmt = "insert into control_mes values (10,:b0,'ASIENTOS CONTABLES'\
-,1,:b1,0)";
+  sqlstm.stmt = "insert into control_mes  values (10,:b0,'ASIENTOS CONTABLES\
+',1,:b1,0)";
   sqlstm.iters = (unsigned int  )1;
-  sqlstm.offset = (unsigned int  )991;
+  sqlstm.offset = (unsigned int  )995;
   sqlstm.cud = sqlcud0;
   sqlstm.sqlest = (unsigned char  *)&sqlca;
   sqlstm.sqlety = (unsigned short)256;
@@ -3155,21 +3173,20 @@ void voy_actu_actualizocnt()
 
 {
    struct sqlexd sqlstm;
-
-   sqlstm.sqlvsn = 10;
+   sqlstm.sqlvsn = 12;
    sqlstm.arrsiz = 18;
    sqlstm.sqladtp = &sqladt;
    sqlstm.sqltdsp = &sqltds;
    sqlstm.stmt = "update control_mes  set consecutivo=(:b0+1) where ((fuente\
 =10 and ano_mes=to_number(:b1)) and codigo_emp=to_number(:b2))";
    sqlstm.iters = (unsigned int  )1;
-   sqlstm.offset = (unsigned int  )1014;
+   sqlstm.offset = (unsigned int  )1018;
    sqlstm.cud = sqlcud0;
    sqlstm.sqlest = (unsigned char  *)&sqlca;
    sqlstm.sqlety = (unsigned short)256;
    sqlstm.occurs = (unsigned int  )0;
    sqlstm.sqhstv[0] = (         void  *)&cons;
-   sqlstm.sqhstl[0] = (unsigned int  )8;
+   sqlstm.sqhstl[0] = (unsigned int  )sizeof(double);
    sqlstm.sqhsts[0] = (         int  )0;
    sqlstm.sqindv[0] = (         void  *)0;
    sqlstm.sqinds[0] = (         int  )0;

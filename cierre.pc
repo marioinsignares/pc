@@ -406,7 +406,7 @@ void hacer_asiento()
                   'CIERRE DE OTRAS CUENTAS',:fechab,'7', '0','','','','','');
 
   if ( sqlca.sqlcode != 1403 && sqlca.sqlcode != 0 && sqlca.sqlcode != -1405 )
-      fprintf (stderr, "Error leyendo Movto_Cy (%d)\n", sqlca.sqlcode);
+      fprintf (stderr, "Error leyendo Movto_Cy (%d), codigo_emp.arr(%s), ano_mesf.arr(%s), consecutivo (%s)\n", sqlca.sqlcode, codigo_emp.arr, ano_mesf.arr, consecutivob.arr);
 
   staora  = 0;
   while (staora == 0) {

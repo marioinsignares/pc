@@ -142,9 +142,9 @@ digo=:b1) and ptaje>0) order by ultimo,ptaje,sucursal            ";
 
  static const char *sq0024 = 
 "select codigo_emp ,ano_mes ,consecutivo ,cuenta ,infa ,infb ,infc ,infd ,cod\
-igo_nit ,sum(nvl(valor_deb,0)) ,sum(nvl(valor_cre,0)) ,sucursal ,cen_cos  from\
- movto_dt  group by codigo_emp,ano_mes,consecutivo,cuenta,infa,infb,infc,infd,\
-codigo_nit,sucursal,cen_cos           ";
+igo_nit ,sum(nvl(valor_deb,0)) ,sum(nvl(valor_cre,0)) ,sucursal ,cen_cos ,libr\
+o  from movto_dt  group by codigo_emp,ano_mes,consecutivo,cuenta,infa,infb,inf\
+c,infd,codigo_nit,sucursal,cen_cos,libro           ";
 
 typedef struct { unsigned short len; unsigned char arr[1]; } VARCHAR;
 typedef struct { unsigned short len; unsigned char arr[1]; } varchar;
@@ -152,73 +152,76 @@ typedef struct { unsigned short len; unsigned char arr[1]; } varchar;
 /* cud (compilation unit data) array */
 static const short sqlcud0[] =
 {10,4114,0,0,0,
-5,0,0,1,0,0,27,180,0,0,4,4,0,1,0,1,9,0,0,1,10,0,0,1,10,0,0,1,10,0,0,
-36,0,0,2,140,0,4,216,0,0,4,1,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,1,9,0,0,
-67,0,0,3,35,0,9,229,0,0,0,0,0,1,0,
-82,0,0,3,0,0,13,236,0,0,1,0,0,1,0,2,9,0,0,
-101,0,0,3,0,0,15,250,0,0,0,0,0,1,0,
-116,0,0,7,0,0,30,315,0,0,0,0,0,1,0,
-131,0,0,8,262,0,2,344,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-166,0,0,9,148,0,2,358,0,0,3,3,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,
-193,0,0,10,150,0,4,375,0,0,4,3,0,1,0,2,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-224,0,0,11,115,0,3,388,0,0,4,4,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-255,0,0,12,117,0,5,396,0,0,4,4,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-286,0,0,4,1534,0,9,435,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-321,0,0,4,0,0,13,437,0,0,22,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
+5,0,0,1,0,0,27,182,0,0,4,4,0,1,0,1,9,0,0,1,10,0,0,1,10,0,0,1,10,0,0,
+36,0,0,2,140,0,4,218,0,0,4,1,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,1,9,0,0,
+67,0,0,3,35,0,9,231,0,0,0,0,0,1,0,
+82,0,0,3,0,0,13,238,0,0,1,0,0,1,0,2,9,0,0,
+101,0,0,3,0,0,15,252,0,0,0,0,0,1,0,
+116,0,0,7,0,0,30,317,0,0,0,0,0,1,0,
+131,0,0,8,262,0,2,346,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+166,0,0,9,148,0,2,360,0,0,3,3,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,
+193,0,0,10,150,0,4,377,0,0,4,3,0,1,0,2,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+224,0,0,11,115,0,3,390,0,0,4,4,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+255,0,0,12,117,0,5,398,0,0,4,4,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+286,0,0,4,1534,0,9,437,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+321,0,0,4,0,0,13,439,0,0,22,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
 9,0,0,2,9,0,0,2,4,0,0,2,4,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,
 2,3,0,0,2,3,0,0,2,3,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,
-424,0,0,4,0,0,15,454,0,0,0,0,0,1,0,
-439,0,0,4,1534,0,9,458,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-474,0,0,4,0,0,13,459,0,0,22,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
+424,0,0,4,0,0,15,456,0,0,0,0,0,1,0,
+439,0,0,4,1534,0,9,460,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+474,0,0,4,0,0,13,461,0,0,22,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
 9,0,0,2,9,0,0,2,4,0,0,2,4,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,
 2,3,0,0,2,3,0,0,2,3,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,
-577,0,0,4,0,0,15,480,0,0,0,0,0,1,0,
-592,0,0,13,203,0,3,500,0,0,6,6,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
+577,0,0,4,0,0,15,482,0,0,0,0,0,1,0,
+592,0,0,13,203,0,3,502,0,0,6,6,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
 9,0,0,
-631,0,0,4,0,0,15,522,0,0,0,0,0,1,0,
-646,0,0,14,22,0,2,524,0,0,0,0,0,1,0,
-661,0,0,4,1534,0,9,532,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-696,0,0,4,0,0,13,534,0,0,22,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
+631,0,0,4,0,0,15,524,0,0,0,0,0,1,0,
+646,0,0,14,22,0,2,526,0,0,0,0,0,1,0,
+661,0,0,4,1534,0,9,534,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+696,0,0,4,0,0,13,536,0,0,22,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
 9,0,0,2,9,0,0,2,4,0,0,2,4,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,
 2,3,0,0,2,3,0,0,2,3,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,
-799,0,0,15,114,0,4,559,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
-826,0,0,16,115,0,4,569,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
-853,0,0,17,115,0,4,579,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
-880,0,0,18,67,0,4,589,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
-907,0,0,19,115,0,4,597,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
-934,0,0,20,67,0,4,607,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
-961,0,0,21,67,0,4,615,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
-988,0,0,22,67,0,4,623,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
-1015,0,0,23,71,0,4,631,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
-1042,0,0,5,123,0,9,679,0,0,1,1,0,1,0,1,9,0,0,
-1061,0,0,5,0,0,13,680,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1088,0,0,5,0,0,13,691,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1115,0,0,5,0,0,15,694,0,0,0,0,0,1,0,
-1130,0,0,6,141,0,9,697,0,0,2,2,0,1,0,1,9,0,0,1,3,0,0,
-1153,0,0,6,0,0,13,698,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1180,0,0,6,0,0,13,709,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1207,0,0,6,0,0,15,712,0,0,0,0,0,1,0,
-1222,0,0,5,123,0,9,737,0,0,1,1,0,1,0,1,9,0,0,
-1241,0,0,5,0,0,13,738,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1268,0,0,5,0,0,13,751,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1295,0,0,5,0,0,15,754,0,0,0,0,0,1,0,
-1310,0,0,4,0,0,13,760,0,0,22,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
+799,0,0,15,114,0,4,561,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
+826,0,0,16,115,0,4,571,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
+853,0,0,17,115,0,4,581,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
+880,0,0,18,67,0,4,591,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
+907,0,0,19,115,0,4,599,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
+934,0,0,20,67,0,4,609,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
+961,0,0,21,67,0,4,617,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
+988,0,0,22,67,0,4,625,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
+1015,0,0,23,71,0,4,633,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
+1042,0,0,5,123,0,9,681,0,0,1,1,0,1,0,1,9,0,0,
+1061,0,0,5,0,0,13,682,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1088,0,0,5,0,0,13,694,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1115,0,0,5,0,0,15,697,0,0,0,0,0,1,0,
+1130,0,0,6,141,0,9,700,0,0,2,2,0,1,0,1,9,0,0,1,3,0,0,
+1153,0,0,6,0,0,13,701,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1180,0,0,6,0,0,13,713,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1207,0,0,6,0,0,15,716,0,0,0,0,0,1,0,
+1222,0,0,5,123,0,9,744,0,0,1,1,0,1,0,1,9,0,0,
+1241,0,0,5,0,0,13,745,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1268,0,0,5,0,0,13,759,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1295,0,0,5,0,0,15,762,0,0,0,0,0,1,0,
+1310,0,0,4,0,0,13,771,0,0,22,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
 9,0,0,2,9,0,0,2,4,0,0,2,4,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,
 2,3,0,0,2,3,0,0,2,3,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,
-1413,0,0,4,0,0,15,776,0,0,0,0,0,1,0,
-1428,0,0,24,270,0,9,792,0,0,0,0,0,1,0,
-1443,0,0,24,0,0,13,794,0,0,13,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
-2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
-1510,0,0,25,312,0,3,823,0,0,14,14,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
-0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-1581,0,0,24,0,0,13,848,0,0,13,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
-2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
-1648,0,0,24,0,0,15,861,0,0,0,0,0,1,0,
-1663,0,0,26,313,0,3,872,0,0,14,14,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
-0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-1734,0,0,27,313,0,3,910,0,0,14,14,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
-0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-1805,0,0,28,125,0,4,941,0,0,7,2,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
+1413,0,0,4,0,0,15,787,0,0,0,0,0,1,0,
+1428,0,0,24,283,0,9,803,0,0,0,0,0,1,0,
+1443,0,0,24,0,0,13,805,0,0,14,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
+2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,
+1514,0,0,25,323,0,3,834,0,0,15,15,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
+0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,3,
+0,0,
+1589,0,0,24,0,0,13,860,0,0,14,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
+2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,
+1660,0,0,24,0,0,15,873,0,0,0,0,0,1,0,
+1675,0,0,26,324,0,3,887,0,0,15,15,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
+0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,
+0,0,
+1750,0,0,27,324,0,3,928,0,0,15,15,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
+0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,
+0,0,
+1825,0,0,28,125,0,4,960,0,0,7,2,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
 1,9,0,0,1,9,0,0,
 };
 
@@ -246,8 +249,8 @@ static const short sqlcud0[] =
 double redondo();
 void hacer_asiento();
 void ver_inf();
-void inserta_deb();
-void inserta_cre();
+void inserta_deb(int li);
+void inserta_cre(int li);
 
 
 /* EXEC SQL BEGIN DECLARE SECTION; */ 
@@ -308,6 +311,9 @@ struct { unsigned short len; unsigned char arr[15]; } valor_debb;
 struct { unsigned short len; unsigned char arr[15]; } valor_creb;
 
 char    inf         [5][14];
+/* VARCHAR li_c        [5]; */ 
+struct { unsigned short len; unsigned char arr[5]; } li_c;
+
                                  /* Control_Mes (C5) */
 double  consecutivo;
 /* VARCHAR fuenteb     [3]; */ 
@@ -328,6 +334,7 @@ struct { unsigned short len; unsigned char arr[5]; } sucursalb;
 /* VARCHAR cen_cosb    [03]; */ 
 struct { unsigned short len; unsigned char arr[3]; } cen_cosb;
 
+int     librob;
 int     db_cr;
 double  valor;
 /* VARCHAR procedimiento [256]; */ 
@@ -3181,7 +3188,8 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
                                   }
                                   else valor_s = valor_d;
 //                                printf("gasto_comun<%s> codigo<%d> sucursalb.arr<%s> nitn<%14.0f> valor_r<%12.2f> valor_d<%12.2f> valor_s<%12.2f> ",gasto_comun.arr, codigo, sucursalb.arr, nitn, valor_r, valor_d, valor_s); getchar();
-                                  inserta_deb();
+                                  inserta_deb(0);
+                                  inserta_deb(1);
                                   /* EXEC SQL FETCH C8 INTO :sucursalb, :ptajesuc, :ultimo; */ 
 
 {
@@ -3364,7 +3372,8 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
                                   }
                                   else valor_s = valor_d;
 //                                printf("gasto_comun<%s> codigo<%d> sucursalb.arr<%s> nitn<%14.0f> valor_r<%12.2f> valor_d<%12.2f> valor_s<%12.2f> ",gasto_comun.arr, codigo, sucursalb.arr, nitn, valor_r, valor_d, valor_s); getchar();
-                                  inserta_deb();
+                                  inserta_deb(0);
+                                  inserta_deb(1);
                                   /* EXEC SQL FETCH C9 INTO :sucursalb, :ptajesuc, :ultimo; */ 
 
 {
@@ -3440,7 +3449,10 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
 
                        }
                     }
-                    else inserta_deb();
+                    else {
+                       inserta_deb(0);
+                       inserta_deb(1);
+                    }
                  }
               }
               else if (valor > 0 ) {
@@ -3563,7 +3575,8 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
                                     }
                                     else valor_s = valor_d;
 //                                  printf("gasto_comun<%s> codigo<%d> sucursalb.arr<%s> nitn<%14.0f> valor_r<%12.2f> valor_d<%12.2f> valor_s<%12.2f> ",gasto_comun.arr, codigo, sucursalb.arr, nitn, valor_r, valor_d, valor_s); getchar();
-                                    inserta_cre();
+                                    inserta_cre(0);
+                                    inserta_cre(1);
                                     /* EXEC SQL FETCH C8 INTO :sucursalb, :ptajesuc, :ultimo; */ 
 
 {
@@ -3638,7 +3651,10 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
 
 
                          }
-                         else inserta_cre();
+                         else {
+                               inserta_cre(0);
+                               inserta_cre(1);
+                         }
                       }
               }
 
@@ -3889,11 +3905,11 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
            select codigo_emp, ano_mes, consecutivo,
                   cuenta, infa, infb, infc, infd,
                   codigo_nit, sum(nvl(valor_deb,0)), sum(nvl(valor_cre,0)),
-                  sucursal, cen_cos
+                  sucursal, cen_cos, libro
            from  movto_dt
            group by codigo_emp, ano_mes, consecutivo,
                     cuenta, infa, infb, infc, infd,
-                    codigo_nit, sucursal, cen_cos; */ 
+                    codigo_nit, sucursal, cen_cos, libro; */ 
 
 
   /* EXEC SQL OPEN C7; */ 
@@ -3921,7 +3937,7 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
   /* EXEC SQL FETCH C7 INTO :codigo_emp, :ano_mes, :consecutivob,
                          :cuentab, :infa, :infb, :infc, :infd,
                          :codigo_nitb, :valor_debb, :valor_creb,
-                         :sucursalb, :cen_cosb; */ 
+                         :sucursalb, :cen_cosb, librob; */ 
 
 {
   struct sqlexd sqlstm;
@@ -4040,6 +4056,14 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
   sqlstm.sqharm[12] = (unsigned int  )0;
   sqlstm.sqadto[12] = (unsigned short )0;
   sqlstm.sqtdso[12] = (unsigned short )0;
+  sqlstm.sqhstv[13] = (         void  *)&librob;
+  sqlstm.sqhstl[13] = (unsigned int  )4;
+  sqlstm.sqhsts[13] = (         int  )0;
+  sqlstm.sqindv[13] = (         void  *)0;
+  sqlstm.sqinds[13] = (         int  )0;
+  sqlstm.sqharm[13] = (unsigned int  )0;
+  sqlstm.sqadto[13] = (unsigned short )0;
+  sqlstm.sqtdso[13] = (unsigned short )0;
   sqlstm.sqphsv = sqlstm.sqhstv;
   sqlstm.sqphsl = sqlstm.sqhstl;
   sqlstm.sqphss = sqlstm.sqhsts;
@@ -4092,7 +4116,8 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
             	       		 VALOR_DEB,
             	       		 VALOR_CRE,
             	       		 SUCURSAL,
-            	       		 CEN_COS)
+            	       		 CEN_COS,
+                         LIBRO)
                   values(to_number(:codigo_emp), 
                          to_number(:ano_mes), 
                          to_number(:consecutivob), 
@@ -4101,7 +4126,7 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
                          to_number(:codigo_nitb), 
                          to_number(:valor_debb, '999999999.99'), 
                          to_number(:valor_creb, '999999999.99'), 
-                         :sucursalb, :cen_cosb); */ 
+                         :sucursalb, :cen_cosb, :librob); */ 
 
 {
         struct sqlexd sqlstm;
@@ -4112,11 +4137,11 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
         sqlstm.sqltdsp = &sqltds;
         sqlstm.stmt = "insert into movto_d(CODIGO_EMP,ANO_MES,CONSECUTIVO,SE\
 CUENCIA,CUENTA,INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN\
-_COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
-:b5,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(:b11,'\
-999999999.99'),:b12,:b13)";
+_COS,LIBRO) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3\
+),:b4,:b5,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(\
+:b11,'999999999.99'),:b12,:b13,:b14)";
         sqlstm.iters = (unsigned int  )1;
-        sqlstm.offset = (unsigned int  )1510;
+        sqlstm.offset = (unsigned int  )1514;
         sqlstm.cud = sqlcud0;
         sqlstm.sqlest = (unsigned char  *)&sqlca;
         sqlstm.sqlety = (unsigned short)256;
@@ -4233,6 +4258,14 @@ _COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
         sqlstm.sqharm[13] = (unsigned int  )0;
         sqlstm.sqadto[13] = (unsigned short )0;
         sqlstm.sqtdso[13] = (unsigned short )0;
+        sqlstm.sqhstv[14] = (         void  *)&librob;
+        sqlstm.sqhstl[14] = (unsigned int  )4;
+        sqlstm.sqhsts[14] = (         int  )0;
+        sqlstm.sqindv[14] = (         void  *)0;
+        sqlstm.sqinds[14] = (         int  )0;
+        sqlstm.sqharm[14] = (unsigned int  )0;
+        sqlstm.sqadto[14] = (unsigned short )0;
+        sqlstm.sqtdso[14] = (unsigned short )0;
         sqlstm.sqphsv = sqlstm.sqhstv;
         sqlstm.sqphsl = sqlstm.sqhstl;
         sqlstm.sqphss = sqlstm.sqhsts;
@@ -4250,7 +4283,7 @@ _COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
         /* EXEC SQL FETCH C7 INTO :codigo_emp, :ano_mes, :consecutivob,
                                :cuentab, :infa, :infb, :infc, :infd,
                                :codigo_nitb, :valor_debb, :valor_creb,
-                               :sucursalb, :cen_cosb; */ 
+                               :sucursalb, :cen_cosb, :librob; */ 
 
 {
         struct sqlexd sqlstm;
@@ -4260,7 +4293,7 @@ _COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
         sqlstm.sqladtp = &sqladt;
         sqlstm.sqltdsp = &sqltds;
         sqlstm.iters = (unsigned int  )1;
-        sqlstm.offset = (unsigned int  )1581;
+        sqlstm.offset = (unsigned int  )1589;
         sqlstm.cud = sqlcud0;
         sqlstm.sqlest = (unsigned char  *)&sqlca;
         sqlstm.sqlety = (unsigned short)256;
@@ -4369,6 +4402,14 @@ _COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
         sqlstm.sqharm[12] = (unsigned int  )0;
         sqlstm.sqadto[12] = (unsigned short )0;
         sqlstm.sqtdso[12] = (unsigned short )0;
+        sqlstm.sqhstv[13] = (         void  *)&librob;
+        sqlstm.sqhstl[13] = (unsigned int  )4;
+        sqlstm.sqhsts[13] = (         int  )0;
+        sqlstm.sqindv[13] = (         void  *)0;
+        sqlstm.sqinds[13] = (         int  )0;
+        sqlstm.sqharm[13] = (unsigned int  )0;
+        sqlstm.sqadto[13] = (unsigned short )0;
+        sqlstm.sqtdso[13] = (unsigned short )0;
         sqlstm.sqphsv = sqlstm.sqhstv;
         sqlstm.sqphsl = sqlstm.sqhstl;
         sqlstm.sqphss = sqlstm.sqhsts;
@@ -4401,7 +4442,7 @@ _COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
   sqlstm.sqladtp = &sqladt;
   sqlstm.sqltdsp = &sqltds;
   sqlstm.iters = (unsigned int  )1;
-  sqlstm.offset = (unsigned int  )1648;
+  sqlstm.offset = (unsigned int  )1660;
   sqlstm.cud = sqlcud0;
   sqlstm.sqlest = (unsigned char  *)&sqlca;
   sqlstm.sqlety = (unsigned short)256;
@@ -4412,8 +4453,11 @@ _COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
 
 }
 
-void inserta_deb()
+void inserta_deb(li)
 {
+
+    sprintf(li_c.arr,"%d",li);
+    li_c.len = strlen(li_c.arr);
 
     strcpy (valor_creb.arr,"");
     valor_creb.len = strlen(valor_creb.arr);
@@ -4434,7 +4478,8 @@ void inserta_deb()
         	       		 VALOR_DEB,
         	       		 VALOR_CRE,
         	       		 SUCURSAL,
-        	       		 CEN_COS)
+        	       		 CEN_COS,
+                     LIBRO)
               values(to_number(:codigo_emp), 
                      to_number(:ano_mes), 
                      to_number(:consecutivob), 
@@ -4443,7 +4488,7 @@ void inserta_deb()
                      to_number(:codigo_nitb), 
                      to_number(:valor_debb, '999999999.99'), 
                      to_number(:valor_creb, '999999999.99'), 
-                     :sucursalb, :cen_cosb); */ 
+                     :sucursalb, :cen_cosb, :li_c); */ 
 
 {
     struct sqlexd sqlstm;
@@ -4454,11 +4499,11 @@ void inserta_deb()
     sqlstm.sqltdsp = &sqltds;
     sqlstm.stmt = "insert into movto_dt(CODIGO_EMP,ANO_MES,CONSECUTIVO,SECUE\
 NCIA,CUENTA,INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_CO\
-S) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,:b5\
-,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(:b11,'999\
-999999.99'),:b12,:b13)";
+S,LIBRO) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:\
+b4,:b5,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(:b1\
+1,'999999999.99'),:b12,:b13,:b14)";
     sqlstm.iters = (unsigned int  )1;
-    sqlstm.offset = (unsigned int  )1663;
+    sqlstm.offset = (unsigned int  )1675;
     sqlstm.cud = sqlcud0;
     sqlstm.sqlest = (unsigned char  *)&sqlca;
     sqlstm.sqlety = (unsigned short)256;
@@ -4575,6 +4620,14 @@ S) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,:b5\
     sqlstm.sqharm[13] = (unsigned int  )0;
     sqlstm.sqadto[13] = (unsigned short )0;
     sqlstm.sqtdso[13] = (unsigned short )0;
+    sqlstm.sqhstv[14] = (         void  *)&li_c;
+    sqlstm.sqhstl[14] = (unsigned int  )7;
+    sqlstm.sqhsts[14] = (         int  )0;
+    sqlstm.sqindv[14] = (         void  *)0;
+    sqlstm.sqinds[14] = (         int  )0;
+    sqlstm.sqharm[14] = (unsigned int  )0;
+    sqlstm.sqadto[14] = (unsigned short )0;
+    sqlstm.sqtdso[14] = (unsigned short )0;
     sqlstm.sqphsv = sqlstm.sqhstv;
     sqlstm.sqphsl = sqlstm.sqhstl;
     sqlstm.sqphss = sqlstm.sqhsts;
@@ -4594,9 +4647,11 @@ S) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,:b5\
 
 }
 
-void inserta_cre()
+void inserta_cre(li)
 {
 
+    sprintf(li_c.arr,"%d",li);
+    li_c.len = strlen(li_c.arr);
     strcpy (valor_debb.arr,"");
     valor_debb.len = strlen(valor_debb.arr);
     sprintf(valor_creb.arr,"%10.2f",valor_s);
@@ -4616,7 +4671,8 @@ void inserta_cre()
         	       		 VALOR_DEB,
         	       		 VALOR_CRE,
         	       		 SUCURSAL,
-        	       		 CEN_COS)
+        	       		 CEN_COS,
+                     LIBRO)
               values(to_number(:codigo_emp), 
                      to_number(:ano_mes), 
                      to_number(:consecutivob), 
@@ -4625,7 +4681,7 @@ void inserta_cre()
                      to_number(:codigo_nitb), 
                      to_number(:valor_debb, '999999999.99'), 
                      to_number(:valor_creb, '999999999.99'), 
-                     :sucursalb, :cen_cosb); */ 
+                     :sucursalb, :cen_cosb, :li_c); */ 
 
 {
     struct sqlexd sqlstm;
@@ -4636,11 +4692,11 @@ void inserta_cre()
     sqlstm.sqltdsp = &sqltds;
     sqlstm.stmt = "insert into movto_dt(CODIGO_EMP,ANO_MES,CONSECUTIVO,SECUE\
 NCIA,CUENTA,INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_CO\
-S) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,:b5\
-,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(:b11,'999\
-999999.99'),:b12,:b13)";
+S,LIBRO) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:\
+b4,:b5,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(:b1\
+1,'999999999.99'),:b12,:b13,:b14)";
     sqlstm.iters = (unsigned int  )1;
-    sqlstm.offset = (unsigned int  )1734;
+    sqlstm.offset = (unsigned int  )1750;
     sqlstm.cud = sqlcud0;
     sqlstm.sqlest = (unsigned char  *)&sqlca;
     sqlstm.sqlety = (unsigned short)256;
@@ -4757,6 +4813,14 @@ S) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,:b5\
     sqlstm.sqharm[13] = (unsigned int  )0;
     sqlstm.sqadto[13] = (unsigned short )0;
     sqlstm.sqtdso[13] = (unsigned short )0;
+    sqlstm.sqhstv[14] = (         void  *)&li_c;
+    sqlstm.sqhstl[14] = (unsigned int  )7;
+    sqlstm.sqhsts[14] = (         int  )0;
+    sqlstm.sqindv[14] = (         void  *)0;
+    sqlstm.sqinds[14] = (         int  )0;
+    sqlstm.sqharm[14] = (unsigned int  )0;
+    sqlstm.sqadto[14] = (unsigned short )0;
+    sqlstm.sqtdso[14] = (unsigned short )0;
     sqlstm.sqphsv = sqlstm.sqhstv;
     sqlstm.sqphsl = sqlstm.sqhstl;
     sqlstm.sqphss = sqlstm.sqhsts;
@@ -4793,7 +4857,7 @@ void ver_inf()
   sqlstm.stmt = "select infa ,infb ,infc ,infd ,nvl(gasto_comun,'D') into :b\
 0,:b1,:b2,:b3,:b4  from plan where (codigo_emp=:b5 and cuenta=:b6)";
   sqlstm.iters = (unsigned int  )1;
-  sqlstm.offset = (unsigned int  )1805;
+  sqlstm.offset = (unsigned int  )1825;
   sqlstm.selerr = (unsigned short)1;
   sqlstm.cud = sqlcud0;
   sqlstm.sqlest = (unsigned char  *)&sqlca;

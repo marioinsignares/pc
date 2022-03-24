@@ -238,7 +238,7 @@ printf ("%s\n",uid.arr);
                     cl.lista, decode(nvl(cl.contado,'0'),'0',' ','CONTADO'), nvl(p.codigo,'N'), nvl(os.ptaje,op.ptaje), 
                     nvl(to_char(cl.fec_dcto_cial,'DD-MON-YYYY'),' '), 
                     nvl(to_char(cl.fec_dcto_financ,'DD-MON-YYYY'),' '),
-                    nvl(to_char(ot.fecha,'DD-MON-YYYY'), ' ') as fecha_ot,
+                    decode(ot.marca,0,nvl(to_char(ot.fecha,'DD-MON-YYYY'), ' '),' ') as fecha_ot,
                     decode(ot.marca,1,'*',' ') as marca
 	           from nits n, ciudades c, clientes cl, preferencia p, opticasp op, opticass os, opticast ot
              where n.codigo_nit       = cl.codigo_nit                     and

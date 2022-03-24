@@ -1,3 +1,4 @@
+
 /*****************************************************************
 * RESUFAC.C  Version 1.0 - Rev 1.2 - Sep. 16/91.
 *
@@ -28,39 +29,167 @@ void empresa();
 void titulos();
 				     /* Parametros de comunicacion con ORACLE */
         		             /* Variables de recepcion para datos */
-EXEC SQL BEGIN DECLARE SECTION;
+/* EXEC SQL BEGIN DECLARE SECTION; */ 
 
-VARCHAR uid[100];
+
+/* VARCHAR uid[100]; */ 
+struct { unsigned short len; unsigned char arr[100]; } uid;
+
                                  /* Facturas (C1) y (C6) */
 double  numero_factura;
-VARCHAR codigo_cliente [10];
+/* VARCHAR codigo_cliente [10]; */ 
+struct { unsigned short len; unsigned char arr[10]; } codigo_cliente;
+
 double  valor_neto[13];
 double  valor_total;
 int     hojas;
-VARCHAR codigo_emp     [5];
-VARCHAR numero_quincena[5];
+/* VARCHAR codigo_emp     [5]; */ 
+struct { unsigned short len; unsigned char arr[5]; } codigo_emp;
+
+/* VARCHAR numero_quincena[5]; */ 
+struct { unsigned short len; unsigned char arr[5]; } numero_quincena;
+
                                  /* Nits (C2) */
-VARCHAR nomb_clie      [61];
-VARCHAR wcod           [10];
+/* VARCHAR nomb_clie      [61]; */ 
+struct { unsigned short len; unsigned char arr[61]; } nomb_clie;
+
+/* VARCHAR wcod           [10]; */ 
+struct { unsigned short len; unsigned char arr[10]; } wcod;
+
                                  /* Ciudades (C3) */
-VARCHAR nomb_ciudad    [40];
-VARCHAR wciu           [10];
+/* VARCHAR nomb_ciudad    [40]; */ 
+struct { unsigned short len; unsigned char arr[40]; } nomb_ciudad;
+
+/* VARCHAR wciu           [10]; */ 
+struct { unsigned short len; unsigned char arr[10]; } wciu;
+
                                  /* Control_fac (C4) */
 int     ano;
 int     mes_proceso;
 float   ptaje_iva;
-VARCHAR fecha_inicial  [30];
-VARCHAR corte          [30];
+/* VARCHAR fecha_inicial  [30]; */ 
+struct { unsigned short len; unsigned char arr[30]; } fecha_inicial;
+
+/* VARCHAR corte          [30]; */ 
+struct { unsigned short len; unsigned char arr[30]; } corte;
+
                                  /* Empresas (C5) */
-VARCHAR nomb_emp       [61];
+/* VARCHAR nomb_emp       [61]; */ 
+struct { unsigned short len; unsigned char arr[61]; } nomb_emp;
 
-VARCHAR fecha_ini[20];
-VARCHAR fecha_fin[20];
+
+/* VARCHAR fecha_ini[20]; */ 
+struct { unsigned short len; unsigned char arr[20]; } fecha_ini;
+
+/* VARCHAR fecha_fin[20]; */ 
+struct { unsigned short len; unsigned char arr[20]; } fecha_fin;
+
 int     anos[12];
-VARCHAR librop   [04];
 
-EXEC SQL END DECLARE SECTION;
-EXEC SQL INCLUDE SQLCA;
+/* EXEC SQL END DECLARE SECTION; */ 
+
+/* EXEC SQL INCLUDE SQLCA;
+ */ 
+/*
+ * $Header: sqlca.h 24-apr-2003.12:50:58 mkandarp Exp $ sqlca.h 
+ */
+
+/* Copyright (c) 1985, 2003, Oracle Corporation.  All rights reserved.  */
+ 
+/*
+NAME
+  SQLCA : SQL Communications Area.
+FUNCTION
+  Contains no code. Oracle fills in the SQLCA with status info
+  during the execution of a SQL stmt.
+NOTES
+  **************************************************************
+  ***                                                        ***
+  *** This file is SOSD.  Porters must change the data types ***
+  *** appropriately on their platform.  See notes/pcport.doc ***
+  *** for more information.                                  ***
+  ***                                                        ***
+  **************************************************************
+
+  If the symbol SQLCA_STORAGE_CLASS is defined, then the SQLCA
+  will be defined to have this storage class. For example:
+ 
+    #define SQLCA_STORAGE_CLASS extern
+ 
+  will define the SQLCA as an extern.
+ 
+  If the symbol SQLCA_INIT is defined, then the SQLCA will be
+  statically initialized. Although this is not necessary in order
+  to use the SQLCA, it is a good pgming practice not to have
+  unitialized variables. However, some C compilers/OS's don't
+  allow automatic variables to be init'd in this manner. Therefore,
+  if you are INCLUDE'ing the SQLCA in a place where it would be
+  an automatic AND your C compiler/OS doesn't allow this style
+  of initialization, then SQLCA_INIT should be left undefined --
+  all others can define SQLCA_INIT if they wish.
+
+  If the symbol SQLCA_NONE is defined, then the SQLCA variable will
+  not be defined at all.  The symbol SQLCA_NONE should not be defined
+  in source modules that have embedded SQL.  However, source modules
+  that have no embedded SQL, but need to manipulate a sqlca struct
+  passed in as a parameter, can set the SQLCA_NONE symbol to avoid
+  creation of an extraneous sqlca variable.
+ 
+MODIFIED
+    lvbcheng   07/31/98 -  long to int
+    jbasu      12/12/94 -  Bug 217878: note this is an SOSD file
+    losborne   08/11/92 -  No sqlca var if SQLCA_NONE macro set 
+  Clare      12/06/84 - Ch SQLCA to not be an extern.
+  Clare      10/21/85 - Add initialization.
+  Bradbury   01/05/86 - Only initialize when SQLCA_INIT set
+  Clare      06/12/86 - Add SQLCA_STORAGE_CLASS option.
+*/
+ 
+#ifndef SQLCA
+#define SQLCA 1
+ 
+struct   sqlca
+         {
+         /* ub1 */ char    sqlcaid[8];
+         /* b4  */ int     sqlabc;
+         /* b4  */ int     sqlcode;
+         struct
+           {
+           /* ub2 */ unsigned short sqlerrml;
+           /* ub1 */ char           sqlerrmc[70];
+           } sqlerrm;
+         /* ub1 */ char    sqlerrp[8];
+         /* b4  */ int     sqlerrd[6];
+         /* ub1 */ char    sqlwarn[8];
+         /* ub1 */ char    sqlext[8];
+         };
+
+#ifndef SQLCA_NONE 
+#ifdef   SQLCA_STORAGE_CLASS
+SQLCA_STORAGE_CLASS struct sqlca sqlca
+#else
+         struct sqlca sqlca
+#endif
+ 
+#ifdef  SQLCA_INIT
+         = {
+         {'S', 'Q', 'L', 'C', 'A', ' ', ' ', ' '},
+         sizeof(struct sqlca),
+         0,
+         { 0, {0}},
+         {'N', 'O', 'T', ' ', 'S', 'E', 'T', ' '},
+         {0, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 0, 0, 0, 0},
+         {0, 0, 0, 0, 0, 0, 0, 0}
+         }
+#endif
+         ;
+#endif
+ 
+#endif
+ 
+/* end SQLCA */
+
                                             /* Variables globales del usuario */
 #define A_F1 "###,###,###.##"
 #define O1 " Impresion en proceso...... "
@@ -83,6 +212,7 @@ int     j;
 int     a, b;
 char    ai[10];
 char    mi[10];
+varchar plibro[4];
 
 struct acu {
             double valor_neto[13];
@@ -104,7 +234,7 @@ int     i;
 if (argc < 7)
    {
     printf ("Incorrecta invocacion:\n");
-    printf ("Uso : resufac fecha_ini fecha_fin libro(0= COLGAAP 1=IFRS) device copias userid/password\n");
+    printf ("Uso : resufac fecha_ini fecha_fin libro device copias userid/password\n");
     printf ("      device : t salida por terminal\n");
     printf ("               Px salida por impresora (x nro printer)\n");
     printf ("               userid/password nombre usuario y password\n");
@@ -115,10 +245,8 @@ strcpy (fecha_ini.arr,argv[1]);
 fecha_ini.len = strlen(fecha_ini.arr);
 strcpy (fecha_fin.arr,argv[2]);
 fecha_fin.len = strlen(fecha_fin.arr);
-
-strcpy (librop.arr, argv[3]);
-librop.len =        strlen(librop.arr);
-
+strcpy (plibro.arr,   argv[3]);
+plibro.len = strlen(plibro.arr);
 strcpy (device,   argv[4]);
 strlow (device);
 strcpy (copias,   argv[5]);
@@ -135,7 +263,46 @@ uid.len   =        strlen(uid.arr);
 /******************************************************
  * Establecer conexion concurrente con ORACLE (orlon) *
  ******************************************************/
-    EXEC SQL CONNECT :uid;
+    /* EXEC SQL CONNECT :uid; */ 
+
+{
+    struct sqlexd sqlstm;
+    sqlstm.sqlvsn = 12;
+    sqlstm.arrsiz = 4;
+    sqlstm.sqladtp = &sqladt;
+    sqlstm.sqltdsp = &sqltds;
+    sqlstm.iters = (unsigned int  )100;
+    sqlstm.offset = (unsigned int  )5;
+    sqlstm.cud = sqlcud0;
+    sqlstm.sqlest = (unsigned char  *)&sqlca;
+    sqlstm.sqlety = (unsigned short)256;
+    sqlstm.occurs = (unsigned int  )0;
+    sqlstm.sqhstv[0] = (         void  *)&uid;
+    sqlstm.sqhstl[0] = (unsigned int  )102;
+    sqlstm.sqhsts[0] = (         int  )102;
+    sqlstm.sqindv[0] = (         void  *)0;
+    sqlstm.sqinds[0] = (         int  )0;
+    sqlstm.sqharm[0] = (unsigned int  )0;
+    sqlstm.sqadto[0] = (unsigned short )0;
+    sqlstm.sqtdso[0] = (unsigned short )0;
+    sqlstm.sqphsv = sqlstm.sqhstv;
+    sqlstm.sqphsl = sqlstm.sqhstl;
+    sqlstm.sqphss = sqlstm.sqhsts;
+    sqlstm.sqpind = sqlstm.sqindv;
+    sqlstm.sqpins = sqlstm.sqinds;
+    sqlstm.sqparm = sqlstm.sqharm;
+    sqlstm.sqparc = sqlstm.sqharc;
+    sqlstm.sqpadto = sqlstm.sqadto;
+    sqlstm.sqptdso = sqlstm.sqtdso;
+    sqlstm.sqlcmax = (unsigned int )100;
+    sqlstm.sqlcmin = (unsigned int )2;
+    sqlstm.sqlcincr = (unsigned int )1;
+    sqlstm.sqlctimeout = (unsigned int )0;
+    sqlstm.sqlcnowait = (unsigned int )0;
+    sqlcxt((void **)0, &sqlctx, &sqlstm, &sqlfpn);
+}
+
+
 
     if (sqlca.sqlcode==-1915)
        {
@@ -176,7 +343,7 @@ uid.len   =        strlen(uid.arr);
 /**********************************************
  * Procesar una sentencia SQL (oexec).        *
  **********************************************/
-  EXEC SQL DECLARE C1 CURSOR FOR
+  /* EXEC SQL DECLARE C1 CURSOR FOR
         select codigo_cliente,\
             sum(decode(to_number(to_char(fecha_documento,'yyyy')),:anos[0],valor_neto,0)) "01",\
             sum(decode(to_number(to_char(fecha_documento,'yyyy')),:anos[1],valor_neto,0)) "02",\
@@ -193,10 +360,10 @@ uid.len   =        strlen(uid.arr);
             sum(valor_neto) \
 	from facturas f\
         where to_number(:codigo_emp)    = tipo_factura                     and\
-              tipo_documento in ('F','C')                                  and\
+              tipo_documento = 'F'                                         and\
               fecha_documento >= to_date(to_number(:fecha_ini),'yyyymmdd') and\
               fecha_documento <= to_date(to_number(:fecha_fin),'yyyymmdd') and\
-              libro = (:librop)          and\
+              libro            = to_number(:plibro) and\
               not exists\
               (select 'x'\
                from   basura\
@@ -204,9 +371,10 @@ uid.len   =        strlen(uid.arr);
                       f.tipo_documento = tipo_documento and\
                       f.numero_factura = numero_factura)\
          group by codigo_cliente \
-         order by codigo_cliente;
+         order by codigo_cliente; */ 
 
-  EXEC SQL DECLARE C6 CURSOR FOR
+
+  /* EXEC SQL DECLARE C6 CURSOR FOR
         select codigo_cliente,\
             sum(decode(to_number(to_char(fecha_documento,'yyyy')),:anos[0],valor_neto,0)) "01",\
             sum(decode(to_number(to_char(fecha_documento,'yyyy')),:anos[1],valor_neto,0)) "02",\
@@ -223,10 +391,10 @@ uid.len   =        strlen(uid.arr);
             sum(valor_neto) \
 	from facturas f\
         where to_number(:codigo_emp)    = tipo_factura                     and\
-              tipo_documento in ('F','C')                                  and\
+              tipo_documento = 'F'                                         and\
               fecha_documento >= to_date(to_number(:fecha_ini),'yyyymmdd') and\
               fecha_documento <= to_date(to_number(:fecha_fin),'yyyymmdd') and\
-              libro = (:librop)          and\
+              libro            = to_number(:plibro) and\
               exists\
               (select 'x'\
                from   basura\
@@ -234,7 +402,8 @@ uid.len   =        strlen(uid.arr);
                       f.tipo_documento = tipo_documento and\
                       f.numero_factura = numero_factura)\
          group by codigo_cliente \
-         order by codigo_cliente;
+         order by codigo_cliente; */ 
+
 
  lista_empresa(1);
  lista_empresa(3);
@@ -248,7 +417,8 @@ uid.len   =        strlen(uid.arr);
  cierre_impresora();
 
 
- EXEC SQL COMMIT WORK RELEASE;
+ /* EXEC SQL COMMIT WORK RELEASE; */ 
+
 
  exit   (0);
 }
@@ -269,10 +439,11 @@ int e;
  strcpy(fechas,cadena);
  inicio  = 0;
  staora  = 0;
- EXEC SQL OPEN C1;
+ /* EXEC SQL OPEN C1; */ 
+
  while (staora == 0) {
 
-       EXEC SQL FETCH C1 INTO :codigo_cliente,
+       /* EXEC SQL FETCH C1 INTO :codigo_cliente,
                               :valor_neto[1],
                               :valor_neto[2],
                               :valor_neto[3],
@@ -285,7 +456,8 @@ int e;
                               :valor_neto[10],
                               :valor_neto[11],
                               :valor_neto[12],
-                              :valor_total;
+                              :valor_total; */ 
+
 
        staora  = sqlca.sqlcode;
        if (staora ==  1403) break;
@@ -322,7 +494,8 @@ int e;
  strcpy(mensajes,"TOTALES GENERALES");
  totaliza(1);
  con_lin=66;
- EXEC SQL CLOSE C1;
+ /* EXEC SQL CLOSE C1; */ 
+
 }
 
 void lista_basura(e)
@@ -331,13 +504,14 @@ int e;
  sprintf(codigo_emp.arr,"%d",e);
  empresa();
 
- EXEC SQL OPEN C6;
+ /* EXEC SQL OPEN C6; */ 
+
 
  inicio  = 0;
  staora  = 0;
  while (staora == 0) {
 
-       EXEC SQL FETCH C6 INTO :codigo_cliente,
+       /* EXEC SQL FETCH C6 INTO :codigo_cliente,
                               :valor_neto[1],
                               :valor_neto[2],
                               :valor_neto[3],
@@ -350,7 +524,8 @@ int e;
                               :valor_neto[10],
                               :valor_neto[11],
                               :valor_neto[12],
-                              :valor_total;
+                              :valor_total; */ 
+
 
        staora  = sqlca.sqlcode;
        if (staora ==  1403) break;
@@ -387,7 +562,8 @@ int e;
  strcpy(mensajes,"TOTALES GENERALES");
  totaliza(1);
  con_lin=66;
- EXEC SQL CLOSE C6;
+ /* EXEC SQL CLOSE C6; */ 
+
 }
 
 void imprime_facturas()
@@ -395,11 +571,12 @@ void imprime_facturas()
  int i;
  if (con_lin > 60)
     titulos();
- EXEC SQL select n.nombre
+ /* EXEC SQL select n.nombre
           into  :nomb_clie
           from  nits n, clientes cl
           where n.codigo_nit      = cl.codigo_nit      and
-                cl.codigo_cliente = :wcod;
+                cl.codigo_cliente = :wcod; */ 
+
 
  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
      fprintf (stderr, "Error leyendo Nits(C2) (%d)\n", sqlca.sqlcode);
@@ -452,10 +629,11 @@ int i;
 void titulo_ciudad()
 {
  wciu.len  =  strlen(wciu.arr);
- EXEC SQL select nombre
+ /* EXEC SQL select nombre
           into  :nomb_ciudad
           from   ciudades
-          where  codigo = :wciu;
+          where  codigo = :wciu; */ 
+
 
  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
      fprintf (stderr, "Error leyendo Ciudades(C3) (%d)\n", sqlca.sqlcode);
@@ -497,7 +675,7 @@ void empresa()
  numero_quincena.len =  strlen(numero_quincena.arr);
  codigo_emp.len      =  strlen(codigo_emp.arr);
 
- EXEC SQL select cf.ano, cf.mes_proceso, cf.ptaje_iva,
+ /* EXEC SQL select cf.ano, cf.mes_proceso, cf.ptaje_iva,
                to_date(
                decode(to_number(cf.numero_quincena),
                   1,to_number(cf.ano||lpad(cf.mes_proceso,2,0)||lpad(1,2,0)),
@@ -508,7 +686,8 @@ void empresa()
                   2,to_number(to_char(last_day(to_date(cf.ano||lpad(cf.mes_proceso,2,0),'yymm')),'yyyymmdd'))),'yymmdd'),'yyyymmdd'),'yyyymmdd')
         into  :ano, :mes_proceso, :ptaje_iva, :fecha_inicial, :corte
 	from  control_fac cf
-        where cf.codigo_emp   = :codigo_emp;
+        where cf.codigo_emp   = :codigo_emp; */ 
+
 
  if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
      fprintf (stderr, "Error leyendo Control_Fac(C4) (%d)\n", sqlca.sqlcode);
@@ -516,66 +695,8 @@ void empresa()
  fecha_inicial.arr [fecha_inicial.len] = '\0';
  corte.arr         [corte.len]         = '\0';
 
- EXEC SQL select nits.nombre
+ /* EXEC SQL select nits.nombre
           into  :nomb_emp
           from   empresas, nits
           where  empresas.codigo_nit = nits.codigo_nit and
-                 empresas.codigo_emp = :codigo_emp;
-
- if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
-     fprintf (stderr, "Error leyendo Empresa(C5) (%d)\n", sqlca.sqlcode);
-
- nomb_emp.arr   [nomb_emp.len] = '\0';
-}
-
-/************************
-* TITULOS()
-*    Imprime titulos en el archivo de spool.
-*/
-
-void titulos()
-{
- int i;
-
- con_pag++;
- if (!strcmp(codigo_emp.arr,"3"))
-    strcpy(nomb_emp.arr," ");
- fprintf(fp,"%s",salte_pagina);
- strful(cadena,(int)(42-strlen(nomb_emp.arr))/2,' ');
- fprintf(fp,"%s%s%s%s%s\n\n",diezcpi,ancho_on,cadena,nomb_emp.arr,ancho_off);
- if( serv == 0 )
-   fprintf(fp,"%s%s%s%44s",diezcpi,condensado_on,ancho_on,"RESUMEN DE VENTAS (CREDITO+CONTADO)");
- else  {
-   if (!strcmp(codigo_emp.arr,"1"))
-       fprintf(fp,"%s%s%s%39s",diezcpi,condensado_on,ancho_on,"SERVICIOS DE ADMINISTRACION");
-   else
-       fprintf(fp,"%s%s%s%46s",diezcpi,condensado_on,ancho_on,"MATERIA PRIMA");
- }
- fprintf(fp,"%s%17s %d\n",diezcpi,"PAGINA ",con_pag);
- fprintf(fp,"%s%s%s%44s\n",diezcpi,condensado_on,ancho_on,"COMPARATIVO ANUAL");
- strorg(fechas,1,strlen(fechas));
- fprintf(fp,"%s%s%62s\n\n",enfatizado_on,fechas,enfatizado_off);
- fprintf(fp,"%s%s%s%36s",ancho_off,condensado_on,"CODIGO ","C L I E N T E / O P T I C A");
- fprintf(fp,"%168s\n",                        "      FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION   FACTURACION     FACTURACION");
- fprintf(fp,"%s%46s",enfatizado_on," ");
-
- for (i=1;i<=12;i++) {
-      fprintf(fp,"%14s","DEL A\\O");
- }
- fprintf(fp,"%15s\n","TOTAL");
-
- fprintf(fp,"%s%50s",enfatizado_on," ");
-
- for (i=0;i<=11;i++) {
-     sprintf (cadena,"%4d",anos[i]);
-     fprintf(fp,"%5s%-9s"," ",fmtnum("z,zz9",cadena,r_t));
- }
-
- fprintf(fp,"%s%5s\n\n",enfatizado_off," ");
-
- con_lin = 10;
- if (tit_ciu == 0) {
-    titulo_ciudad();
-    tit_ciu=1;
-  }
-}
+                 empresas.codigo_emp = :codigo_emp; */ 

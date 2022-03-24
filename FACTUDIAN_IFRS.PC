@@ -71,6 +71,10 @@ VARCHAR cliente_ini[10];
 VARCHAR cliente_fin[10];
 VARCHAR fecha_ini[20];
 VARCHAR fecha_fin[20];
+double  fecha_ctrl_ini;
+double  fecha_corte_ini;
+double  fecha_ctrl_fin;
+double  fecha_corte_fin;
 VARCHAR codigo_cliente[10];
 VARCHAR nomb_clie[100];
 VARCHAR nomb_ciu[100];
@@ -114,6 +118,7 @@ int     cm_retefte;
 double  monto_retefte;
 VARCHAR ultimo_numero_c[20];
 VARCHAR codigo_cliente_c[20];
+VARCHAR fecha_esp_c[20];
 VARCHAR fecha_corte_c[20];
 VARCHAR fecha_vencmto_c[20];
 VARCHAR nro_ordenes_oc[20];
@@ -299,8 +304,10 @@ strcpy (numero_quincena.arr,argv[3]);
 numero_quincena.len =   strlen(numero_quincena.arr);
 strcpy (fecha_ini.arr, argv[4]);
 fecha_ini.len     =   strlen(fecha_ini.arr);
+fecha_corte_ini = atof(fecha_ini.arr);
 strcpy (fecha_fin.arr, argv[5]);
 fecha_fin.len     =   strlen(fecha_fin.arr);
+fecha_corte_fin = atof(fecha_fin.arr);
 strcpy (cliente_ini.arr, argv[6]);
 cliente_ini.len     =   strlen(cliente_ini.arr);
 strcpy (cliente_fin.arr, argv[7]);
@@ -356,9 +363,48 @@ uid.len     = strlen(uid.arr);
  * Procesar una sentencia SQL (oexec).        *
  **********************************************/
 
+/**********************************************
+ * Inicio control fechas inicial y final      *
+ **********************************************/
+
+  EXEC SQL select
+           to_number(to_char(to_date(
+               decode(cf.numero_quincena,
+                      1,to_number(cf.ano||lpad(cf.mes_proceso,2,0)||'01'),
+                      2,to_number(cf.ano||lpad(cf.mes_proceso,2,0)||'16')
+                      ),'yymmdd'),'yyyymmdd')) as fecha_inicial_ctrl,
+               to_number(to_char(to_date(
+               decode(cf.numero_quincena,
+                      1,to_number(cf.ano||lpad(cf.mes_proceso,2,0)||15),
+                      2,to_number(to_char(last_day(to_date(cf.ano||lpad(cf.mes_proceso,2,0),'yymm')),'yyyymmdd'))
+                      ),'yymmdd'),'yyyymmdd')) as fecha_final_ctrl
+           into :fecha_ctrl_ini, :fecha_ctrl_fin
+           from control_fac cf
+           where codigo_emp = 1;
+
+    if (fecha_corte_ini != fecha_ctrl_ini) {
+        printf("fecha_corte_ini <%-12.0f> debe ser igual a la fecha_ctrl_ini <%-12.0f>",fecha_corte_ini,fecha_ctrl_ini); getchar();
+	      exit (1);
+    }
+
+    if (fecha_corte_fin > fecha_ctrl_fin || fecha_corte_fin < fecha_ctrl_ini) {
+        printf("fecha_corte_fin <%-12.0f> debe estar entre fecha_ctrl_ini <%-12.0f> y fecha_ctrl_fin <%-12.0f>",fecha_corte_fin,fecha_ctrl_ini,fecha_ctrl_fin); getchar();
+	      exit (1);
+    }
+
+
+//    printf("1) fecha_corte_ini <%-12.0f> debe ser igual a la fecha_ctrl_ini <%-12.0f>",fecha_corte_ini,fecha_ctrl_ini); getchar();
+//    printf("2) fecha_corte_fin <%-12.0f> debe estar entre fecha_ctrl_ini <%-12.0f> y fecha_ctrl_fin <%-12.0f>",fecha_corte_fin,fecha_ctrl_ini,fecha_ctrl_fin); getchar();
+//    exit (1);
+
+/**********************************************
+ * Fin control fechas inicial y final         *
+ **********************************************/
+
     if (!strcmp(cliente_ini.arr,cliente_fin.arr)) {
+        printf("cliente_ini<%s> cliente_fin<%s>",cliente_ini.arr,cliente_fin.arr); getchar();
         EXEC SQL select count(*)
-                 into cuantos
+                 into :cuantos
                  from pedido_c c, clientes f, control_fac cf
                  where c.estado in ('O','P') AND
                        f.codigo_emp     = 1 and
@@ -388,12 +434,14 @@ uid.len     = strlen(uid.arr);
              from pedido_c c, control_fac cf
              where estado in ('P','O') AND
                    cf.codigo_emp = 1 and
+                   c.codigo_cliente >= :cliente_ini AND
+                   c.codigo_cliente <= :cliente_fin AND
                    c.fecha_control  <=
                    to_date(
                    decode(to_number(:numero_quincena),
                        1,to_number(to_char(to_date(cf.ano||lpad(cf.mes_proceso,2,0)||15,'yymmdd'),'yyyymmdd')),
                        2,to_number(to_char(last_day(to_date(cf.ano||lpad(cf.mes_proceso,2,0),'yyyymm')),'yyyymmdd')))||23,'yyyymmddhh24' ); 
-/*
+
     if (cuantos > 0 ) {
         EXEC SQL OPEN C16;
         staora  = 0;
@@ -404,7 +452,7 @@ uid.len     = strlen(uid.arr);
               staora  = sqlca.sqlcode;
               codigo_cliente.arr      [codigo_cliente.len]     = '\0';
               fecha_control.arr       [fecha_control.len]      = '\0';
-              printf("%-6s%-12.0f%10s", codigo_cliente.arr, numero_orden, fecha_control.arr);
+              printf("%-6s %-12.0f %10s\n", codigo_cliente.arr, numero_orden, fecha_control.arr);
         }
         EXEC SQL CLOSE C16;
         
@@ -412,7 +460,7 @@ uid.len     = strlen(uid.arr);
         EXEC SQL ROLLBACK WORK RELEASE;
         exit   (0);
     }
-*/ 
+ 
     EXEC SQL select sysdate
              into   :ano_mes
              from   dual;
@@ -435,7 +483,8 @@ uid.len     = strlen(uid.arr);
                       0,to_number(:fecha_fin),
                       1,to_number(cf.ano||lpad(cf.mes_proceso,2,0)||15),
                       2,to_number(to_char(last_day(to_date(cf.ano||lpad(cf.mes_proceso,2,0),'yymm')),'yyyymmdd'))),'yymmdd'),'yyyymmdd'),'yymmdd') as fecha_fac,
-               retefte, monto_retefte, nvl(si_retefte,0), nvl(cm_retefte,0), decode(n.clase_docu,'N',cf.cree,0) as cree, nvl(dcto_financ,0) as dcto_financ
+               retefte, monto_retefte, nvl(si_retefte,0), nvl(cm_retefte,0), decode(n.clase_docu,'N',cf.cree,0) as cree, nvl(dcto_financ,0) as dcto_financ,
+               to_date(:fecha_fin,'yyyymmdd') as fecha_esp                
         from ordenes_c o, clientese e, control_fac cf, clientes cl, nits n
         where to_number(:codigo_emp) = nvl(e.codigo_emp,1)           and
               to_number(:codigo_emp) = cf.codigo_emp                 and
@@ -601,8 +650,8 @@ uid.len     = strlen(uid.arr);
    EXEC SQL FETCH C1 INTO :codigo_cliente, :consecutivo, :numero_orden,
                           :clase_material, :valor_total, :ptaje_iva,
                           :fecha_vencmto,  :fecha_corte, :retefte, 
-                          :monto_retefte, :si_retefte, :cm_retefte, 
-                          :cree, :dcto_financ;
+                          :monto_retefte,  :si_retefte,  :cm_retefte, 
+                          :cree,           :dcto_financ, :fecha_esp_c;
    oraest  = sqlca.sqlcode;
 
    if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
@@ -612,6 +661,7 @@ uid.len     = strlen(uid.arr);
    clase_material.arr      [clase_material.len]     = '\0';
    fecha_vencmto.arr       [fecha_vencmto.len]      = '\0';
    fecha_corte.arr         [fecha_corte.len]        = '\0';
+   fecha_esp_c.arr         [fecha_esp_c.len]        = '\0';
 
 //   printf("1) %s si_retefte <%d> %d",codigo_cliente.arr,si_retefte,oraest); getchar();
 //printf("codigo_cliente.arr=<%s>",codigo_cliente.arr);getchar();
@@ -720,8 +770,9 @@ while (oraest == 0) {
       EXEC SQL FETCH C1 INTO :codigo_cliente, :consecutivo, :numero_orden,
                              :clase_material, :valor_total, :ptaje_iva,
                              :fecha_vencmto,  :fecha_corte, :retefte, 
-                             :monto_retefte, :si_retefte, :cm_retefte, 
-                             :cree, :dcto_financ;
+                             :monto_retefte,  :si_retefte,  :cm_retefte, 
+                             :cree,           :dcto_financ, :fecha_esp_c;
+
       oraest  = sqlca.sqlcode;
 
       if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
@@ -731,6 +782,7 @@ while (oraest == 0) {
       clase_material.arr      [clase_material.len]     = '\0';
       fecha_vencmto.arr       [fecha_vencmto.len]      = '\0';
       fecha_corte.arr         [fecha_corte.len]        = '\0';
+      fecha_esp_c.arr         [fecha_esp_c.len]        = '\0';
 //printf("1.11) %s si_retefte <%d> %d",codigo_cliente.arr,si_retefte,oraest); getchar();
 
 }
@@ -1006,12 +1058,16 @@ void totales()
         fprintf (stderr, "Error leyendo IFRS (%d)\n", sqlca.sqlcode);
     }
     else {
-        hacer_asiento(0);
-        asiento_opticasp(0);
+        hacer_asiento(0); // consecutivo ++
         if (estado_ifrs == 1) {
             if (fechaf >= fecha_ifrs) {
-               hacer_asiento_ifrs(1);
-               asiento_opticasp_ifrs(1);
+               hacer_asiento_ifrs(1);  // mismo consecutivo
+            }
+        }
+        asiento_opticasp(0); // consecutivo ++
+        if (estado_ifrs == 1) {
+            if (fechaf >= fecha_ifrs) {
+               asiento_opticasp_ifrs(1); // mismo consecutivo
             }
         }
     }   
@@ -1210,7 +1266,8 @@ void actualizo_facturas(li)
          VALOR_ICA, 
 	       LIBRO,
       	 VAL_DCTO_CON, 
-      	 DIAS_DCTO_CON)
+      	 DIAS_DCTO_CON,
+         FECHA_ESP)
         values (to_number(:ultimo_numero_c),
                 (:codigo_cliente_c),
                 to_date(:fecha_corte_c),
@@ -1243,7 +1300,8 @@ void actualizo_facturas(li)
                 0,
                 to_number(:li_c,'99'),
              	  to_number(:val_dcto_con_c,'9999999999999.99'),
-                30);
+                30,
+                to_date(:fecha_esp_c));
 
        oraest  = sqlca.sqlcode;
 
@@ -1351,7 +1409,9 @@ void mover_datos_factura(li)
  if (li == 1) {
      sprintf(val_dcto_con_c.arr,"%9.0f",val_dcto_con);
      val_dcto_con_c.len   = strlen(val_dcto_con_c.arr);
+/*
      costo_factura = costo_factura - val_dcto_con;
+*/
      sprintf(costo_factura_c.arr,"%9.0f",costo_factura);
      costo_factura_c.len  = strlen(costo_factura_c.arr);
  }
@@ -1824,12 +1884,16 @@ void hacer_asiento(li)
 
 /* Lee consecutivo de control_mes Fte 17 Cns ultimo Asiento Aj x Depreciacion */
 //  printf("1) fuenteb<%s> ano_mesa<%s> codigo_emp<%s>",fuenteb.arr,ano_mesa.arr,codigo_emp.arr); getchar();
-  EXEC SQL select consecutivo   into :consecutivo15
-           from control_mes
-           where fuente       = to_number(:fuenteb)       and
-                 ano_mes      = to_number(:ano_mesa)      and
-                 codigo_emp   = to_number(:codigo_emp);
 
+  EXEC SQL  
+     select consecutivo INTO :consecutivo15   
+     from control_mes
+     where fuente     = to_number(:fuenteb)       and
+           ano_mes    = to_number(:ano_mesa)      and
+           codigo_emp = to_number(:codigo_emp)
+     for update of consecutivo;
+
+ 
   if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
       fprintf (stderr, "Error leyendo Control_Mes (%d)\n", sqlca.sqlcode);
   else {
@@ -1862,18 +1926,20 @@ void hacer_asiento(li)
 
   }
 
+
   strcpy(fuenteb.arr,"08");
   fuenteb.len = strlen(fuenteb.arr);
 
   /* Lee consecutivo de Control_mes Fte 08 sgte consecutivo */
 
 //  printf("2) fuenteb<%s> ano_mesa<%s> codigo_emp<%s>",fuenteb.arr,ano_mesa.arr,codigo_emp.arr); getchar();
-  EXEC SQL select consecutivo+1 into :consecutivo2
+
+  EXEC SQL select consecutivo+1 INTO :consecutivo2
            from control_mes
            where fuente       = to_number(:fuenteb)       and
                  ano_mes      = to_number(:ano_mesa)      and
                  codigo_emp   = to_number(:codigo_emp)
-           for update;
+           for update of consecutivo;
 
   if (sqlca.sqlcode)
      {
@@ -1898,6 +1964,7 @@ void hacer_asiento(li)
                        fuente       = :fuenteb;
   }
 
+
   strcpy(fuenteb.arr,"17");
   fuenteb.len = strlen(fuenteb.arr);
 
@@ -1906,7 +1973,7 @@ void hacer_asiento(li)
            where fuente       = to_number(:fuenteb)       and
                  ano_mes      = to_number(:ano_mesa)      and
                  codigo_emp   = to_number(:codigo_emp)
-           for update;
+           for update of consecutivo;
 
   if (sqlca.sqlcode)
      {
@@ -2445,7 +2512,10 @@ void hacer_asiento_ifrs(li)
      strcpy(inf[4],comprobanteb.arr);
 
      ver_inf();
+/*
      total_cartera2 = total_cartera - val_dcto_con;
+*/     
+     total_cartera2 = total_cartera;
      sprintf(valor_debb.arr,"%10.2f",total_cartera2);
      valor_debb.len = strlen(valor_debb.arr);
      strcpy (valor_creb.arr,"");
@@ -2672,7 +2742,10 @@ if ( valor_cree > 0 ) {
      ver_inf();
      strcpy (valor_debb.arr,"");
      valor_debb.len = strlen(valor_debb.arr);
+/*
      sprintf(valor_creb.arr,"%10.2f",(sub_total_o+sub_total_c)-val_dcto_con);
+*/
+     sprintf(valor_creb.arr,"%10.2f",sub_total_o+sub_total_c);
      valor_creb.len = strlen(valor_creb.arr);
 
                                          /* Graba en movto_d el Credito (C4) */
@@ -2850,11 +2923,13 @@ void asiento_opticasp(li)
 
 /* Lee consecutivo de control_mes Fte 17 Cns ultimo Asiento Aj x Depreciacion */
 //  printf("1) fuenteb<%s> ano_mesa<%s> codigo_emp<%s>",fuenteb.arr,ano_mesa.arr,codigo_emp.arr); getchar();
+
   EXEC SQL select consecutivo   into :consecutivo15
            from control_mes
            where fuente       = to_number(:fuenteb)       and
                  ano_mes      = to_number(:ano_mesa)      and
-                 codigo_emp   = to_number(:codigo_emp_op);
+                 codigo_emp   = to_number(:codigo_emp_op)
+           for update of consecutivo;
 
   if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0)
       fprintf (stderr, "Error leyendo Control_Mes (%d)\n", sqlca.sqlcode);
@@ -2903,7 +2978,7 @@ void asiento_opticasp(li)
            where fuente       = to_number(:fuenteb)       and
                  ano_mes      = to_number(:ano_mesa)      and
                  codigo_emp   = to_number(:codigo_emp_op)
-           for update;
+           for update of consecutivo;
 
   if (sqlca.sqlcode)
      {
@@ -2936,7 +3011,7 @@ void asiento_opticasp(li)
            where fuente       = to_number(:fuenteb)       and
                  ano_mes      = to_number(:ano_mesa)      and
                  codigo_emp   = to_number(:codigo_emp_op)
-           for update;
+           for update of consecutivo;
 
   if (sqlca.sqlcode)
      {
@@ -3403,7 +3478,10 @@ void asiento_opticasp_ifrs(li)
 
 // 1) Lentes oftalmicos
 
+/*
   if ( (sub_total_o+fletes-val_dcto_con) > 0 ) {
+*/
+  if ( (sub_total_o+fletes) > 0 ) {
      secuencia++;
      sprintf(secuenciab.arr,"%6.0f",secuencia);
      secuenciab.len = strlen(secuenciab.arr);
@@ -3580,7 +3658,11 @@ void asiento_opticasp_ifrs(li)
      strcpy(inf[4],fechab.arr);
 
      ver_inf_op();
+/*
      sprintf(valor_creb.arr,"%10.2f",(total_cartera - val_dcto_con));
+     valor_creb.len = strlen(valor_creb.arr);
+*/
+     sprintf(valor_creb.arr,"%10.2f",(total_cartera));
      valor_creb.len = strlen(valor_creb.arr);
      strcpy (valor_debb.arr,"");
      valor_debb.len = strlen(valor_debb.arr);

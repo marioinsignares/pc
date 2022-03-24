@@ -871,7 +871,7 @@ mpresora=:b30";
 
   if ((fp = fopen(w_ruta.arr, "w")) == NULL)
      {
-      fprintf (stderr,"Error abriendo archivo pipe \n");
+      fprintf (stderr,"Error abriendo archivo pipe: <%s> \n", w_ruta.arr);
       exit (1);
   }
 

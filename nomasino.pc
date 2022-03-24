@@ -20,7 +20,7 @@
 double redondo();
 void hacer_asiento();
 void ver_inf();
-void grabar_movtod();
+void grabar_movtod(int li);
 double redondo();
 
 
@@ -49,6 +49,7 @@ VARCHAR infd        [14];
 VARCHAR valor_debb  [15];
 VARCHAR valor_creb  [15];
 char    inf         [5][14];
+VARCHAR li_c        [5];
                                  /* Control_Mes (C5) */
 double  consecutivo;
 VARCHAR fuenteb     [03];
@@ -623,7 +624,8 @@ void hacer_asiento()
                                }
                                else valor = valor_d;
 //                             printf("gasto_comun<%s> codigo<%d> sucursalb.arr<%s> nitn<%14.0f> valor_r<%12.2f> valor_d<%12.2f> valor<%12.2f> ",gasto_comun.arr, codigo, sucursalb.arr, nitn, valor_r, valor_d, valor); getchar();
-                               grabar_movtod();
+                               grabar_movtod(0);
+                               grabar_movtod(1);
                                EXEC SQL FETCH C7 INTO :sucursalb, :ptajesuc, :ultimo;
                                staorag = sqlca.sqlcode;
                         }
@@ -641,14 +643,18 @@ void hacer_asiento()
                                }
                                else valor = valor_d;
 //                             printf("gasto_comun<%s> codigo<%d> sucursalb.arr<%s> nitn<%14.0f> valor_r<%12.2f> valor_d<%12.2f> valor<%12.2f> ",gasto_comun.arr, codigo, sucursalb.arr, nitn, valor_r, valor_d, valor); getchar();
-                               grabar_movtod();
+                               grabar_movtod(0);
+                               grabar_movtod(1);
                                EXEC SQL FETCH C9 INTO :sucursalb, :ptajesuc, :ultimo;
                                staorag = sqlca.sqlcode;
                         }
                         EXEC SQL CLOSE C9;
                     }
                  }
-                 else grabar_movtod();
+                 else {
+                       grabar_movtod(0);
+                       grabar_movtod(1);
+                 }
               }
 
               EXEC SQL FETCH C6 INTO :nitn,       :codigo_nit,    :cuentab,   :db_cr, :valor,
@@ -669,8 +675,11 @@ void hacer_asiento()
   }
 }
 
-void grabar_movtod()
+void grabar_movtod(li)
 {
+
+    sprintf(li_c.arr,"%d",li);
+    li_c.len = strlen(li_c.arr);
               if (valor > 0 && db_cr == 0) {
 
                  sprintf(valor_debb.arr,"%10.2f",valor);
@@ -694,7 +703,8 @@ void grabar_movtod()
                       	       	 VALOR_DEB,
                       	       	 VALOR_CRE,
                       	       	 SUCURSAL,
-                      	       	 CEN_COS)
+                      	       	 CEN_COS,
+                                 LIBRO)
                           values(to_number(:codigo_emp), 
                                  to_number(:ano_mes), 
                                  to_number(:consecutivob), 
@@ -703,7 +713,7 @@ void grabar_movtod()
                                  to_number(:codigo_nitb), 
                                  to_number(:valor_debb, '999999999.99'), 
                                  to_number(:valor_creb, '999999999.99'), 
-                                 :sucursalb, :cen_cosb);
+                                 :sucursalb, :cen_cosb, :li_c);
 
 	           if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
         	       printf("Error Grabando Debito (%d)\n", sqlca.sqlcode);
@@ -720,7 +730,8 @@ void grabar_movtod()
 	               printf("valor_debb <%s>\n",valor_debb.arr);
         	       printf("valor_creb <%s>\n",valor_creb.arr);
 	               printf("sucursalb <%s>\n",sucursalb.arr);
-        	       printf("cen_cosb <%s>\n",cen_cosb.arr); getchar();
+                 printf("cen_cosb <%s>\n",cen_cosb.arr);
+	               printf("libro <%s>\n",li); getchar();
 	           }
 
               }
@@ -749,7 +760,8 @@ void grabar_movtod()
                           	       		 VALOR_DEB,
                           	       		 VALOR_CRE,
                           	       		 SUCURSAL,
-                          	       		 CEN_COS)
+                          	       		 CEN_COS,
+                                       LIBRO)
                                 values(to_number(:codigo_emp), 
                                        to_number(:ano_mes), 
                                        to_number(:consecutivob), 
@@ -758,7 +770,7 @@ void grabar_movtod()
                                        to_number(:codigo_nitb), 
                                        to_number(:valor_debb, '999999999.99'), 
                                        to_number(:valor_creb, '999999999.99'), 
-                                       :sucursalb, :cen_cosb);
+                                       :sucursalb, :cen_cosb, :li_c);
 
 		           if (sqlca.sqlcode != 1403 && sqlca.sqlcode != 0) {
 		               printf("Error Grabando Credito (%d)\n", sqlca.sqlcode);
@@ -775,7 +787,8 @@ void grabar_movtod()
 		               printf("valor_debb <%s>\n",valor_debb.arr);
 		               printf("valor_creb <%s>\n",valor_creb.arr);
 		               printf("sucursalb <%s>\n",sucursalb.arr);
-		               printf("cen_cosb <%s>\n",cen_cosb.arr); getchar();
+		               printf("cen_cosb <%s>\n",cen_cosb.arr);
+		               printf("libro <%s>\n",li); getchar();
 		           }
 
               }

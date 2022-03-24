@@ -28,8 +28,8 @@ VARCHAR vecinf     [20][14];
 VARCHAR ano_mes    [20];
 VARCHAR tipo_ini   [10];
 VARCHAR tipo_fin   [10];
-VARCHAR cmp_ini    [7];
-VARCHAR cmp_fin    [8];
+VARCHAR cmp_ini    [20];
+VARCHAR cmp_fin    [20];
 VARCHAR veca       [14];
 VARCHAR vecb       [14];
 VARCHAR vecc       [14];
@@ -69,8 +69,7 @@ int     digito;
 VARCHAR cen_cosb   [05];
 VARCHAR sucursalb  [03];
 VARCHAR librob     [02];
-
-
+double  consecutivo_an;
 
 EXEC SQL END DECLARE SECTION;
 EXEC SQL INCLUDE SQLCA;
@@ -220,8 +219,8 @@ int     nrec   = 0;
                  c.tipo          <= to_number(:tipo_fin)          and
                  c.comprobante   >= to_number(:cmp_ini)           and
                  c.comprobante   <= to_number(:cmp_fin)           and
-                 d.libro          = to_number(:librob)            and
-                 c.estado        <>   '9'
+                 d.libro          = to_number(:librob)           /* and
+                 c.estado        <>   '9'                        */
           order by tipo, comprobante;
 
      EXEC SQL DECLARE C2B CURSOR FOR
@@ -348,7 +347,10 @@ int     nrec   = 0;
           printf("inicio <%d>, codigo_emp<%s>, ano_mes<%s>, tipo_ini<%s>, tipo_fin<%s>, cmp_ini<%s>, cmp_fin<%s>, librob<%s>,  comprobante=<%10.0f> consecutivo=<%10.0f>\n",staora, codigo_emp.arr, ano_mes.arr, tipo_ini.arr, tipo_fin.arr, cmp_ini.arr, cmp_fin.arr, librob.arr, comprobante, consecutivo); getchar();
 */
 
-          if (traidos == 0) tipo_an=tipo[0];
+          if (traidos == 0) {
+              tipo_an        = tipo[0];
+              consecutivo_an = consecutivo[0];
+          }
 
           traidos = sqlca.sqlerrd[2];
 
@@ -374,7 +376,10 @@ int     nrec   = 0;
               lista_movto();
               if (!strcmp(asiento,"s"))
                   if (strcmp(estado[loop_2].arr, "2")) {
-                      voy_marco_movto();
+                      if (consecutivo_an != consecutivo[loop_2]) {
+                          voy_marco_movto();
+                          consecutivo_an = consecutivo[loop_2];
+                      }
                       nrec++;
                       if (nrec >= 100) {
                           EXEC SQL COMMIT;
@@ -384,6 +389,7 @@ int     nrec   = 0;
           }
           num_ret = traidos;
     }
+    voy_marco_movto();
     if (!strcmp (orden,"T")) {
        EXEC SQL CLOSE C2A;
     }
@@ -722,11 +728,12 @@ void voy_marco_movto()
 {
   EXEC SQL update movto_c set    estado = '9'
            where  codigo_emp   = to_number(:codigo_emp) and
-                  tipo        >=          (:tipo_ini) and
-                  tipo        <=          (:tipo_fin) and
-                  comprobante >= to_number(:cmp_ini) and
-                  comprobante <= to_number(:cmp_fin) and
-                  ano_mes      = to_number(:ano_mes) and
+                  tipo        >=          (:tipo_ini)   and
+                  tipo        <=          (:tipo_fin)   and
+                  comprobante >= to_number(:cmp_ini)    and
+                  comprobante <= to_number(:cmp_fin)    and
+                  ano_mes      = to_number(:ano_mes)    and
+                  consecutivo  = :consecutivo_an        and
                   estado      <> '2';
 // printf("voy_marco_movto codigo_emp %s tipo_ini %s tipo_fin %s cmp_ini %s cmp_fin %s ano_mes %s sqlca.sqlcode %d\n", codigo_emp.arr, tipo_ini.arr, tipo_fin.arr, cmp_ini.arr, cmp_fin.arr, ano_mes.arr, sqlca.sqlcode); getchar();
 

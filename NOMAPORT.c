@@ -65,7 +65,7 @@ struct sqlcxp
 static const struct sqlcxp sqlfpn =
 {
     13,
-    ".\\NOMAPORT.pc"
+    ".\\nomaport.pc"
 };
 
 
@@ -136,9 +136,9 @@ RSAL order by E.CODIGO            ";
 
  static const char *sq0024 = 
 "select codigo_emp ,ano_mes ,consecutivo ,cuenta ,infa ,infb ,infc ,infd ,cod\
-igo_nit ,sum(nvl(valor_deb,0)) ,sum(nvl(valor_cre,0)) ,sucursal ,cen_cos  from\
- movto_dt  group by codigo_emp,ano_mes,consecutivo,cuenta,infa,infb,infc,infd,\
-codigo_nit,sucursal,cen_cos           ";
+igo_nit ,sum(nvl(valor_deb,0)) ,sum(nvl(valor_cre,0)) ,sucursal ,cen_cos ,libr\
+o  from movto_dt  group by codigo_emp,ano_mes,consecutivo,cuenta,infa,infb,inf\
+c,infd,codigo_nit,sucursal,cen_cos,libro           ";
 
  static const char *sq0005 = 
 "select sucursal ,ptaje ,ultimo  from SUCURSAL where (codigo_emp=:b0 and ptaj\
@@ -154,77 +154,80 @@ typedef struct { unsigned short len; unsigned char arr[1]; } varchar;
 /* cud (compilation unit data) array */
 static const short sqlcud0[] =
 {10,4114,0,0,0,
-5,0,0,1,0,0,27,191,0,0,4,4,0,1,0,1,9,0,0,1,10,0,0,1,10,0,0,1,10,0,0,
-36,0,0,2,140,0,4,227,0,0,4,1,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,1,9,0,0,
-67,0,0,3,35,0,9,240,0,0,0,0,0,1,0,
-82,0,0,3,0,0,13,247,0,0,1,0,0,1,0,2,9,0,0,
-101,0,0,3,0,0,15,261,0,0,0,0,0,1,0,
-116,0,0,7,0,0,30,327,0,0,0,0,0,1,0,
-131,0,0,8,262,0,2,357,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-166,0,0,9,148,0,2,371,0,0,3,3,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,
-193,0,0,10,150,0,4,388,0,0,4,3,0,1,0,2,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-224,0,0,11,71,0,3,401,0,0,4,4,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-255,0,0,12,117,0,5,409,0,0,4,4,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-286,0,0,4,1680,0,9,448,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-321,0,0,4,0,0,13,450,0,0,28,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
+5,0,0,1,0,0,27,192,0,0,4,4,0,1,0,1,9,0,0,1,10,0,0,1,10,0,0,1,10,0,0,
+36,0,0,2,140,0,4,228,0,0,4,1,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,1,9,0,0,
+67,0,0,3,35,0,9,241,0,0,0,0,0,1,0,
+82,0,0,3,0,0,13,249,0,0,1,0,0,1,0,2,9,0,0,
+101,0,0,3,0,0,15,264,0,0,0,0,0,1,0,
+116,0,0,7,0,0,30,330,0,0,0,0,0,1,0,
+131,0,0,8,262,0,2,360,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+166,0,0,9,148,0,2,374,0,0,3,3,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,
+193,0,0,10,150,0,4,391,0,0,4,3,0,1,0,2,4,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+224,0,0,11,71,0,3,404,0,0,4,4,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+255,0,0,12,117,0,5,412,0,0,4,4,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+286,0,0,4,1680,0,9,451,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+321,0,0,4,0,0,13,453,0,0,28,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
 9,0,0,2,9,0,0,2,4,0,0,2,4,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,2,3,0,0,
 2,3,0,0,2,3,0,0,2,3,0,0,2,3,0,0,2,4,0,0,2,3,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,
 0,2,4,0,0,2,9,0,0,2,9,0,0,
-448,0,0,4,0,0,15,467,0,0,0,0,0,1,0,
-463,0,0,4,1680,0,9,471,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-498,0,0,4,0,0,13,472,0,0,28,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
+448,0,0,4,0,0,15,470,0,0,0,0,0,1,0,
+463,0,0,4,1680,0,9,474,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+498,0,0,4,0,0,13,475,0,0,28,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
 9,0,0,2,9,0,0,2,4,0,0,2,4,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,2,3,0,0,
 2,3,0,0,2,3,0,0,2,3,0,0,2,3,0,0,2,4,0,0,2,3,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,
 0,2,4,0,0,2,9,0,0,2,9,0,0,
-625,0,0,4,0,0,15,493,0,0,0,0,0,1,0,
-640,0,0,13,203,0,3,513,0,0,6,6,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
+625,0,0,4,0,0,15,496,0,0,0,0,0,1,0,
+640,0,0,13,203,0,3,516,0,0,6,6,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,
 9,0,0,
-679,0,0,4,0,0,15,535,0,0,0,0,0,1,0,
-694,0,0,14,22,0,2,537,0,0,0,0,0,1,0,
-709,0,0,4,1680,0,9,545,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-744,0,0,4,0,0,13,547,0,0,28,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
+679,0,0,4,0,0,15,538,0,0,0,0,0,1,0,
+694,0,0,14,22,0,2,540,0,0,0,0,0,1,0,
+709,0,0,4,1680,0,9,548,0,0,5,5,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
+744,0,0,4,0,0,13,550,0,0,28,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
 9,0,0,2,9,0,0,2,4,0,0,2,4,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,2,3,0,0,
 2,3,0,0,2,3,0,0,2,3,0,0,2,3,0,0,2,4,0,0,2,3,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,
 0,2,4,0,0,2,9,0,0,2,9,0,0,
-871,0,0,15,114,0,4,574,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
-898,0,0,16,115,0,4,584,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
-925,0,0,17,115,0,4,594,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
-952,0,0,18,67,0,4,604,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
-979,0,0,19,115,0,4,612,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
-1006,0,0,20,67,0,4,622,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
-1033,0,0,21,67,0,4,630,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
-1060,0,0,22,67,0,4,638,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
-1087,0,0,23,71,0,4,646,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
-1114,0,0,4,0,0,13,709,0,0,28,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
+871,0,0,15,114,0,4,577,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
+898,0,0,16,115,0,4,587,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
+925,0,0,17,115,0,4,597,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
+952,0,0,18,67,0,4,607,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
+979,0,0,19,115,0,4,615,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
+1006,0,0,20,67,0,4,625,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
+1033,0,0,21,67,0,4,633,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
+1060,0,0,22,67,0,4,641,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,3,0,0,
+1087,0,0,23,71,0,4,649,0,0,3,1,0,1,0,2,4,0,0,2,3,0,0,1,9,0,0,
+1114,0,0,4,0,0,13,712,0,0,28,0,0,1,0,2,4,0,0,2,3,0,0,2,9,0,0,2,3,0,0,2,4,0,0,2,
 9,0,0,2,9,0,0,2,4,0,0,2,4,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,0,2,3,0,0,
 2,3,0,0,2,3,0,0,2,3,0,0,2,3,0,0,2,4,0,0,2,3,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,3,0,
 0,2,4,0,0,2,9,0,0,2,9,0,0,
-1241,0,0,4,0,0,15,725,0,0,0,0,0,1,0,
-1256,0,0,24,270,0,9,738,0,0,0,0,0,1,0,
-1271,0,0,24,0,0,13,740,0,0,13,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
-2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
-1338,0,0,25,312,0,3,769,0,0,14,14,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
-0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-1409,0,0,24,0,0,13,794,0,0,13,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
-2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
-1476,0,0,24,0,0,15,807,0,0,0,0,0,1,0,
-1491,0,0,5,123,0,9,899,0,0,1,1,0,1,0,1,9,0,0,
-1510,0,0,5,0,0,13,900,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1537,0,0,5,0,0,13,911,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1564,0,0,5,0,0,15,914,0,0,0,0,0,1,0,
-1579,0,0,6,141,0,9,917,0,0,2,2,0,1,0,1,9,0,0,1,3,0,0,
-1602,0,0,6,0,0,13,918,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1629,0,0,6,0,0,13,929,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1656,0,0,6,0,0,15,932,0,0,0,0,0,1,0,
-1671,0,0,26,313,0,3,949,0,0,14,14,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
-0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-1742,0,0,5,123,0,9,1040,0,0,1,1,0,1,0,1,9,0,0,
-1761,0,0,5,0,0,13,1041,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1788,0,0,5,0,0,13,1054,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
-1815,0,0,5,0,0,15,1057,0,0,0,0,0,1,0,
-1830,0,0,27,313,0,3,1073,0,0,14,14,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
-0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,
-1901,0,0,28,125,0,4,1106,0,0,7,2,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
+1241,0,0,4,0,0,15,728,0,0,0,0,0,1,0,
+1256,0,0,24,283,0,9,741,0,0,0,0,0,1,0,
+1271,0,0,24,0,0,13,743,0,0,14,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
+2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
+1342,0,0,25,323,0,3,773,0,0,15,15,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
+0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,
+0,0,
+1417,0,0,24,0,0,13,799,0,0,14,0,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
+2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
+1488,0,0,24,0,0,15,812,0,0,0,0,0,1,0,
+1503,0,0,5,123,0,9,904,0,0,1,1,0,1,0,1,9,0,0,
+1522,0,0,5,0,0,13,905,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1549,0,0,5,0,0,13,917,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1576,0,0,5,0,0,15,920,0,0,0,0,0,1,0,
+1591,0,0,6,141,0,9,923,0,0,2,2,0,1,0,1,9,0,0,1,3,0,0,
+1614,0,0,6,0,0,13,924,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1641,0,0,6,0,0,13,936,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1668,0,0,6,0,0,15,939,0,0,0,0,0,1,0,
+1683,0,0,26,324,0,3,962,0,0,15,15,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
+0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,
+0,0,
+1758,0,0,5,123,0,9,1054,0,0,1,1,0,1,0,1,9,0,0,
+1777,0,0,5,0,0,13,1055,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1804,0,0,5,0,0,13,1069,0,0,3,0,0,1,0,2,9,0,0,2,4,0,0,2,3,0,0,
+1831,0,0,5,0,0,15,1072,0,0,0,0,0,1,0,
+1846,0,0,27,324,0,3,1094,0,0,15,15,0,1,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,
+0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,0,0,1,9,
+0,0,
+1921,0,0,28,125,0,4,1128,0,0,7,2,0,1,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,2,9,0,0,
 1,9,0,0,1,9,0,0,
 };
 
@@ -254,8 +257,8 @@ void hacer_asiento();
 void ver_inf();
 void graba_deb();
 void graba_cre();
-void inserta_deb();
-void inserta_cre();
+void inserta_deb(int li);
+void inserta_cre(int li);
 
 
 /* EXEC SQL BEGIN DECLARE SECTION; */ 
@@ -408,6 +411,9 @@ struct { unsigned short len; unsigned char arr[10]; } gasto_comun;
 
 /* VARCHAR gasto_cc    [10]; */ 
 struct { unsigned short len; unsigned char arr[10]; } gasto_cc;
+
+/* VARCHAR li_c        [5]; */ 
+struct { unsigned short len; unsigned char arr[5]; } li_c;
 
 
 char    vecplan     [05][14];
@@ -773,6 +779,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
     staora  = 0;
     traidos = 0;
     num_ret = 0;
+
     while (staora == 0) {
 
           /* EXEC SQL FETCH C2 INTO :vecinf; */ 
@@ -824,6 +831,7 @@ its n ,empresas e where (n.codigo_nit=e.codigo_nit and e.codigo_emp=to_number(\
           }
           num_ret = traidos;
     }
+
     k = traidos;
     /* EXEC SQL CLOSE C2; */ 
 
@@ -3558,11 +3566,11 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
   /* EXEC SQL DECLARE C7 CURSOR FOR
            select codigo_emp, ano_mes, consecutivo,
                   cuenta, infa, infb, infc, infd,
-                  codigo_nit, sum(nvl(valor_deb,0)), sum(nvl(valor_cre,0)), sucursal, cen_cos
+                  codigo_nit, sum(nvl(valor_deb,0)), sum(nvl(valor_cre,0)), sucursal, cen_cos, libro
            from  movto_dt
            group by codigo_emp, ano_mes, consecutivo,
                     cuenta, infa, infb, infc, infd,
-                    codigo_nit, sucursal, cen_cos; */ 
+                    codigo_nit, sucursal, cen_cos, libro; */ 
 
 
   /* EXEC SQL OPEN C7; */ 
@@ -3590,7 +3598,7 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
   /* EXEC SQL FETCH C7 INTO :codigo_emp, :ano_mes, :consecutivob,
                          :cuentab, :infa, :infb, :infc, :infd,
                          :codigo_nitb, :valor_debb, :valor_creb,
-                         :sucursalb, :cen_cosb; */ 
+                         :sucursalb, :cen_cosb, :li_c; */ 
 
 {
   struct sqlexd sqlstm;
@@ -3709,6 +3717,14 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
   sqlstm.sqharm[12] = (unsigned int  )0;
   sqlstm.sqadto[12] = (unsigned short )0;
   sqlstm.sqtdso[12] = (unsigned short )0;
+  sqlstm.sqhstv[13] = (         void  *)&li_c;
+  sqlstm.sqhstl[13] = (unsigned int  )7;
+  sqlstm.sqhsts[13] = (         int  )0;
+  sqlstm.sqindv[13] = (         void  *)0;
+  sqlstm.sqinds[13] = (         int  )0;
+  sqlstm.sqharm[13] = (unsigned int  )0;
+  sqlstm.sqadto[13] = (unsigned short )0;
+  sqlstm.sqtdso[13] = (unsigned short )0;
   sqlstm.sqphsv = sqlstm.sqhstv;
   sqlstm.sqphsl = sqlstm.sqhstl;
   sqlstm.sqphss = sqlstm.sqhsts;
@@ -3742,6 +3758,7 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
         valor_creb.arr   [valor_creb.len]   = '\0';
         sucursalb.arr    [sucursalb.len]    = '\0';
         cen_cosb.arr     [cen_cosb.len]     = '\0';
+        li_c.arr         [li_c.len]         = '\0';
 
         secuencia++;
         sprintf(secuenciab.arr,"%6.0f",secuencia);
@@ -3761,7 +3778,8 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
             	       		 VALOR_DEB,
             	       		 VALOR_CRE,
             	       		 SUCURSAL,
-            	       		 CEN_COS)
+            	       		 CEN_COS,
+                         LIBRO)
                   values(to_number(:codigo_emp), 
                          to_number(:ano_mes), 
                          to_number(:consecutivob), 
@@ -3770,7 +3788,7 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
                          to_number(:codigo_nitb), 
                          to_number(:valor_debb, '999999999.99'), 
                          to_number(:valor_creb, '999999999.99'), 
-                         :sucursalb, :cen_cosb); */ 
+                         :sucursalb, :cen_cosb, :li_c); */ 
 
 {
         struct sqlexd sqlstm;
@@ -3781,11 +3799,11 @@ ect nit ,codigo_nit into :b0,:b1  from nits where nit=to_number(:b2)";
         sqlstm.sqltdsp = &sqltds;
         sqlstm.stmt = "insert into movto_d(CODIGO_EMP,ANO_MES,CONSECUTIVO,SE\
 CUENCIA,CUENTA,INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN\
-_COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
-:b5,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(:b11,'\
-999999999.99'),:b12,:b13)";
+_COS,LIBRO) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3\
+),:b4,:b5,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(\
+:b11,'999999999.99'),:b12,:b13,:b14)";
         sqlstm.iters = (unsigned int  )1;
-        sqlstm.offset = (unsigned int  )1338;
+        sqlstm.offset = (unsigned int  )1342;
         sqlstm.cud = sqlcud0;
         sqlstm.sqlest = (unsigned char  *)&sqlca;
         sqlstm.sqlety = (unsigned short)256;
@@ -3902,6 +3920,14 @@ _COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
         sqlstm.sqharm[13] = (unsigned int  )0;
         sqlstm.sqadto[13] = (unsigned short )0;
         sqlstm.sqtdso[13] = (unsigned short )0;
+        sqlstm.sqhstv[14] = (         void  *)&li_c;
+        sqlstm.sqhstl[14] = (unsigned int  )7;
+        sqlstm.sqhsts[14] = (         int  )0;
+        sqlstm.sqindv[14] = (         void  *)0;
+        sqlstm.sqinds[14] = (         int  )0;
+        sqlstm.sqharm[14] = (unsigned int  )0;
+        sqlstm.sqadto[14] = (unsigned short )0;
+        sqlstm.sqtdso[14] = (unsigned short )0;
         sqlstm.sqphsv = sqlstm.sqhstv;
         sqlstm.sqphsl = sqlstm.sqhstl;
         sqlstm.sqphss = sqlstm.sqhsts;
@@ -3919,7 +3945,7 @@ _COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
         /* EXEC SQL FETCH C7 INTO :codigo_emp, :ano_mes, :consecutivob,
                                :cuentab, :infa, :infb, :infc, :infd,
                                :codigo_nitb, :valor_debb, :valor_creb,
-                               :sucursalb, :cen_cosb; */ 
+                               :sucursalb, :cen_cosb, :li_c; */ 
 
 {
         struct sqlexd sqlstm;
@@ -3929,7 +3955,7 @@ _COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
         sqlstm.sqladtp = &sqladt;
         sqlstm.sqltdsp = &sqltds;
         sqlstm.iters = (unsigned int  )1;
-        sqlstm.offset = (unsigned int  )1409;
+        sqlstm.offset = (unsigned int  )1417;
         sqlstm.cud = sqlcud0;
         sqlstm.sqlest = (unsigned char  *)&sqlca;
         sqlstm.sqlety = (unsigned short)256;
@@ -4038,6 +4064,14 @@ _COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
         sqlstm.sqharm[12] = (unsigned int  )0;
         sqlstm.sqadto[12] = (unsigned short )0;
         sqlstm.sqtdso[12] = (unsigned short )0;
+        sqlstm.sqhstv[13] = (         void  *)&li_c;
+        sqlstm.sqhstl[13] = (unsigned int  )7;
+        sqlstm.sqhsts[13] = (         int  )0;
+        sqlstm.sqindv[13] = (         void  *)0;
+        sqlstm.sqinds[13] = (         int  )0;
+        sqlstm.sqharm[13] = (unsigned int  )0;
+        sqlstm.sqadto[13] = (unsigned short )0;
+        sqlstm.sqtdso[13] = (unsigned short )0;
         sqlstm.sqphsv = sqlstm.sqhstv;
         sqlstm.sqphsl = sqlstm.sqhstl;
         sqlstm.sqphss = sqlstm.sqhsts;
@@ -4070,7 +4104,7 @@ _COS) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,\
   sqlstm.sqladtp = &sqladt;
   sqlstm.sqltdsp = &sqltds;
   sqlstm.iters = (unsigned int  )1;
-  sqlstm.offset = (unsigned int  )1476;
+  sqlstm.offset = (unsigned int  )1488;
   sqlstm.cud = sqlcud0;
   sqlstm.sqlest = (unsigned char  *)&sqlca;
   sqlstm.sqlety = (unsigned short)256;
@@ -4181,7 +4215,7 @@ void graba_deb()
                            sqlstm.sqltdsp = &sqltds;
                            sqlstm.stmt = sq0005;
                            sqlstm.iters = (unsigned int  )1;
-                           sqlstm.offset = (unsigned int  )1491;
+                           sqlstm.offset = (unsigned int  )1503;
                            sqlstm.selerr = (unsigned short)1;
                            sqlstm.cud = sqlcud0;
                            sqlstm.sqlest = (unsigned char  *)&sqlca;
@@ -4218,7 +4252,7 @@ void graba_deb()
                            sqlstm.sqladtp = &sqladt;
                            sqlstm.sqltdsp = &sqltds;
                            sqlstm.iters = (unsigned int  )1;
-                           sqlstm.offset = (unsigned int  )1510;
+                           sqlstm.offset = (unsigned int  )1522;
                            sqlstm.cud = sqlcud0;
                            sqlstm.sqlest = (unsigned char  *)&sqlca;
                            sqlstm.sqlety = (unsigned short)256;
@@ -4269,7 +4303,8 @@ void graba_deb()
                                   }
                                   else valor_s = valor_d;
 //                                printf("gasto_comun<%s> codigo<%d> sucursalb.arr<%s> nitn<%14.0f> valor_r<%12.2f> valor_d<%12.2f> valor_s<%12.2f> ",gasto_comun.arr, codigo, sucursalb.arr, nitn, valor_r, valor_d, valor_s); getchar();
-                                  inserta_deb();
+                                  inserta_deb(0);
+                                  inserta_deb(1);
                                   /* EXEC SQL FETCH C8 INTO :sucursalb, :ptajesuc, :ultimo; */ 
 
 {
@@ -4280,7 +4315,7 @@ void graba_deb()
                                   sqlstm.sqladtp = &sqladt;
                                   sqlstm.sqltdsp = &sqltds;
                                   sqlstm.iters = (unsigned int  )1;
-                                  sqlstm.offset = (unsigned int  )1537;
+                                  sqlstm.offset = (unsigned int  )1549;
                                   sqlstm.cud = sqlcud0;
                                   sqlstm.sqlest = (unsigned char  *)&sqlca;
                                   sqlstm.sqlety = (unsigned short)256;
@@ -4334,7 +4369,7 @@ void graba_deb()
                            sqlstm.sqladtp = &sqladt;
                            sqlstm.sqltdsp = &sqltds;
                            sqlstm.iters = (unsigned int  )1;
-                           sqlstm.offset = (unsigned int  )1564;
+                           sqlstm.offset = (unsigned int  )1576;
                            sqlstm.cud = sqlcud0;
                            sqlstm.sqlest = (unsigned char  *)&sqlca;
                            sqlstm.sqlety = (unsigned short)256;
@@ -4356,7 +4391,7 @@ void graba_deb()
                            sqlstm.sqltdsp = &sqltds;
                            sqlstm.stmt = sq0006;
                            sqlstm.iters = (unsigned int  )1;
-                           sqlstm.offset = (unsigned int  )1579;
+                           sqlstm.offset = (unsigned int  )1591;
                            sqlstm.selerr = (unsigned short)1;
                            sqlstm.cud = sqlcud0;
                            sqlstm.sqlest = (unsigned char  *)&sqlca;
@@ -4401,7 +4436,7 @@ void graba_deb()
                            sqlstm.sqladtp = &sqladt;
                            sqlstm.sqltdsp = &sqltds;
                            sqlstm.iters = (unsigned int  )1;
-                           sqlstm.offset = (unsigned int  )1602;
+                           sqlstm.offset = (unsigned int  )1614;
                            sqlstm.cud = sqlcud0;
                            sqlstm.sqlest = (unsigned char  *)&sqlca;
                            sqlstm.sqlety = (unsigned short)256;
@@ -4452,7 +4487,8 @@ void graba_deb()
                                   }
                                   else valor_s = valor_d;
 //                                printf("gasto_comun<%s> codigo<%d> sucursalb.arr<%s> nitn<%14.0f> valor_r<%12.2f> valor_d<%12.2f> valor_s<%12.2f> ",gasto_comun.arr, codigo, sucursalb.arr, nitn, valor_r, valor_d, valor_s); getchar();
-                                  inserta_deb();
+                                  inserta_deb(0);
+                                  inserta_deb(1);
                                   /* EXEC SQL FETCH C9 INTO :sucursalb, :ptajesuc, :ultimo; */ 
 
 {
@@ -4463,7 +4499,7 @@ void graba_deb()
                                   sqlstm.sqladtp = &sqladt;
                                   sqlstm.sqltdsp = &sqltds;
                                   sqlstm.iters = (unsigned int  )1;
-                                  sqlstm.offset = (unsigned int  )1629;
+                                  sqlstm.offset = (unsigned int  )1641;
                                   sqlstm.cud = sqlcud0;
                                   sqlstm.sqlest = (unsigned char  *)&sqlca;
                                   sqlstm.sqlety = (unsigned short)256;
@@ -4517,7 +4553,7 @@ void graba_deb()
                            sqlstm.sqladtp = &sqladt;
                            sqlstm.sqltdsp = &sqltds;
                            sqlstm.iters = (unsigned int  )1;
-                           sqlstm.offset = (unsigned int  )1656;
+                           sqlstm.offset = (unsigned int  )1668;
                            sqlstm.cud = sqlcud0;
                            sqlstm.sqlest = (unsigned char  *)&sqlca;
                            sqlstm.sqlety = (unsigned short)256;
@@ -4528,13 +4564,19 @@ void graba_deb()
 
                        }
                     }
-                    else inserta_deb();
+                    else {
+                         inserta_deb(0);
+                         inserta_deb(1);
+                    }
                  }
 
 }
 
-void inserta_deb()
+void inserta_deb(li)
 {
+
+    sprintf(li_c.arr,"%d",li);
+    li_c.len = strlen(li_c.arr);
 
     sprintf(valor_debb.arr,"%10.2f",valor_s);
     valor_debb.len = strlen(valor_debb.arr);
@@ -4556,7 +4598,8 @@ void inserta_deb()
         	       		 VALOR_DEB,
         	       		 VALOR_CRE,
         	       		 SUCURSAL,
-        	       		 CEN_COS)
+        	       		 CEN_COS,
+                     LIBRO)
               values(to_number(:codigo_emp), 
                      to_number(:ano_mes), 
                      to_number(:consecutivob), 
@@ -4565,7 +4608,7 @@ void inserta_deb()
                      to_number(:codigo_nitb), 
                      to_number(:valor_debb, '999999999.99'), 
                      to_number(:valor_creb, '999999999.99'), 
-                     :sucursalb, :cen_cosb); */ 
+                     :sucursalb, :cen_cosb, :li_c); */ 
 
 {
     struct sqlexd sqlstm;
@@ -4576,11 +4619,11 @@ void inserta_deb()
     sqlstm.sqltdsp = &sqltds;
     sqlstm.stmt = "insert into movto_dt(CODIGO_EMP,ANO_MES,CONSECUTIVO,SECUE\
 NCIA,CUENTA,INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_CO\
-S) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,:b5\
-,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(:b11,'999\
-999999.99'),:b12,:b13)";
+S,LIBRO) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:\
+b4,:b5,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(:b1\
+1,'999999999.99'),:b12,:b13,:b14)";
     sqlstm.iters = (unsigned int  )1;
-    sqlstm.offset = (unsigned int  )1671;
+    sqlstm.offset = (unsigned int  )1683;
     sqlstm.cud = sqlcud0;
     sqlstm.sqlest = (unsigned char  *)&sqlca;
     sqlstm.sqlety = (unsigned short)256;
@@ -4697,6 +4740,14 @@ S) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,:b5\
     sqlstm.sqharm[13] = (unsigned int  )0;
     sqlstm.sqadto[13] = (unsigned short )0;
     sqlstm.sqtdso[13] = (unsigned short )0;
+    sqlstm.sqhstv[14] = (         void  *)&li_c;
+    sqlstm.sqhstl[14] = (unsigned int  )7;
+    sqlstm.sqhsts[14] = (         int  )0;
+    sqlstm.sqindv[14] = (         void  *)0;
+    sqlstm.sqinds[14] = (         int  )0;
+    sqlstm.sqharm[14] = (unsigned int  )0;
+    sqlstm.sqadto[14] = (unsigned short )0;
+    sqlstm.sqtdso[14] = (unsigned short )0;
     sqlstm.sqphsv = sqlstm.sqhstv;
     sqlstm.sqphsl = sqlstm.sqhstl;
     sqlstm.sqphss = sqlstm.sqhsts;
@@ -4788,7 +4839,7 @@ void graba_cre()
                     sqlstm.sqltdsp = &sqltds;
                     sqlstm.stmt = sq0005;
                     sqlstm.iters = (unsigned int  )1;
-                    sqlstm.offset = (unsigned int  )1742;
+                    sqlstm.offset = (unsigned int  )1758;
                     sqlstm.selerr = (unsigned short)1;
                     sqlstm.cud = sqlcud0;
                     sqlstm.sqlest = (unsigned char  *)&sqlca;
@@ -4825,7 +4876,7 @@ void graba_cre()
                     sqlstm.sqladtp = &sqladt;
                     sqlstm.sqltdsp = &sqltds;
                     sqlstm.iters = (unsigned int  )1;
-                    sqlstm.offset = (unsigned int  )1761;
+                    sqlstm.offset = (unsigned int  )1777;
                     sqlstm.cud = sqlcud0;
                     sqlstm.sqlest = (unsigned char  *)&sqlca;
                     sqlstm.sqlety = (unsigned short)256;
@@ -4878,7 +4929,8 @@ void graba_cre()
                            }
                            else valor_s = valor_d;
 //                         printf("gasto_comun<%s> codigo<%d> sucursalb.arr<%s> nitn<%14.0f> valor_r<%12.2f> valor_d<%12.2f> valor_s<%12.2f> ",gasto_comun.arr, codigo, sucursalb.arr, nitn, valor_r, valor_d, valor_s); getchar();
-                           inserta_cre();
+                           inserta_cre(0);
+                           inserta_cre(1);
                            /* EXEC SQL FETCH C8 INTO :sucursalb, :ptajesuc, :ultimo; */ 
 
 {
@@ -4889,7 +4941,7 @@ void graba_cre()
                            sqlstm.sqladtp = &sqladt;
                            sqlstm.sqltdsp = &sqltds;
                            sqlstm.iters = (unsigned int  )1;
-                           sqlstm.offset = (unsigned int  )1788;
+                           sqlstm.offset = (unsigned int  )1804;
                            sqlstm.cud = sqlcud0;
                            sqlstm.sqlest = (unsigned char  *)&sqlca;
                            sqlstm.sqlety = (unsigned short)256;
@@ -4943,7 +4995,7 @@ void graba_cre()
                     sqlstm.sqladtp = &sqladt;
                     sqlstm.sqltdsp = &sqltds;
                     sqlstm.iters = (unsigned int  )1;
-                    sqlstm.offset = (unsigned int  )1815;
+                    sqlstm.offset = (unsigned int  )1831;
                     sqlstm.cud = sqlcud0;
                     sqlstm.sqlest = (unsigned char  *)&sqlca;
                     sqlstm.sqlety = (unsigned short)256;
@@ -4953,13 +5005,19 @@ void graba_cre()
 
 
                  }
-                 else inserta_cre();
+                 else {
+                       inserta_cre(0);
+                       inserta_cre(1);
+                 }
               }
 
 }
 
-void inserta_cre()
+void inserta_cre(li)
 {
+
+     sprintf(li_c.arr,"%d",li);
+     li_c.len = strlen(li_c.arr);
 
      strcpy(valor_debb.arr,"");
      valor_debb.len = strlen(valor_debb.arr);
@@ -4981,7 +5039,8 @@ void inserta_cre()
         	       		 VALOR_DEB,
         	       		 VALOR_CRE,
         	       		 SUCURSAL,
-        	       		 CEN_COS)
+        	       		 CEN_COS,
+                     LIBRO)
               values(to_number(:codigo_emp), 
                      to_number(:ano_mes), 
                      to_number(:consecutivob), 
@@ -4990,7 +5049,7 @@ void inserta_cre()
                      to_number(:codigo_nitb), 
                      to_number(:valor_debb, '999999999.99'), 
                      to_number(:valor_creb, '999999999.99'), 
-                     :sucursalb, :cen_cosb); */ 
+                     :sucursalb, :cen_cosb, :li_c); */ 
 
 {
     struct sqlexd sqlstm;
@@ -5001,11 +5060,11 @@ void inserta_cre()
     sqlstm.sqltdsp = &sqltds;
     sqlstm.stmt = "insert into movto_dt(CODIGO_EMP,ANO_MES,CONSECUTIVO,SECUE\
 NCIA,CUENTA,INFA,INFB,INFC,INFD,CODIGO_NIT,VALOR_DEB,VALOR_CRE,SUCURSAL,CEN_CO\
-S) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,:b5\
-,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(:b11,'999\
-999999.99'),:b12,:b13)";
+S,LIBRO) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:\
+b4,:b5,:b6,:b7,:b8,to_number(:b9),to_number(:b10,'999999999.99'),to_number(:b1\
+1,'999999999.99'),:b12,:b13,:b14)";
     sqlstm.iters = (unsigned int  )1;
-    sqlstm.offset = (unsigned int  )1830;
+    sqlstm.offset = (unsigned int  )1846;
     sqlstm.cud = sqlcud0;
     sqlstm.sqlest = (unsigned char  *)&sqlca;
     sqlstm.sqlety = (unsigned short)256;
@@ -5122,6 +5181,14 @@ S) values (to_number(:b0),to_number(:b1),to_number(:b2),to_number(:b3),:b4,:b5\
     sqlstm.sqharm[13] = (unsigned int  )0;
     sqlstm.sqadto[13] = (unsigned short )0;
     sqlstm.sqtdso[13] = (unsigned short )0;
+    sqlstm.sqhstv[14] = (         void  *)&li_c;
+    sqlstm.sqhstl[14] = (unsigned int  )7;
+    sqlstm.sqhsts[14] = (         int  )0;
+    sqlstm.sqindv[14] = (         void  *)0;
+    sqlstm.sqinds[14] = (         int  )0;
+    sqlstm.sqharm[14] = (unsigned int  )0;
+    sqlstm.sqadto[14] = (unsigned short )0;
+    sqlstm.sqtdso[14] = (unsigned short )0;
     sqlstm.sqphsv = sqlstm.sqhstv;
     sqlstm.sqphsl = sqlstm.sqhstl;
     sqlstm.sqphss = sqlstm.sqhsts;
@@ -5160,7 +5227,7 @@ void ver_inf()
   sqlstm.stmt = "select infa ,infb ,infc ,infd ,nvl(gasto_comun,'D') into :b\
 0,:b1,:b2,:b3,:b4  from plan where (codigo_emp=:b5 and cuenta=:b6)";
   sqlstm.iters = (unsigned int  )1;
-  sqlstm.offset = (unsigned int  )1901;
+  sqlstm.offset = (unsigned int  )1921;
   sqlstm.selerr = (unsigned short)1;
   sqlstm.cud = sqlcud0;
   sqlstm.sqlest = (unsigned char  *)&sqlca;
